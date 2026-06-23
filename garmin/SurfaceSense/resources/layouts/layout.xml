@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<!-- Layout wird nicht direkt genutzt — onUpdate() zeichnet alles manuell.
+     Diese Datei ist Pflicht für den CIQ-Compiler. -->
+<layouts>
+  <layout id="MainLayout">
+  </layout>
+</layouts>

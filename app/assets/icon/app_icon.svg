@@ -1,0 +1,58 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="1024" height="1024" rx="224" fill="#0D1117"/>
+  <rect width="1024" height="1024" rx="224" fill="none" stroke="#1E2A38" stroke-width="3"/>
+
+  <!-- Road surface band -->
+  <rect x="0" y="740" width="1024" height="284" rx="0" fill="#1A2332"/>
+  <clipPath id="c"><rect width="1024" height="1024" rx="224"/></clipPath>
+  <g clip-path="url(#c)">
+    <line x1="0" y1="770" x2="1024" y2="770" stroke="#243040" stroke-width="2.5"/>
+    <line x1="0" y1="810" x2="1024" y2="810" stroke="#1E2A3A" stroke-width="2"/>
+    <line x1="0" y1="850" x2="1024" y2="850" stroke="#1A2535" stroke-width="2"/>
+    <path d="M30 770 Q60 756 90 770 Q120 756 150 770 Q180 756 210 770 Q240 756 270 770 Q300 756 330 770 Q360 756 390 770 Q420 756 450 770 Q480 756 510 770 Q540 756 570 770 Q600 756 630 770 Q660 756 690 770 Q720 756 750 770 Q780 756 810 770 Q840 756 870 770 Q900 756 930 770 Q960 756 990 770"
+      fill="none" stroke="#2A3F55" stroke-width="2.5"/>
+
+    <!-- Bike wheel -->
+    <circle cx="512" cy="760" r="290" fill="none" stroke="#1E3A5F" stroke-width="13"/>
+    <g stroke="#1E3A5F" stroke-width="4" opacity="0.7">
+      <line x1="512" y1="470" x2="512" y2="760"/>
+      <line x1="512" y1="760" x2="714" y2="580"/>
+      <line x1="512" y1="760" x2="763" y2="810"/>
+      <line x1="512" y1="760" x2="310" y2="580"/>
+      <line x1="512" y1="760" x2="261" y2="810"/>
+      <line x1="512" y1="760" x2="392" y2="484"/>
+      <line x1="512" y1="760" x2="632" y2="484"/>
+    </g>
+    <circle cx="512" cy="760" r="30" fill="#1E3A5F" stroke="#2A5080" stroke-width="3"/>
+    <circle cx="512" cy="760" r="13" fill="#2A5080"/>
+  </g>
+
+  <!-- Vibration waveform — glow layer -->
+  <path d="M200 510 C240 510 260 420 305 420 C350 420 370 600 415 600 C460 600 480 370 525 370 C570 370 590 640 635 640 C680 640 700 400 745 400 C790 400 810 540 855 540 C880 540 900 510 930 510"
+    fill="none" stroke="#3B82F6" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" opacity="0.12"/>
+
+  <!-- Vibration waveform — main -->
+  <path d="M200 510 C240 510 260 420 305 420 C350 420 370 600 415 600 C460 600 480 370 525 370 C570 370 590 640 635 640 C680 640 700 400 745 400 C790 400 810 540 855 540 C880 540 900 510 930 510"
+    fill="none" stroke="#60A5FA" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Peak/trough dots -->
+  <circle cx="525" cy="370" r="11" fill="#93C5FD"/>
+  <circle cx="635" cy="640" r="11" fill="#93C5FD"/>
+  <circle cx="415" cy="600" r="8" fill="#60A5FA" opacity="0.8"/>
+  <circle cx="745" cy="400" r="8" fill="#60A5FA" opacity="0.8"/>
+
+  <!-- Vertical (g) axis -->
+  <line x1="165" y1="680" x2="165" y2="320" stroke="#34D399" stroke-width="4" stroke-linecap="round"/>
+  <polygon points="165,308 153,336 177,336" fill="#34D399"/>
+
+  <!-- Baseline (0g) -->
+  <line x1="150" y1="510" x2="870" y2="510" stroke="#374151" stroke-width="2.5" stroke-dasharray="10,9" stroke-linecap="round"/>
+
+  <!-- "g" label -->
+  <text x="165" y="302" text-anchor="middle" font-family="system-ui,sans-serif" font-size="44" font-weight="600" fill="#34D399">g</text>
+
+  <!-- RMS bar -->
+  <rect x="200" y="500" width="620" height="18" rx="9" fill="#1E3A5F" opacity="0.5"/>
+  <rect x="200" y="500" width="370" height="18" rx="9" fill="#3B82F6" opacity="0.55"/>
+</svg>

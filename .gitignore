@@ -1,0 +1,24 @@
+# Signing-Dateien — NIEMALS committen
+app/android/key.properties
+app/android/*.jks
+app/android/*.keystore
+*.jks
+*.keystore
+
+# Flutter Build-Artefakte
+app/.dart_tool/
+app/build/
+app/.flutter-plugins-dependencies
+app/.pub-cache/
+app/.pub/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# macOS
+.DS_Store
+
+# Arduino Build
+firmware/build/

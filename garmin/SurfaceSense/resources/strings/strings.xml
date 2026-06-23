@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<strings>
+  <string id="AppName">SurfaceSense</string>
+  <string id="Searching">Suche Sensor...</string>
+  <string id="Connected">Verbunden</string>
+  <string id="NoData">Keine Daten</string>
+</strings>

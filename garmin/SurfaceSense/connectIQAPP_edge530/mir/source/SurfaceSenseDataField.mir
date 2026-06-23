@@ -1,0 +1,1091 @@
+[ @file = "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc"; @line = 1; @symbol_importdef<0> = [Toybox,1,7,13]; @symbol_importdef<1> = [WatchUi,1,14,21]; ]
+import Toybox.WatchUi;
+[ @file = "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc"; @line = 2; @symbol_importdef<0> = [Toybox,2,7,13]; @symbol_importdef<1> = [Graphics,2,14,22]; ]
+import Toybox.Graphics;
+[ @file = "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc"; @line = 3; @symbol_importdef<0> = [Toybox,3,7,13]; @symbol_importdef<1> = [FitContributor,3,14,28]; ]
+import Toybox.FitContributor;
+[ @file = "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc"; @line = 4; @symbol_importdef<0> = [Toybox,4,7,13]; @symbol_importdef<1> = [Activity,4,14,22]; ]
+import Toybox.Activity;
+[ @file = "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc"; @line = 5; @symbol_importdef<0> = [Toybox,5,7,13]; @symbol_importdef<1> = [Lang,5,14,18]; ]
+import Toybox.Lang;
+[ @file = "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc"; @line = 6; @symbol_importdef<0> = [Toybox,6,7,13]; @symbol_importdef<1> = [System,6,14,20]; ]
+import Toybox.System;
+[ @file = "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc"; @line = 7; @symbol_importdef<0> = [Toybox,7,7,13]; @symbol_importdef<1> = [Math,7,14,18]; ]
+import Toybox.Math;
+[ @file = "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc"; @line = 31; @symbol_classdef = [SurfaceSenseDataField,31,6,27]; @symbol_extends<0> = [WatchUi,31,36,43]; @symbol_extends<1> = [DataField,31,44,53]; ]
+class SurfaceSenseDataField extends WatchUi.DataField {
+    [ @file = "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc"; @line = 31; ]
+    <init> {
+    }
+    [ @file = "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc"; @line = 31; ]
+    static
+    <init> {
+    }
+    [ @file = "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc"; @line = 34; @position = 16; @symbol_vardef = [_fitRms,34,16,23]; @symbol_type<0> = [FitContributor,34,29,43]; @symbol_type<1> = [Field,34,44,49]; ]
+    private
+    var _fitRms as FitContributor.Field;
+    [ @file = "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc"; @line = 35; @position = 16; @symbol_vardef = [_fitVdv,35,16,23]; @symbol_type<0> = [FitContributor,35,29,43]; @symbol_type<1> = [Field,35,44,49]; ]
+    private
+    var _fitVdv as FitContributor.Field;
+    [ @file = "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc"; @line = 36; @position = 16; @symbol_vardef = [_fitPeak,36,16,24]; @symbol_type<0> = [FitContributor,36,29,43]; @symbol_type<1> = [Field,36,44,49]; ]
+    private
+    var _fitPeak as FitContributor.Field;
+    [ @file = "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc"; @line = 37; @position = 16; @symbol_vardef = [_fitCrest,37,16,25]; @symbol_type<0> = [FitContributor,37,29,43]; @symbol_type<1> = [Field,37,44,49]; ]
+    private
+    var _fitCrest as FitContributor.Field;
+    [ @file = "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc"; @line = 38; @position = 16; @symbol_vardef = [_fitIri,38,16,23]; @symbol_type<0> = [FitContributor,38,29,43]; @symbol_type<1> = [Field,38,44,49]; ]
+    private
+    var _fitIri as FitContributor.Field;
+    [ @file = "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc"; @line = 41; @position = 16; @symbol_vardef = [_ble,41,16,20]; @symbol_type<0> = [BleManager,41,24,34]; ]
+    private
+    var _ble as BleManager;
+    [ @file = "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc"; @line = 44; @position = 16; @symbol_vardef = [_rms,44,16,20]; @symbol_type<0> = [Float,44,28,33]; ]
+    private
+    var _rms as Float = 0.0f;
+    [ @file = "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc"; @line = 45; @position = 16; @symbol_vardef = [_vdv,45,16,20]; @symbol_type<0> = [Float,45,28,33]; ]
+    private
+    var _vdv as Float = 0.0f;
+    [ @file = "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc"; @line = 46; @position = 16; @symbol_vardef = [_iri,46,16,20]; @symbol_type<0> = [Float,46,28,33]; ]
+    private
+    var _iri as Float = 0.0f;
+    [ @file = "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc"; @line = 47; @position = 16; @symbol_vardef = [_dataAge,47,16,24]; @symbol_type<0> = [Number,47,28,34]; ]
+    private
+    var _dataAge as Number = 99;
+    [ @file = "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc"; @line = 51; @symbol_functiondef = [initialize,51,13,23]; ]
+    function initialize() as Void {
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_51_26_83_4_start:
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 52 8 ]
+        symbol [ DataField %tmp.2 52 8 17 ];
+        %tmp.2 = getv ? :DataField;
+        symbol [ initialize %tmp.3 52 18 28 ];
+        %tmp.3 = getv function %tmp.2 :initialize;
+        invoke %tmp.2 %tmp.3();
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 55 8 ]
+        %tmp.4 = self;
+        symbol [ createField %tmp.5 55 18 29 ];
+        %tmp.5 = getv function %tmp.4 :createField;
+        %tmp.6 = "vibration_rms";
+        %tmp.7 = 0;
+        symbol [ FitContributor %tmp.8 57 12 26 ];
+        %tmp.8 = getm $.Toybox.FitContributor;
+        symbol [ DATA_TYPE_FLOAT %tmp.9 57 27 42 ];
+        %tmp.9 = getv %tmp.8 :DATA_TYPE_FLOAT;
+        %tmp.10 = newd 2;
+        %tmp.12 = const :mesgType;
+        symbol [ mesgType %tmp.12 58 15 23 const ];
+        symbol [ FitContributor %tmp.13 58 27 41 ];
+        %tmp.13 = getm $.Toybox.FitContributor;
+        symbol [ MESG_TYPE_RECORD %tmp.14 58 42 58 ];
+        %tmp.14 = getv %tmp.13 :MESG_TYPE_RECORD;
+        %tmp.15 = dup %tmp.10;
+        %tmp.16 = aputv %tmp.15 %tmp.12 %tmp.14;
+        %tmp.18 = const :units;
+        symbol [ units %tmp.18 58 61 66 const ];
+        %tmp.19 = "g";
+        %tmp.20 = dup %tmp.16;
+        %tmp.21 = aputv %tmp.20 %tmp.18 %tmp.19;
+        %tmp.22 = invoke %tmp.4 %tmp.5(%tmp.6, %tmp.7, %tmp.9, %tmp.21);
+        symbol [ _fitRms ? 55 8 15 ];
+        putv self :_fitRms %tmp.22;
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 60 8 ]
+        %tmp.23 = self;
+        symbol [ createField %tmp.24 60 18 29 ];
+        %tmp.24 = getv function %tmp.23 :createField;
+        %tmp.25 = "vibration_vdv";
+        %tmp.26 = 1;
+        symbol [ FitContributor %tmp.27 62 12 26 ];
+        %tmp.27 = getm $.Toybox.FitContributor;
+        symbol [ DATA_TYPE_FLOAT %tmp.28 62 27 42 ];
+        %tmp.28 = getv %tmp.27 :DATA_TYPE_FLOAT;
+        %tmp.29 = newd 2;
+        %tmp.31 = const :mesgType;
+        symbol [ mesgType %tmp.31 63 15 23 const ];
+        symbol [ FitContributor %tmp.32 63 27 41 ];
+        %tmp.32 = getm $.Toybox.FitContributor;
+        symbol [ MESG_TYPE_RECORD %tmp.33 63 42 58 ];
+        %tmp.33 = getv %tmp.32 :MESG_TYPE_RECORD;
+        %tmp.34 = dup %tmp.29;
+        %tmp.35 = aputv %tmp.34 %tmp.31 %tmp.33;
+        %tmp.37 = const :units;
+        symbol [ units %tmp.37 63 61 66 const ];
+        %tmp.38 = "g*s^0.25";
+        %tmp.39 = dup %tmp.35;
+        %tmp.40 = aputv %tmp.39 %tmp.37 %tmp.38;
+        %tmp.41 = invoke %tmp.23 %tmp.24(%tmp.25, %tmp.26, %tmp.28, %tmp.40);
+        symbol [ _fitVdv ? 60 8 15 ];
+        putv self :_fitVdv %tmp.41;
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 65 8 ]
+        %tmp.42 = self;
+        symbol [ createField %tmp.43 65 19 30 ];
+        %tmp.43 = getv function %tmp.42 :createField;
+        %tmp.44 = "vibration_peak";
+        %tmp.45 = 2;
+        symbol [ FitContributor %tmp.46 67 12 26 ];
+        %tmp.46 = getm $.Toybox.FitContributor;
+        symbol [ DATA_TYPE_FLOAT %tmp.47 67 27 42 ];
+        %tmp.47 = getv %tmp.46 :DATA_TYPE_FLOAT;
+        %tmp.48 = newd 2;
+        %tmp.50 = const :mesgType;
+        symbol [ mesgType %tmp.50 68 15 23 const ];
+        symbol [ FitContributor %tmp.51 68 27 41 ];
+        %tmp.51 = getm $.Toybox.FitContributor;
+        symbol [ MESG_TYPE_RECORD %tmp.52 68 42 58 ];
+        %tmp.52 = getv %tmp.51 :MESG_TYPE_RECORD;
+        %tmp.53 = dup %tmp.48;
+        %tmp.54 = aputv %tmp.53 %tmp.50 %tmp.52;
+        %tmp.56 = const :units;
+        symbol [ units %tmp.56 68 61 66 const ];
+        %tmp.57 = "g";
+        %tmp.58 = dup %tmp.54;
+        %tmp.59 = aputv %tmp.58 %tmp.56 %tmp.57;
+        %tmp.60 = invoke %tmp.42 %tmp.43(%tmp.44, %tmp.45, %tmp.47, %tmp.59);
+        symbol [ _fitPeak ? 65 8 16 ];
+        putv self :_fitPeak %tmp.60;
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 70 8 ]
+        %tmp.61 = self;
+        symbol [ createField %tmp.62 70 20 31 ];
+        %tmp.62 = getv function %tmp.61 :createField;
+        %tmp.63 = "crest_factor";
+        %tmp.64 = 3;
+        symbol [ FitContributor %tmp.65 72 12 26 ];
+        %tmp.65 = getm $.Toybox.FitContributor;
+        symbol [ DATA_TYPE_FLOAT %tmp.66 72 27 42 ];
+        %tmp.66 = getv %tmp.65 :DATA_TYPE_FLOAT;
+        %tmp.67 = newd 2;
+        %tmp.69 = const :mesgType;
+        symbol [ mesgType %tmp.69 73 15 23 const ];
+        symbol [ FitContributor %tmp.70 73 27 41 ];
+        %tmp.70 = getm $.Toybox.FitContributor;
+        symbol [ MESG_TYPE_RECORD %tmp.71 73 42 58 ];
+        %tmp.71 = getv %tmp.70 :MESG_TYPE_RECORD;
+        %tmp.72 = dup %tmp.67;
+        %tmp.73 = aputv %tmp.72 %tmp.69 %tmp.71;
+        %tmp.75 = const :units;
+        symbol [ units %tmp.75 73 61 66 const ];
+        %tmp.76 = "";
+        %tmp.77 = dup %tmp.73;
+        %tmp.78 = aputv %tmp.77 %tmp.75 %tmp.76;
+        %tmp.79 = invoke %tmp.61 %tmp.62(%tmp.63, %tmp.64, %tmp.66, %tmp.78);
+        symbol [ _fitCrest ? 70 8 17 ];
+        putv self :_fitCrest %tmp.79;
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 75 8 ]
+        %tmp.80 = self;
+        symbol [ createField %tmp.81 75 18 29 ];
+        %tmp.81 = getv function %tmp.80 :createField;
+        %tmp.82 = "iri";
+        %tmp.83 = 4;
+        symbol [ FitContributor %tmp.84 77 12 26 ];
+        %tmp.84 = getm $.Toybox.FitContributor;
+        symbol [ DATA_TYPE_FLOAT %tmp.85 77 27 42 ];
+        %tmp.85 = getv %tmp.84 :DATA_TYPE_FLOAT;
+        %tmp.86 = newd 2;
+        %tmp.88 = const :mesgType;
+        symbol [ mesgType %tmp.88 78 15 23 const ];
+        symbol [ FitContributor %tmp.89 78 27 41 ];
+        %tmp.89 = getm $.Toybox.FitContributor;
+        symbol [ MESG_TYPE_RECORD %tmp.90 78 42 58 ];
+        %tmp.90 = getv %tmp.89 :MESG_TYPE_RECORD;
+        %tmp.91 = dup %tmp.86;
+        %tmp.92 = aputv %tmp.91 %tmp.88 %tmp.90;
+        %tmp.94 = const :units;
+        symbol [ units %tmp.94 78 61 66 const ];
+        %tmp.95 = "m/km";
+        %tmp.96 = dup %tmp.92;
+        %tmp.97 = aputv %tmp.96 %tmp.94 %tmp.95;
+        %tmp.98 = invoke %tmp.80 %tmp.81(%tmp.82, %tmp.83, %tmp.85, %tmp.97);
+        symbol [ _fitIri ? 75 8 15 ];
+        putv self :_fitIri %tmp.98;
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 82 8 ]
+        symbol [ BleManager %tmp.102 82 19 29 ];
+        %tmp.102 = getv ? :BleManager;
+        %tmp.103 = self;
+        symbol [ method %tmp.104 82 30 36 ];
+        %tmp.104 = getv function %tmp.103 :method;
+        %tmp.106 = const :onSurfaceData;
+        symbol [ onSurfaceData %tmp.106 82 38 51 const ];
+        %tmp.107 = invoke %tmp.103 %tmp.104(%tmp.106);
+        %tmp.99 = newc %tmp.102 (%tmp.107);
+        symbol [ _ble ? 82 8 12 ];
+        putv self :_ble %tmp.99;
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_51_26_83_4_stop:
+    }
+    [ @file = "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc"; @line = 87; @symbol_functiondef = [onSurfaceData,87,13,26]; @symbol_param<0> = [rms,88,8,11]; @symbol_param<0>_type<0> = [Float,88,17,22]; @symbol_param<1> = [vdv,89,8,11]; @symbol_param<1>_type<0> = [Float,89,17,22]; @symbol_param<2> = [peak,90,8,12]; @symbol_param<2>_type<0> = [Float,90,17,22]; @symbol_param<3> = [crest,91,8,13]; @symbol_param<3>_type<0> = [Float,91,17,22]; @symbol_param<4> = [iri,92,8,11]; @symbol_param<4>_type<0> = [Float,92,17,22]; ]
+    function onSurfaceData(rms as Float, vdv as Float, peak as Float, crest as Float, iri as Float) as Void {
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_93_14_105_4_start:
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 94 8 ]
+        %tmp.1 = lgetv %rms;
+        symbol [ rms %tmp.1 94 17 20 ];
+        symbol [ _rms ? 94 8 12 ];
+        putv self :_rms %tmp.1;
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 95 8 ]
+        %tmp.2 = lgetv %vdv;
+        symbol [ vdv %tmp.2 95 17 20 ];
+        symbol [ _vdv ? 95 8 12 ];
+        putv self :_vdv %tmp.2;
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 96 8 ]
+        %tmp.3 = lgetv %iri;
+        symbol [ iri %tmp.3 96 17 20 ];
+        symbol [ _iri ? 96 8 12 ];
+        putv self :_iri %tmp.3;
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 97 8 ]
+        %tmp.4 = 0;
+        symbol [ _dataAge ? 97 8 16 ];
+        putv self :_dataAge %tmp.4;
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 100 8 ]
+        symbol [ _fitRms %tmp.6 100 8 15 ];
+        %tmp.6 = getv ? :_fitRms;
+        symbol [ setData %tmp.7 100 16 23 ];
+        %tmp.7 = getv function %tmp.6 :setData;
+        %tmp.8 = lgetv %rms;
+        symbol [ rms %tmp.8 100 24 27 ];
+        invoke %tmp.6 %tmp.7(%tmp.8);
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 101 8 ]
+        symbol [ _fitVdv %tmp.10 101 8 15 ];
+        %tmp.10 = getv ? :_fitVdv;
+        symbol [ setData %tmp.11 101 16 23 ];
+        %tmp.11 = getv function %tmp.10 :setData;
+        %tmp.12 = lgetv %vdv;
+        symbol [ vdv %tmp.12 101 24 27 ];
+        invoke %tmp.10 %tmp.11(%tmp.12);
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 102 8 ]
+        symbol [ _fitPeak %tmp.14 102 8 16 ];
+        %tmp.14 = getv ? :_fitPeak;
+        symbol [ setData %tmp.15 102 17 24 ];
+        %tmp.15 = getv function %tmp.14 :setData;
+        %tmp.16 = lgetv %peak;
+        symbol [ peak %tmp.16 102 25 29 ];
+        invoke %tmp.14 %tmp.15(%tmp.16);
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 103 8 ]
+        symbol [ _fitCrest %tmp.18 103 8 17 ];
+        %tmp.18 = getv ? :_fitCrest;
+        symbol [ setData %tmp.19 103 18 25 ];
+        %tmp.19 = getv function %tmp.18 :setData;
+        %tmp.20 = lgetv %crest;
+        symbol [ crest %tmp.20 103 26 31 ];
+        invoke %tmp.18 %tmp.19(%tmp.20);
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 104 8 ]
+        symbol [ _fitIri %tmp.22 104 8 15 ];
+        %tmp.22 = getv ? :_fitIri;
+        symbol [ setData %tmp.23 104 16 23 ];
+        %tmp.23 = getv function %tmp.22 :setData;
+        %tmp.24 = lgetv %iri;
+        symbol [ iri %tmp.24 104 24 27 ];
+        invoke %tmp.22 %tmp.23(%tmp.24);
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_93_14_105_4_stop:
+    }
+    [ @file = "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc"; @line = 109; @symbol_functiondef = [compute,109,13,20]; @symbol_param<0> = [info,109,21,25]; @symbol_param<0>_type<0> = [Activity,109,29,37]; @symbol_param<0>_type<1> = [Info,109,38,42]; @symbol_return<0> = [Lang,109,47,51]; @symbol_return<1> = [Object,109,52,58]; ]
+    function compute(info as Activity.Info) as Lang.Object or Null {
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_109_67_125_4_start:
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 110 8 ]
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_110_8_110_41_if_stmt:
+        symbol [ _dataAge %tmp.2 110 12 20 ];
+        %tmp.2 = getv ? :_dataAge;
+        %tmp.3 = 99;
+        %tmp.4 = lt %tmp.2 %tmp.3;
+        bf %tmp.4 @C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_110_8_110_41_if_end;
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_110_8_110_41_if_true:
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_110_27_110_41_start:
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 110 29 ]
+        symbol [ _dataAge %tmp.7 110 29 37 ];
+        %tmp.7 = getv ? :_dataAge;
+        %tmp.8 = add %tmp.7 1;
+        symbol [ _dataAge ? 110 29 37 ];
+        putv self :_dataAge dup %tmp.8;
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_110_27_110_41_stop:
+        goto @C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_110_8_110_41_if_end;
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_110_8_110_41_if_end:
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 113 8 ]
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_113_8_122_8_if_stmt:
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_113_12_113_59_begin:
+        %tmp.9 = lgetv %info;
+        symbol [ info %tmp.9 113 12 16 ];
+        %tmp.11 = const :currentSpeed;
+        symbol [ currentSpeed %tmp.11 113 22 34 const ];
+        %tmp.12 = canhazplz %tmp.9 %tmp.11;
+        bf %tmp.12 @C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_113_8_122_8_if_end;
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_113_38_113_59_true:
+        %tmp.13 = lgetv %info;
+        symbol [ info %tmp.13 113 38 42 ];
+        %tmp.14 = as %tmp.13 { (interface { var currentSpeed; }) };
+        symbol [ currentSpeed %tmp.15 113 43 55 ];
+        %tmp.15 = getv %tmp.14 :currentSpeed;
+        %tmp.16 = null;
+        %tmp.17 = ne %tmp.15 %tmp.16;
+        push %tmp.17;
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_113_38_113_59_end:
+        %tmp.18 = phi [%tmp.12 @C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_113_12_113_59_begin] [%tmp.17 @C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_113_38_113_59_true] [%tmp.18 @C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_113_38_113_59_end];
+        bf %tmp.18 @C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_113_8_122_8_if_end;
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_113_8_122_8_if_true:
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_113_65_122_8_start:
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 114 12 ]
+        [ "C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_113_65_122_8_start" "C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_113_65_122_8_stop" ]
+        %speedMs.1 = local;
+        symbol [ speedMs %speedMs.1 114 16 23 ];
+        %tmp.19 = lgetv %info;
+        symbol [ info %tmp.19 114 27 31 ];
+        %tmp.20 = as %tmp.19 { (interface { var currentSpeed; }) };
+        symbol [ currentSpeed %tmp.21 114 32 44 ];
+        %tmp.21 = getv %tmp.20 :currentSpeed;
+        %tmp.22 = as %tmp.21 Float;
+        symbol [ Float %tmp.22 114 48 53 ];
+        lputv %speedMs.1 %tmp.22;
+        symbol [ speedMs %speedMs.1 114 16 23 ];
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 115 12 ]
+        [ "C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_113_65_122_8_start" "C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_113_65_122_8_stop" ]
+        %speedKmh.2 = local;
+        symbol [ speedKmh %speedKmh.2 115 16 24 ];
+        %tmp.23 = lgetv %speedMs.1;
+        symbol [ speedMs %tmp.23 115 27 34 ];
+        %tmp.24 = 3.6f;
+        %tmp.25 = mul %tmp.23 %tmp.24;
+        lputv %speedKmh.2 %tmp.25;
+        symbol [ speedKmh %speedKmh.2 115 16 24 ];
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 116 12 ]
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_116_12_121_12_if_stmt:
+        %tmp.26 = lgetv %speedKmh.2;
+        symbol [ speedKmh %tmp.26 116 16 24 ];
+        %tmp.27 = 2.0f;
+        %tmp.28 = gt %tmp.26 %tmp.27;
+        bf %tmp.28 @C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_116_12_121_12_if_end;
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_116_12_121_12_if_true:
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_116_33_121_12_start:
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 117 16 ]
+        [ "C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_116_33_121_12_start" "C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_116_33_121_12_stop" ]
+        %vClamped.3 = local;
+        symbol [ vClamped %vClamped.3 117 20 28 ];
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_117_31_117_58_begin:
+        %tmp.29 = lgetv %speedKmh.2;
+        symbol [ speedKmh %tmp.29 117 32 40 ];
+        %tmp.30 = 5.0f;
+        %tmp.31 = lt %tmp.29 %tmp.30;
+        bf %tmp.31 @C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_117_31_117_58_else_false;
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_117_31_117_58_true:
+        %tmp.32 = 5.0f;
+        push %tmp.32;
+        goto @C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_117_31_117_58_end;
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_117_31_117_58_else_false:
+        %tmp.33 = lgetv %speedKmh.2;
+        symbol [ speedKmh %tmp.33 117 58 66 ];
+        push %tmp.33;
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_117_31_117_58_end:
+        %tmp.34 = phi [%tmp.31 @C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_117_31_117_58_begin] [%tmp.32 @C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_117_31_117_58_true] [%tmp.33 @C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_117_31_117_58_else_false] [%tmp.34 @C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_117_31_117_58_end];
+        lputv %vClamped.3 %tmp.34;
+        symbol [ vClamped %vClamped.3 117 20 28 ];
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 118 16 ]
+        [ "C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_116_33_121_12_start" "C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_116_33_121_12_stop" ]
+        %speedFactor.4 = local;
+        symbol [ speedFactor %speedFactor.4 118 20 31 ];
+        symbol [ Math %tmp.35 118 34 38 ];
+        %tmp.35 = getm $.Toybox.Math;
+        symbol [ sqrt %tmp.36 118 39 43 ];
+        %tmp.36 = getv function %tmp.35 :sqrt;
+        %tmp.37 = 20.0f;
+        %tmp.38 = lgetv %vClamped.3;
+        symbol [ vClamped %tmp.38 118 52 60 ];
+        %tmp.39 = div %tmp.37 %tmp.38;
+        %tmp.40 = invoke %tmp.35 %tmp.36(%tmp.39);
+        symbol [ toFloat %tmp.41 118 62 69 ];
+        %tmp.41 = getv function %tmp.40 :toFloat;
+        %tmp.42 = invoke %tmp.40 %tmp.41();
+        lputv %speedFactor.4 %tmp.42;
+        symbol [ speedFactor %speedFactor.4 118 20 31 ];
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 119 16 ]
+        %tmp.43 = 2.21f;
+        symbol [ _rms %tmp.45 119 31 35 ];
+        %tmp.45 = getv ? :_rms;
+        %tmp.46 = mul %tmp.43 %tmp.45;
+        %tmp.47 = lgetv %speedFactor.4;
+        symbol [ speedFactor %tmp.47 119 38 49 ];
+        %tmp.48 = mul %tmp.46 %tmp.47;
+        symbol [ _iri ? 119 16 20 ];
+        putv self :_iri %tmp.48;
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 120 16 ]
+        symbol [ _fitIri %tmp.50 120 16 23 ];
+        %tmp.50 = getv ? :_fitIri;
+        symbol [ setData %tmp.51 120 24 31 ];
+        %tmp.51 = getv function %tmp.50 :setData;
+        symbol [ _iri %tmp.53 120 32 36 ];
+        %tmp.53 = getv ? :_iri;
+        invoke %tmp.50 %tmp.51(%tmp.53);
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_116_33_121_12_stop:
+        goto @C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_116_12_121_12_if_end;
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_116_12_121_12_if_end:
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_113_65_122_8_stop:
+        goto @C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_113_8_122_8_if_end;
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_113_8_122_8_if_end:
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 124 8 ]
+        symbol [ _rms %tmp.55 124 15 19 ];
+        %tmp.55 = getv ? :_rms;
+        ret %tmp.55;
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_109_67_125_4_stop:
+    }
+    [ @file = "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc"; @line = 129; @symbol_functiondef = [onLayout,129,13,21]; @symbol_param<0> = [dc,129,22,24]; @symbol_param<0>_type<0> = [Graphics,129,28,36]; @symbol_param<0>_type<1> = [Dc,129,37,39]; ]
+    function onLayout(dc as Graphics.Dc) as Void {
+    }
+    [ @file = "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc"; @line = 134; @symbol_functiondef = [onUpdate,134,13,21]; @symbol_param<0> = [dc,134,22,24]; @symbol_param<0>_type<0> = [Graphics,134,28,36]; @symbol_param<0>_type<1> = [Dc,134,37,39]; ]
+    function onUpdate(dc as Graphics.Dc) as Void {
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_134_49_203_4_start:
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 135 8 ]
+        [ "C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_134_49_203_4_start" "C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_134_49_203_4_stop" ]
+        %w.1 = local;
+        symbol [ w %w.1 135 12 13 ];
+        %tmp.1 = lgetv %dc;
+        symbol [ dc %tmp.1 135 16 18 ];
+        symbol [ getWidth %tmp.2 135 19 27 ];
+        %tmp.2 = getv function %tmp.1 :getWidth;
+        %tmp.3 = invoke %tmp.1 %tmp.2();
+        lputv %w.1 %tmp.3;
+        symbol [ w %w.1 135 12 13 ];
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 136 8 ]
+        [ "C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_134_49_203_4_start" "C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_134_49_203_4_stop" ]
+        %h.2 = local;
+        symbol [ h %h.2 136 12 13 ];
+        %tmp.4 = lgetv %dc;
+        symbol [ dc %tmp.4 136 16 18 ];
+        symbol [ getHeight %tmp.5 136 19 28 ];
+        %tmp.5 = getv function %tmp.4 :getHeight;
+        %tmp.6 = invoke %tmp.4 %tmp.5();
+        lputv %h.2 %tmp.6;
+        symbol [ h %h.2 136 12 13 ];
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 138 8 ]
+        [ "C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_134_49_203_4_start" "C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_134_49_203_4_stop" ]
+        %bg.3 = local;
+        symbol [ bg %bg.3 138 12 14 ];
+        %tmp.7 = self;
+        symbol [ getBackgroundColor %tmp.8 138 17 35 ];
+        %tmp.8 = getv function %tmp.7 :getBackgroundColor;
+        %tmp.9 = invoke %tmp.7 %tmp.8();
+        lputv %bg.3 %tmp.9;
+        symbol [ bg %bg.3 138 12 14 ];
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 139 8 ]
+        [ "C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_134_49_203_4_start" "C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_134_49_203_4_stop" ]
+        %fg.4 = local;
+        symbol [ fg %fg.4 139 12 14 ];
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_139_17_141_23_begin:
+        %tmp.10 = lgetv %bg.3;
+        symbol [ bg %tmp.10 139 18 20 ];
+        symbol [ Graphics %tmp.11 139 24 32 ];
+        %tmp.11 = getm $.Toybox.Graphics;
+        symbol [ COLOR_BLACK %tmp.12 139 33 44 ];
+        %tmp.12 = getv %tmp.11 :COLOR_BLACK;
+        %tmp.13 = eq %tmp.10 %tmp.12;
+        bf %tmp.13 @C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_139_17_141_23_else_false;
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_139_17_141_23_true:
+        symbol [ Graphics %tmp.14 140 14 22 ];
+        %tmp.14 = getm $.Toybox.Graphics;
+        symbol [ COLOR_WHITE %tmp.15 140 23 34 ];
+        %tmp.15 = getv %tmp.14 :COLOR_WHITE;
+        push %tmp.15;
+        goto @C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_139_17_141_23_end;
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_139_17_141_23_else_false:
+        symbol [ Graphics %tmp.16 141 14 22 ];
+        %tmp.16 = getm $.Toybox.Graphics;
+        symbol [ COLOR_BLACK %tmp.17 141 23 34 ];
+        %tmp.17 = getv %tmp.16 :COLOR_BLACK;
+        push %tmp.17;
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_139_17_141_23_end:
+        %tmp.18 = phi [%tmp.13 @C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_139_17_141_23_begin] [%tmp.15 @C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_139_17_141_23_true] [%tmp.17 @C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_139_17_141_23_else_false] [%tmp.18 @C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_139_17_141_23_end];
+        lputv %fg.4 %tmp.18;
+        symbol [ fg %fg.4 139 12 14 ];
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 143 8 ]
+        %tmp.19 = lgetv %dc;
+        symbol [ dc %tmp.19 143 8 10 ];
+        symbol [ setColor %tmp.20 143 11 19 ];
+        %tmp.20 = getv function %tmp.19 :setColor;
+        %tmp.21 = lgetv %fg.4;
+        symbol [ fg %tmp.21 143 20 22 ];
+        %tmp.22 = lgetv %bg.3;
+        symbol [ bg %tmp.22 143 24 26 ];
+        invoke %tmp.19 %tmp.20(%tmp.21, %tmp.22);
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 144 8 ]
+        %tmp.23 = lgetv %dc;
+        symbol [ dc %tmp.23 144 8 10 ];
+        symbol [ clear %tmp.24 144 11 16 ];
+        %tmp.24 = getv function %tmp.23 :clear;
+        invoke %tmp.23 %tmp.24();
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 147 8 ]
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_147_8_152_8_if_stmt:
+        symbol [ _ble %tmp.26 147 13 17 ];
+        %tmp.26 = getv ? :_ble;
+        symbol [ connected %tmp.27 147 18 27 ];
+        %tmp.27 = getv %tmp.26 :connected;
+        %tmp.28 = not %tmp.27;
+        bf %tmp.28 @C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_147_8_152_8_if_end;
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_147_8_152_8_if_true:
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_147_29_152_8_start:
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 148 12 ]
+        %tmp.29 = self;
+        symbol [ _drawCentered %tmp.30 148 12 25 ];
+        %tmp.30 = getv function %tmp.29 :_drawCentered;
+        %tmp.31 = lgetv %dc;
+        symbol [ dc %tmp.31 148 26 28 ];
+        %tmp.32 = lgetv %w.1;
+        symbol [ w %tmp.32 148 30 31 ];
+        %tmp.33 = lgetv %h.2;
+        symbol [ h %tmp.33 148 33 34 ];
+        %tmp.34 = 3;
+        %tmp.35 = div %tmp.33 %tmp.34;
+        symbol [ Graphics %tmp.36 148 44 52 ];
+        %tmp.36 = getm $.Toybox.Graphics;
+        symbol [ FONT_XTINY %tmp.37 148 53 63 ];
+        %tmp.37 = getv %tmp.36 :FONT_XTINY;
+        %tmp.38 = "Surface";
+        %tmp.39 = lgetv %fg.4;
+        symbol [ fg %tmp.39 148 77 79 ];
+        invoke %tmp.29 %tmp.30(%tmp.31, %tmp.32, %tmp.35, %tmp.37, %tmp.38, %tmp.39);
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 149 12 ]
+        %tmp.40 = self;
+        symbol [ _drawCentered %tmp.41 149 12 25 ];
+        %tmp.41 = getv function %tmp.40 :_drawCentered;
+        %tmp.42 = lgetv %dc;
+        symbol [ dc %tmp.42 149 26 28 ];
+        %tmp.43 = lgetv %w.1;
+        symbol [ w %tmp.43 149 30 31 ];
+        %tmp.44 = lgetv %h.2;
+        symbol [ h %tmp.44 149 33 34 ];
+        %tmp.45 = 2;
+        %tmp.46 = div %tmp.44 %tmp.45;
+        symbol [ Graphics %tmp.47 149 44 52 ];
+        %tmp.47 = getm $.Toybox.Graphics;
+        symbol [ FONT_XTINY %tmp.48 149 53 63 ];
+        %tmp.48 = getv %tmp.47 :FONT_XTINY;
+        %tmp.49 = "Sense";
+        %tmp.50 = lgetv %fg.4;
+        symbol [ fg %tmp.50 149 77 79 ];
+        invoke %tmp.40 %tmp.41(%tmp.42, %tmp.43, %tmp.46, %tmp.48, %tmp.49, %tmp.50);
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 150 12 ]
+        %tmp.51 = self;
+        symbol [ _drawCentered %tmp.52 150 12 25 ];
+        %tmp.52 = getv function %tmp.51 :_drawCentered;
+        %tmp.53 = lgetv %dc;
+        symbol [ dc %tmp.53 150 26 28 ];
+        %tmp.54 = lgetv %w.1;
+        symbol [ w %tmp.54 150 30 31 ];
+        %tmp.55 = lgetv %h.2;
+        symbol [ h %tmp.55 150 33 34 ];
+        %tmp.56 = 2;
+        %tmp.57 = mul %tmp.55 %tmp.56;
+        %tmp.58 = 3;
+        %tmp.59 = div %tmp.57 %tmp.58;
+        symbol [ Graphics %tmp.60 150 44 52 ];
+        %tmp.60 = getm $.Toybox.Graphics;
+        symbol [ FONT_XTINY %tmp.61 150 53 63 ];
+        %tmp.61 = getv %tmp.60 :FONT_XTINY;
+        %tmp.62 = "Suche...";
+        symbol [ Graphics %tmp.63 150 77 85 ];
+        %tmp.63 = getm $.Toybox.Graphics;
+        symbol [ COLOR_LT_GRAY %tmp.64 150 86 99 ];
+        %tmp.64 = getv %tmp.63 :COLOR_LT_GRAY;
+        invoke %tmp.51 %tmp.52(%tmp.53, %tmp.54, %tmp.59, %tmp.61, %tmp.62, %tmp.64);
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 151 12 ]
+        ret ?;
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_147_29_152_8_stop:
+        goto @C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_147_8_152_8_if_end;
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_147_8_152_8_if_end:
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 155 8 ]
+        [ "C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_134_49_203_4_start" "C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_134_49_203_4_stop" ]
+        %valueColor.5 = local;
+        symbol [ valueColor %valueColor.5 155 12 22 ];
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_155_25_155_66_begin:
+        symbol [ _dataAge %tmp.66 155 26 34 ];
+        %tmp.66 = getv ? :_dataAge;
+        %tmp.67 = 3;
+        %tmp.68 = gt %tmp.66 %tmp.67;
+        bf %tmp.68 @C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_155_25_155_66_else_false;
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_155_25_155_66_true:
+        symbol [ Graphics %tmp.69 155 42 50 ];
+        %tmp.69 = getm $.Toybox.Graphics;
+        symbol [ COLOR_YELLOW %tmp.70 155 51 63 ];
+        %tmp.70 = getv %tmp.69 :COLOR_YELLOW;
+        push %tmp.70;
+        goto @C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_155_25_155_66_end;
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_155_25_155_66_else_false:
+        %tmp.71 = lgetv %fg.4;
+        symbol [ fg %tmp.71 155 66 68 ];
+        push %tmp.71;
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_155_25_155_66_end:
+        %tmp.72 = phi [%tmp.68 @C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_155_25_155_66_begin] [%tmp.70 @C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_155_25_155_66_true] [%tmp.71 @C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_155_25_155_66_else_false] [%tmp.72 @C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_155_25_155_66_end];
+        lputv %valueColor.5 %tmp.72;
+        symbol [ valueColor %valueColor.5 155 12 22 ];
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 161 8 ]
+        [ "C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_134_49_203_4_start" "C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_134_49_203_4_stop" ]
+        %rowH.6 = local;
+        symbol [ rowH %rowH.6 161 12 16 ];
+        %tmp.73 = lgetv %h.2;
+        symbol [ h %tmp.73 161 24 25 ];
+        %tmp.74 = 3;
+        %tmp.75 = div %tmp.73 %tmp.74;
+        lputv %rowH.6 %tmp.75;
+        symbol [ rowH %rowH.6 161 12 16 ];
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 162 8 ]
+        [ "C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_134_49_203_4_start" "C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_134_49_203_4_stop" ]
+        %labelX.7 = local;
+        symbol [ labelX %labelX.7 162 12 18 ];
+        %tmp.76 = 4;
+        lputv %labelX.7 %tmp.76;
+        symbol [ labelX %labelX.7 162 12 18 ];
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 163 8 ]
+        [ "C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_134_49_203_4_start" "C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_134_49_203_4_stop" ]
+        %valueX.8 = local;
+        symbol [ valueX %valueX.8 163 12 18 ];
+        %tmp.77 = lgetv %w.1;
+        symbol [ w %tmp.77 163 24 25 ];
+        %tmp.78 = 4;
+        %tmp.79 = sub %tmp.77 %tmp.78;
+        lputv %valueX.8 %tmp.79;
+        symbol [ valueX %valueX.8 163 12 18 ];
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 164 8 ]
+        [ "C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_134_49_203_4_start" "C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_134_49_203_4_stop" ]
+        %labelFont.9 = local;
+        symbol [ labelFont %labelFont.9 164 12 21 ];
+        symbol [ Graphics %tmp.80 164 24 32 ];
+        %tmp.80 = getm $.Toybox.Graphics;
+        symbol [ FONT_XTINY %tmp.81 164 33 43 ];
+        %tmp.81 = getv %tmp.80 :FONT_XTINY;
+        lputv %labelFont.9 %tmp.81;
+        symbol [ labelFont %labelFont.9 164 12 21 ];
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 165 8 ]
+        [ "C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_134_49_203_4_start" "C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_134_49_203_4_stop" ]
+        %valueFont.10 = local;
+        symbol [ valueFont %valueFont.10 165 12 21 ];
+        symbol [ Graphics %tmp.82 165 24 32 ];
+        %tmp.82 = getm $.Toybox.Graphics;
+        symbol [ FONT_SMALL %tmp.83 165 33 43 ];
+        %tmp.83 = getv %tmp.82 :FONT_SMALL;
+        lputv %valueFont.10 %tmp.83;
+        symbol [ valueFont %valueFont.10 165 12 21 ];
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 168 8 ]
+        %tmp.84 = lgetv %dc;
+        symbol [ dc %tmp.84 168 8 10 ];
+        symbol [ setColor %tmp.85 168 11 19 ];
+        %tmp.85 = getv function %tmp.84 :setColor;
+        symbol [ Graphics %tmp.86 168 20 28 ];
+        %tmp.86 = getm $.Toybox.Graphics;
+        symbol [ COLOR_LT_GRAY %tmp.87 168 29 42 ];
+        %tmp.87 = getv %tmp.86 :COLOR_LT_GRAY;
+        %tmp.88 = lgetv %bg.3;
+        symbol [ bg %tmp.88 168 44 46 ];
+        invoke %tmp.84 %tmp.85(%tmp.87, %tmp.88);
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 169 8 ]
+        %tmp.89 = lgetv %dc;
+        symbol [ dc %tmp.89 169 8 10 ];
+        symbol [ drawLine %tmp.90 169 11 19 ];
+        %tmp.90 = getv function %tmp.89 :drawLine;
+        %tmp.91 = 0;
+        %tmp.92 = lgetv %rowH.6;
+        symbol [ rowH %tmp.92 169 23 27 ];
+        %tmp.93 = lgetv %w.1;
+        symbol [ w %tmp.93 169 33 34 ];
+        %tmp.94 = lgetv %rowH.6;
+        symbol [ rowH %tmp.94 169 36 40 ];
+        invoke %tmp.89 %tmp.90(%tmp.91, %tmp.92, %tmp.93, %tmp.94);
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 170 8 ]
+        %tmp.95 = lgetv %dc;
+        symbol [ dc %tmp.95 170 8 10 ];
+        symbol [ drawLine %tmp.96 170 11 19 ];
+        %tmp.96 = getv function %tmp.95 :drawLine;
+        %tmp.97 = 0;
+        %tmp.98 = lgetv %rowH.6;
+        symbol [ rowH %tmp.98 170 23 27 ];
+        %tmp.99 = 2;
+        %tmp.100 = mul %tmp.98 %tmp.99;
+        %tmp.101 = lgetv %w.1;
+        symbol [ w %tmp.101 170 33 34 ];
+        %tmp.102 = lgetv %rowH.6;
+        symbol [ rowH %tmp.102 170 36 40 ];
+        %tmp.103 = 2;
+        %tmp.104 = mul %tmp.102 %tmp.103;
+        invoke %tmp.95 %tmp.96(%tmp.97, %tmp.100, %tmp.101, %tmp.104);
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 173 8 ]
+        %tmp.105 = lgetv %dc;
+        symbol [ dc %tmp.105 173 8 10 ];
+        symbol [ setColor %tmp.106 173 11 19 ];
+        %tmp.106 = getv function %tmp.105 :setColor;
+        symbol [ Graphics %tmp.107 173 20 28 ];
+        %tmp.107 = getm $.Toybox.Graphics;
+        symbol [ COLOR_BLUE %tmp.108 173 29 39 ];
+        %tmp.108 = getv %tmp.107 :COLOR_BLUE;
+        %tmp.109 = lgetv %bg.3;
+        symbol [ bg %tmp.109 173 41 43 ];
+        invoke %tmp.105 %tmp.106(%tmp.108, %tmp.109);
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 174 8 ]
+        %tmp.110 = lgetv %dc;
+        symbol [ dc %tmp.110 174 8 10 ];
+        symbol [ drawText %tmp.111 174 11 19 ];
+        %tmp.111 = getv function %tmp.110 :drawText;
+        %tmp.112 = lgetv %labelX.7;
+        symbol [ labelX %tmp.112 174 20 26 ];
+        %tmp.113 = lgetv %rowH.6;
+        symbol [ rowH %tmp.113 174 28 32 ];
+        %tmp.114 = 0;
+        %tmp.115 = mul %tmp.113 %tmp.114;
+        %tmp.116 = lgetv %rowH.6;
+        symbol [ rowH %tmp.116 174 39 43 ];
+        %tmp.117 = 2;
+        %tmp.118 = div %tmp.116 %tmp.117;
+        %tmp.119 = add %tmp.115 %tmp.118;
+        %tmp.120 = lgetv %labelFont.9;
+        symbol [ labelFont %tmp.120 174 49 58 ];
+        %tmp.121 = "RMS mg";
+        symbol [ Graphics %tmp.122 175 22 30 ];
+        %tmp.122 = getm $.Toybox.Graphics;
+        symbol [ TEXT_JUSTIFY_LEFT %tmp.123 175 31 48 ];
+        %tmp.123 = getv %tmp.122 :TEXT_JUSTIFY_LEFT;
+        symbol [ Graphics %tmp.124 175 51 59 ];
+        %tmp.124 = getm $.Toybox.Graphics;
+        symbol [ TEXT_JUSTIFY_VCENTER %tmp.125 175 60 80 ];
+        %tmp.125 = getv %tmp.124 :TEXT_JUSTIFY_VCENTER;
+        %tmp.126 = bitor %tmp.123 %tmp.125;
+        invoke %tmp.110 %tmp.111(%tmp.112, %tmp.119, %tmp.120, %tmp.121, %tmp.126);
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 176 8 ]
+        %tmp.127 = lgetv %dc;
+        symbol [ dc %tmp.127 176 8 10 ];
+        symbol [ setColor %tmp.128 176 11 19 ];
+        %tmp.128 = getv function %tmp.127 :setColor;
+        %tmp.129 = lgetv %valueColor.5;
+        symbol [ valueColor %tmp.129 176 20 30 ];
+        %tmp.130 = lgetv %bg.3;
+        symbol [ bg %tmp.130 176 32 34 ];
+        invoke %tmp.127 %tmp.128(%tmp.129, %tmp.130);
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 177 8 ]
+        %tmp.131 = lgetv %dc;
+        symbol [ dc %tmp.131 177 8 10 ];
+        symbol [ drawText %tmp.132 177 11 19 ];
+        %tmp.132 = getv function %tmp.131 :drawText;
+        %tmp.133 = lgetv %valueX.8;
+        symbol [ valueX %tmp.133 177 20 26 ];
+        %tmp.134 = lgetv %rowH.6;
+        symbol [ rowH %tmp.134 177 28 32 ];
+        %tmp.135 = 0;
+        %tmp.136 = mul %tmp.134 %tmp.135;
+        %tmp.137 = lgetv %rowH.6;
+        symbol [ rowH %tmp.137 177 39 43 ];
+        %tmp.138 = 2;
+        %tmp.139 = div %tmp.137 %tmp.138;
+        %tmp.140 = add %tmp.136 %tmp.139;
+        %tmp.141 = lgetv %valueFont.10;
+        symbol [ valueFont %tmp.141 177 49 58 ];
+        symbol [ _rms %tmp.143 178 13 17 ];
+        %tmp.143 = getv ? :_rms;
+        %tmp.144 = 1000.0f;
+        %tmp.145 = mul %tmp.143 %tmp.144;
+        symbol [ format %tmp.146 178 29 35 ];
+        %tmp.146 = getv function %tmp.145 :format;
+        %tmp.147 = "%.1f";
+        %tmp.148 = invoke %tmp.145 %tmp.146(%tmp.147);
+        symbol [ Graphics %tmp.149 179 12 20 ];
+        %tmp.149 = getm $.Toybox.Graphics;
+        symbol [ TEXT_JUSTIFY_RIGHT %tmp.150 179 21 39 ];
+        %tmp.150 = getv %tmp.149 :TEXT_JUSTIFY_RIGHT;
+        symbol [ Graphics %tmp.151 179 42 50 ];
+        %tmp.151 = getm $.Toybox.Graphics;
+        symbol [ TEXT_JUSTIFY_VCENTER %tmp.152 179 51 71 ];
+        %tmp.152 = getv %tmp.151 :TEXT_JUSTIFY_VCENTER;
+        %tmp.153 = bitor %tmp.150 %tmp.152;
+        invoke %tmp.131 %tmp.132(%tmp.133, %tmp.140, %tmp.141, %tmp.148, %tmp.153);
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 182 8 ]
+        %tmp.154 = lgetv %dc;
+        symbol [ dc %tmp.154 182 8 10 ];
+        symbol [ setColor %tmp.155 182 11 19 ];
+        %tmp.155 = getv function %tmp.154 :setColor;
+        symbol [ Graphics %tmp.156 182 20 28 ];
+        %tmp.156 = getm $.Toybox.Graphics;
+        symbol [ COLOR_BLUE %tmp.157 182 29 39 ];
+        %tmp.157 = getv %tmp.156 :COLOR_BLUE;
+        %tmp.158 = lgetv %bg.3;
+        symbol [ bg %tmp.158 182 41 43 ];
+        invoke %tmp.154 %tmp.155(%tmp.157, %tmp.158);
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 183 8 ]
+        %tmp.159 = lgetv %dc;
+        symbol [ dc %tmp.159 183 8 10 ];
+        symbol [ drawText %tmp.160 183 11 19 ];
+        %tmp.160 = getv function %tmp.159 :drawText;
+        %tmp.161 = lgetv %labelX.7;
+        symbol [ labelX %tmp.161 183 20 26 ];
+        %tmp.162 = lgetv %rowH.6;
+        symbol [ rowH %tmp.162 183 28 32 ];
+        %tmp.163 = 1;
+        %tmp.164 = mul %tmp.162 %tmp.163;
+        %tmp.165 = lgetv %rowH.6;
+        symbol [ rowH %tmp.165 183 39 43 ];
+        %tmp.166 = 2;
+        %tmp.167 = div %tmp.165 %tmp.166;
+        %tmp.168 = add %tmp.164 %tmp.167;
+        %tmp.169 = lgetv %labelFont.9;
+        symbol [ labelFont %tmp.169 183 49 58 ];
+        %tmp.170 = "VDV";
+        symbol [ Graphics %tmp.171 184 19 27 ];
+        %tmp.171 = getm $.Toybox.Graphics;
+        symbol [ TEXT_JUSTIFY_LEFT %tmp.172 184 28 45 ];
+        %tmp.172 = getv %tmp.171 :TEXT_JUSTIFY_LEFT;
+        symbol [ Graphics %tmp.173 184 48 56 ];
+        %tmp.173 = getm $.Toybox.Graphics;
+        symbol [ TEXT_JUSTIFY_VCENTER %tmp.174 184 57 77 ];
+        %tmp.174 = getv %tmp.173 :TEXT_JUSTIFY_VCENTER;
+        %tmp.175 = bitor %tmp.172 %tmp.174;
+        invoke %tmp.159 %tmp.160(%tmp.161, %tmp.168, %tmp.169, %tmp.170, %tmp.175);
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 185 8 ]
+        %tmp.176 = lgetv %dc;
+        symbol [ dc %tmp.176 185 8 10 ];
+        symbol [ setColor %tmp.177 185 11 19 ];
+        %tmp.177 = getv function %tmp.176 :setColor;
+        %tmp.178 = lgetv %valueColor.5;
+        symbol [ valueColor %tmp.178 185 20 30 ];
+        %tmp.179 = lgetv %bg.3;
+        symbol [ bg %tmp.179 185 32 34 ];
+        invoke %tmp.176 %tmp.177(%tmp.178, %tmp.179);
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 186 8 ]
+        %tmp.180 = lgetv %dc;
+        symbol [ dc %tmp.180 186 8 10 ];
+        symbol [ drawText %tmp.181 186 11 19 ];
+        %tmp.181 = getv function %tmp.180 :drawText;
+        %tmp.182 = lgetv %valueX.8;
+        symbol [ valueX %tmp.182 186 20 26 ];
+        %tmp.183 = lgetv %rowH.6;
+        symbol [ rowH %tmp.183 186 28 32 ];
+        %tmp.184 = 1;
+        %tmp.185 = mul %tmp.183 %tmp.184;
+        %tmp.186 = lgetv %rowH.6;
+        symbol [ rowH %tmp.186 186 39 43 ];
+        %tmp.187 = 2;
+        %tmp.188 = div %tmp.186 %tmp.187;
+        %tmp.189 = add %tmp.185 %tmp.188;
+        %tmp.190 = lgetv %valueFont.10;
+        symbol [ valueFont %tmp.190 186 49 58 ];
+        symbol [ _vdv %tmp.192 187 12 16 ];
+        %tmp.192 = getv ? :_vdv;
+        symbol [ format %tmp.193 187 17 23 ];
+        %tmp.193 = getv function %tmp.192 :format;
+        %tmp.194 = "%.4f";
+        %tmp.195 = invoke %tmp.192 %tmp.193(%tmp.194);
+        symbol [ Graphics %tmp.196 188 12 20 ];
+        %tmp.196 = getm $.Toybox.Graphics;
+        symbol [ TEXT_JUSTIFY_RIGHT %tmp.197 188 21 39 ];
+        %tmp.197 = getv %tmp.196 :TEXT_JUSTIFY_RIGHT;
+        symbol [ Graphics %tmp.198 188 42 50 ];
+        %tmp.198 = getm $.Toybox.Graphics;
+        symbol [ TEXT_JUSTIFY_VCENTER %tmp.199 188 51 71 ];
+        %tmp.199 = getv %tmp.198 :TEXT_JUSTIFY_VCENTER;
+        %tmp.200 = bitor %tmp.197 %tmp.199;
+        invoke %tmp.180 %tmp.181(%tmp.182, %tmp.189, %tmp.190, %tmp.195, %tmp.200);
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 191 8 ]
+        %tmp.201 = lgetv %dc;
+        symbol [ dc %tmp.201 191 8 10 ];
+        symbol [ setColor %tmp.202 191 11 19 ];
+        %tmp.202 = getv function %tmp.201 :setColor;
+        symbol [ Graphics %tmp.203 191 20 28 ];
+        %tmp.203 = getm $.Toybox.Graphics;
+        symbol [ COLOR_BLUE %tmp.204 191 29 39 ];
+        %tmp.204 = getv %tmp.203 :COLOR_BLUE;
+        %tmp.205 = lgetv %bg.3;
+        symbol [ bg %tmp.205 191 41 43 ];
+        invoke %tmp.201 %tmp.202(%tmp.204, %tmp.205);
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 192 8 ]
+        %tmp.206 = lgetv %dc;
+        symbol [ dc %tmp.206 192 8 10 ];
+        symbol [ drawText %tmp.207 192 11 19 ];
+        %tmp.207 = getv function %tmp.206 :drawText;
+        %tmp.208 = lgetv %labelX.7;
+        symbol [ labelX %tmp.208 192 20 26 ];
+        %tmp.209 = lgetv %rowH.6;
+        symbol [ rowH %tmp.209 192 28 32 ];
+        %tmp.210 = 2;
+        %tmp.211 = mul %tmp.209 %tmp.210;
+        %tmp.212 = lgetv %rowH.6;
+        symbol [ rowH %tmp.212 192 39 43 ];
+        %tmp.213 = 2;
+        %tmp.214 = div %tmp.212 %tmp.213;
+        %tmp.215 = add %tmp.211 %tmp.214;
+        %tmp.216 = lgetv %labelFont.9;
+        symbol [ labelFont %tmp.216 192 49 58 ];
+        %tmp.217 = "IRI m/km";
+        symbol [ Graphics %tmp.218 193 24 32 ];
+        %tmp.218 = getm $.Toybox.Graphics;
+        symbol [ TEXT_JUSTIFY_LEFT %tmp.219 193 33 50 ];
+        %tmp.219 = getv %tmp.218 :TEXT_JUSTIFY_LEFT;
+        symbol [ Graphics %tmp.220 193 53 61 ];
+        %tmp.220 = getm $.Toybox.Graphics;
+        symbol [ TEXT_JUSTIFY_VCENTER %tmp.221 193 62 82 ];
+        %tmp.221 = getv %tmp.220 :TEXT_JUSTIFY_VCENTER;
+        %tmp.222 = bitor %tmp.219 %tmp.221;
+        invoke %tmp.206 %tmp.207(%tmp.208, %tmp.215, %tmp.216, %tmp.217, %tmp.222);
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 194 8 ]
+        [ "C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_134_49_203_4_start" "C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_134_49_203_4_stop" ]
+        %iriColor.11 = local;
+        symbol [ iriColor %iriColor.11 194 12 20 ];
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 195 8 ]
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_195_8_198_64_if_stmt:
+        symbol [ _iri %tmp.224 195 12 16 ];
+        %tmp.224 = getv ? :_iri;
+        %tmp.225 = 2.0f;
+        %tmp.226 = lt %tmp.224 %tmp.225;
+        bf %tmp.226 @C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_195_8_198_64_if_false;
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_195_8_198_64_if_true:
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_195_30_195_65_start:
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 195 32 ]
+        symbol [ Graphics %tmp.227 195 43 51 ];
+        %tmp.227 = getm $.Toybox.Graphics;
+        symbol [ COLOR_GREEN %tmp.228 195 52 63 ];
+        %tmp.228 = getv %tmp.227 :COLOR_GREEN;
+        lputv %iriColor.11 %tmp.228;
+        symbol [ iriColor %iriColor.11 195 32 40 ];
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_195_30_195_65_stop:
+        goto @C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_195_8_198_64_if_end;
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_195_8_198_64_if_false:
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 196 13 ]
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_196_13_198_64_if_stmt:
+        symbol [ _iri %tmp.230 196 17 21 ];
+        %tmp.230 = getv ? :_iri;
+        %tmp.231 = 5.0f;
+        %tmp.232 = lt %tmp.230 %tmp.231;
+        bf %tmp.232 @C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_196_13_198_64_if_false;
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_196_13_198_64_if_true:
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_196_30_196_66_start:
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 196 32 ]
+        symbol [ Graphics %tmp.233 196 43 51 ];
+        %tmp.233 = getm $.Toybox.Graphics;
+        symbol [ COLOR_YELLOW %tmp.234 196 52 64 ];
+        %tmp.234 = getv %tmp.233 :COLOR_YELLOW;
+        lputv %iriColor.11 %tmp.234;
+        symbol [ iriColor %iriColor.11 196 32 40 ];
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_196_30_196_66_stop:
+        goto @C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_196_13_198_64_if_end;
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_196_13_198_64_if_false:
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 197 13 ]
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_197_13_198_64_if_stmt:
+        symbol [ _iri %tmp.236 197 17 21 ];
+        %tmp.236 = getv ? :_iri;
+        %tmp.237 = 8.0f;
+        %tmp.238 = lt %tmp.236 %tmp.237;
+        bf %tmp.238 @C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_197_13_198_64_if_else_false;
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_197_13_198_64_if_true:
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_197_30_197_66_start:
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 197 32 ]
+        symbol [ Graphics %tmp.239 197 43 51 ];
+        %tmp.239 = getm $.Toybox.Graphics;
+        symbol [ COLOR_ORANGE %tmp.240 197 52 64 ];
+        %tmp.240 = getv %tmp.239 :COLOR_ORANGE;
+        lputv %iriColor.11 %tmp.240;
+        symbol [ iriColor %iriColor.11 197 32 40 ];
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_197_30_197_66_stop:
+        goto @C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_197_13_198_64_if_end;
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_197_13_198_64_if_else_false:
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_198_31_198_64_start:
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 198 33 ]
+        symbol [ Graphics %tmp.241 198 44 52 ];
+        %tmp.241 = getm $.Toybox.Graphics;
+        symbol [ COLOR_RED %tmp.242 198 53 62 ];
+        %tmp.242 = getv %tmp.241 :COLOR_RED;
+        lputv %iriColor.11 %tmp.242;
+        symbol [ iriColor %iriColor.11 198 33 41 ];
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_198_31_198_64_stop:
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_197_13_198_64_if_end:
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_196_13_198_64_if_end:
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_195_8_198_64_if_end:
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 199 8 ]
+        %tmp.243 = lgetv %dc;
+        symbol [ dc %tmp.243 199 8 10 ];
+        symbol [ setColor %tmp.244 199 11 19 ];
+        %tmp.244 = getv function %tmp.243 :setColor;
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_199_20_199_61_begin:
+        symbol [ _dataAge %tmp.246 199 21 29 ];
+        %tmp.246 = getv ? :_dataAge;
+        %tmp.247 = 3;
+        %tmp.248 = gt %tmp.246 %tmp.247;
+        bf %tmp.248 @C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_199_20_199_61_else_false;
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_199_20_199_61_true:
+        symbol [ Graphics %tmp.249 199 37 45 ];
+        %tmp.249 = getm $.Toybox.Graphics;
+        symbol [ COLOR_YELLOW %tmp.250 199 46 58 ];
+        %tmp.250 = getv %tmp.249 :COLOR_YELLOW;
+        push %tmp.250;
+        goto @C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_199_20_199_61_end;
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_199_20_199_61_else_false:
+        %tmp.251 = lgetv %iriColor.11;
+        symbol [ iriColor %tmp.251 199 61 69 ];
+        push %tmp.251;
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_199_20_199_61_end:
+        %tmp.252 = phi [%tmp.248 @C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_199_20_199_61_begin] [%tmp.250 @C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_199_20_199_61_true] [%tmp.251 @C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_199_20_199_61_else_false] [%tmp.252 @C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_199_20_199_61_end];
+        %tmp.253 = lgetv %bg.3;
+        symbol [ bg %tmp.253 199 71 73 ];
+        invoke %tmp.243 %tmp.244(%tmp.252, %tmp.253);
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 200 8 ]
+        %tmp.254 = lgetv %dc;
+        symbol [ dc %tmp.254 200 8 10 ];
+        symbol [ drawText %tmp.255 200 11 19 ];
+        %tmp.255 = getv function %tmp.254 :drawText;
+        %tmp.256 = lgetv %valueX.8;
+        symbol [ valueX %tmp.256 200 20 26 ];
+        %tmp.257 = lgetv %rowH.6;
+        symbol [ rowH %tmp.257 200 28 32 ];
+        %tmp.258 = 2;
+        %tmp.259 = mul %tmp.257 %tmp.258;
+        %tmp.260 = lgetv %rowH.6;
+        symbol [ rowH %tmp.260 200 39 43 ];
+        %tmp.261 = 2;
+        %tmp.262 = div %tmp.260 %tmp.261;
+        %tmp.263 = add %tmp.259 %tmp.262;
+        %tmp.264 = lgetv %valueFont.10;
+        symbol [ valueFont %tmp.264 200 49 58 ];
+        symbol [ _iri %tmp.266 201 12 16 ];
+        %tmp.266 = getv ? :_iri;
+        symbol [ format %tmp.267 201 17 23 ];
+        %tmp.267 = getv function %tmp.266 :format;
+        %tmp.268 = "%.2f";
+        %tmp.269 = invoke %tmp.266 %tmp.267(%tmp.268);
+        symbol [ Graphics %tmp.270 202 12 20 ];
+        %tmp.270 = getm $.Toybox.Graphics;
+        symbol [ TEXT_JUSTIFY_RIGHT %tmp.271 202 21 39 ];
+        %tmp.271 = getv %tmp.270 :TEXT_JUSTIFY_RIGHT;
+        symbol [ Graphics %tmp.272 202 42 50 ];
+        %tmp.272 = getm $.Toybox.Graphics;
+        symbol [ TEXT_JUSTIFY_VCENTER %tmp.273 202 51 71 ];
+        %tmp.273 = getv %tmp.272 :TEXT_JUSTIFY_VCENTER;
+        %tmp.274 = bitor %tmp.271 %tmp.273;
+        invoke %tmp.254 %tmp.255(%tmp.256, %tmp.263, %tmp.264, %tmp.269, %tmp.274);
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_134_49_203_4_stop:
+    }
+    [ @file = "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc"; @line = 207; @symbol_functiondef = [_drawCentered,207,21,34]; @symbol_param<0> = [dc,208,8,10]; @symbol_param<0>_type<0> = [Graphics,208,17,25]; @symbol_param<0>_type<1> = [Dc,208,26,28]; @symbol_param<1> = [w,209,8,9]; @symbol_param<1>_type<0> = [Number,209,17,23]; @symbol_param<2> = [y,210,8,9]; @symbol_param<2>_type<0> = [Number,210,17,23]; @symbol_param<3> = [font,211,8,12]; @symbol_param<3>_type<0> = [Graphics,211,17,25]; @symbol_param<3>_type<1> = [FontType,211,26,34]; @symbol_param<4> = [text,212,8,12]; @symbol_param<4>_type<0> = [String,212,17,23]; @symbol_param<5> = [color,213,8,13]; @symbol_param<5>_type<0> = [Graphics,213,17,25]; @symbol_param<5>_type<1> = [ColorType,213,26,35]; ]
+    private
+    function _drawCentered(dc as Graphics.Dc, w as Number, y as Number, font as Graphics.FontType, text as String, color as Graphics.ColorType) as Void {
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_214_14_218_4_start:
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 215 8 ]
+        %tmp.1 = lgetv %dc;
+        symbol [ dc %tmp.1 215 8 10 ];
+        symbol [ setColor %tmp.2 215 11 19 ];
+        %tmp.2 = getv function %tmp.1 :setColor;
+        %tmp.3 = lgetv %color;
+        symbol [ color %tmp.3 215 20 25 ];
+        %tmp.4 = -1;
+        invoke %tmp.1 %tmp.2(%tmp.3, %tmp.4);
+[ "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc" 216 8 ]
+        %tmp.5 = lgetv %dc;
+        symbol [ dc %tmp.5 216 8 10 ];
+        symbol [ drawText %tmp.6 216 11 19 ];
+        %tmp.6 = getv function %tmp.5 :drawText;
+        %tmp.7 = lgetv %w;
+        symbol [ w %tmp.7 216 20 21 ];
+        %tmp.8 = 2;
+        %tmp.9 = div %tmp.7 %tmp.8;
+        %tmp.10 = lgetv %y;
+        symbol [ y %tmp.10 216 27 28 ];
+        %tmp.11 = lgetv %font;
+        symbol [ font %tmp.11 216 30 34 ];
+        %tmp.12 = lgetv %text;
+        symbol [ text %tmp.12 216 36 40 ];
+        symbol [ Graphics %tmp.13 217 12 20 ];
+        %tmp.13 = getm $.Toybox.Graphics;
+        symbol [ TEXT_JUSTIFY_CENTER %tmp.14 217 21 40 ];
+        %tmp.14 = getv %tmp.13 :TEXT_JUSTIFY_CENTER;
+        symbol [ Graphics %tmp.15 217 43 51 ];
+        %tmp.15 = getm $.Toybox.Graphics;
+        symbol [ TEXT_JUSTIFY_VCENTER %tmp.16 217 52 72 ];
+        %tmp.16 = getv %tmp.15 :TEXT_JUSTIFY_VCENTER;
+        %tmp.17 = bitor %tmp.14 %tmp.16;
+        invoke %tmp.5 %tmp.6(%tmp.9, %tmp.10, %tmp.11, %tmp.12, %tmp.17);
+C__Users_ElysiumNB1_Claude_Projects_Surface_Sensor_with_Mobiel_app_and_integration_to_Garmin_devices_garmin_SurfaceSense_source_SurfaceSenseDataField_mc_214_14_218_4_stop:
+    }
+}
+[ @file = "C:\Users\ElysiumNB1\Claude\Projects\Surface Sensor with Mobiel app and integration to Garmin devices\garmin\SurfaceSense\source\SurfaceSenseDataField.mc"; @line = 1; ]
+<init> {
+}

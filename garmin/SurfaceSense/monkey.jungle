@@ -1,0 +1,8 @@
+project.manifest = manifest.xml
+
+# Quellcode und Ressourcen
+base.sourcePath   = source
+base.resourcePath = resources
+
+# Für Simulator-Tests (optional)
+# sim.resourcePath = resources-sim
