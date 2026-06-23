@@ -22,3 +22,9 @@ app/.pub/
 
 # Arduino Build
 firmware/build/
+
+# Dashboard
+dashboard/node_modules/
+dashboard/.svelte-kit/
+dashboard/.vercel/
+dashboard/build/
