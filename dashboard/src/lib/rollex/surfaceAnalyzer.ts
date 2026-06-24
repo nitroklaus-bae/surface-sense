@@ -356,137 +356,63 @@ interface OverpassElement {
 }
 
 
-// ── Overpass around: query ────────────────────────────────────────────────────
+// ── Overpass bbox query (ROLLEX_POC strategy) ────────────────────────────────
 //
-// Strategy: one single Overpass `around:` request per track.
-//   way["highway"](around:50, lat1,lon1, lat2,lon2, ...);
-//
-// Advantages over the previous bbox-chunking approach:
-//   • 1 HTTP request instead of N (eliminates serial/parallel overhead)
-//   • Returns only ways within 50 m of the actual GPS line, not the whole bbox
-//     → much less data for city rides or winding routes
-//   • Works for any route length without timeout risk (timeout: 60 s)
-//
-// The track is decimated to ≤ MAX_QUERY_POINTS before building the query so the
-// POST body stays compact; 500 points at 6-decimal precision is ~14 KB.
-// The result is cached in IndexedDB keyed by a 20-point route fingerprint so
-// the same (or very similar) ride loads instantly on the next visit.
+// Single bbox query covering the whole track + 0.0025° padding (~275 m).
+// Overpass handles bbox queries via a spatial index → no timeout risk.
+// Result cached in IndexedDB keyed by the rounded bbox.
 
-const AROUND_RADIUS_M = 55     // slightly larger than HMM RADIUS_M (40 m) for safety
-const MAX_QUERY_POINTS = 500   // max coordinates to embed in the around: query
-
-/** Thin the track to at most maxPts uniformly-spaced points. */
-function decimateTrack(
-  points: TrackSegment['points'], maxPts: number,
-): Array<{ lat: number; lon: number }> {
-  if (points.length === 0) return []
-  if (points.length <= maxPts) return points
-  const step = (points.length - 1) / (maxPts - 1)
-  const out: Array<{ lat: number; lon: number }> = []
-  for (let i = 0; i < maxPts; i++) {
-    const p = points[Math.round(i * step)]
-    out.push({ lat: p.lat, lon: p.lon })
-  }
-  return out
-}
-
-/** Route fingerprint: 20 evenly-spaced points at 3-decimal precision (~100 m). */
-function aroundCacheKey(pts: Array<{ lat: number; lon: number }>): string {
-  const n = 20
-  const step = Math.max(1, Math.floor(pts.length / n))
-  const fp = pts
-    .filter((_, i) => i % step === 0)
-    .slice(0, n)
-    .map(p => `${p.lat.toFixed(3)},${p.lon.toFixed(3)}`)
-    .join('|')
-  return 'osm:around:v2:' + fp
-}
-
-/** Build the Overpass QL query string for an around: request. */
-function buildAroundQuery(pts: Array<{ lat: number; lon: number }>): string {
-  const coords = pts.map(p => `${p.lat.toFixed(6)},${p.lon.toFixed(6)}`).join(',')
-  return `[out:json][timeout:60];\nway["highway"](around:${AROUND_RADIUS_M},${coords});\nout geom;`
-}
-
-// ── Chunked Overpass fetching ─────────────────────────────────────────────────
-// A single around: query with 500 points causes Overpass 504 timeouts for long
-// routes. Instead we split the decimated track into CHUNK_SIZE-point slices
-// (with a small overlap for continuity), run up to MAX_CONCURRENT in parallel,
-// and merge results by way ID.
-const CHUNK_SIZE    = 100   // points per around: request (~4 KB body)
-const CHUNK_OVERLAP = 15    // overlap between adjacent chunks (avoid coverage gaps)
-const MAX_CONCURRENT = 3    // parallel Overpass requests
-
-/** Fetch one chunk via direct Overpass POST, falling back to the SvelteKit proxy. */
-async function fetchChunk(pts: Array<{ lat: number; lon: number }>): Promise<OverpassElement[]> {
-  const query = buildAroundQuery(pts)
-  const formBody = new URLSearchParams({ data: query }).toString()
-
-  // 1. Direct Overpass
-  try {
-    const res = await fetch('https://overpass-api.de/api/interpreter', {
-      method: 'POST',
-      headers: { 'content-type': 'application/x-www-form-urlencoded' },
-      body: formBody,
-    })
-    if (res.ok) return ((await res.json()) as { elements: OverpassElement[] }).elements ?? []
-  } catch { /* fall through */ }
-
-  // 2. SvelteKit proxy (overpass-api.de + kumi.systems with retry)
-  const res = await fetch('/api/osm/overpass', {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ query }),
-  })
-  if (!res.ok) {
-    const text = await res.text()
-    let msg = `Overpass API Fehler: ${res.status}`
-    try { msg = JSON.parse(text)?.message ?? msg } catch {}
-    throw new Error(msg)
-  }
-  return ((await res.json()) as { elements: OverpassElement[] }).elements ?? []
+function bboxCacheKey(bbox: [number, number, number, number]): string {
+  return 'osm:v1:' + bbox.map(v => v.toFixed(3)).join(',')
 }
 
 /**
- * Fetch all OSM highway ways within AROUND_RADIUS_M of the GPS track.
- * Splits the decimated track into overlapping chunks of CHUNK_SIZE points and
- * fires up to MAX_CONCURRENT requests in parallel. Results are deduplicated by
- * way ID and cached in IndexedDB by route fingerprint.
+ * Fetch all OSM highway ways within the track's bounding box.
+ * Tries Overpass directly (POST), then falls back to the SvelteKit proxy.
+ * Result is cached in IndexedDB by bbox.
  */
-async function queryOverpassAround(
-  points: TrackSegment['points'],
+async function queryOverpass(
+  bbox: [number, number, number, number],
   onProgress?: ProgressFn,
 ): Promise<OverpassElement[]> {
-  const decimated = decimateTrack(points, MAX_QUERY_POINTS)
-  const key = aroundCacheKey(decimated)
-
+  const key = bboxCacheKey(bbox)
   const cached = await osmCacheGet<OverpassElement[]>(key)
   if (cached) {
     onProgress?.('OSM-Daten aus Cache geladen', 50)
     return cached
   }
 
-  // Split into overlapping chunks
-  const chunks: Array<Array<{ lat: number; lon: number }>> = []
-  const step = CHUNK_SIZE - CHUNK_OVERLAP
-  for (let i = 0; i < decimated.length; i += step) {
-    chunks.push(decimated.slice(i, i + CHUNK_SIZE))
-    if (i + CHUNK_SIZE >= decimated.length) break
+  const [s, w, n, e] = bbox
+  const query = `[out:json][timeout:30];\nway["highway"](${s},${w},${n},${e});\nout geom;`
+  const formBody = new URLSearchParams({ data: query }).toString()
+
+  // 1. Direct Overpass POST
+  let elements: OverpassElement[] | null = null
+  try {
+    const res = await fetch('https://overpass-api.de/api/interpreter', {
+      method: 'POST',
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      body: formBody,
+    })
+    if (res.ok) elements = ((await res.json()) as { elements: OverpassElement[] }).elements ?? []
+  } catch { /* fall through to proxy */ }
+
+  // 2. SvelteKit proxy (overpass-api.de + kumi.systems with retry)
+  if (!elements) {
+    const res = await fetch('/api/osm/overpass', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ query }),
+    })
+    if (!res.ok) {
+      const text = await res.text()
+      let msg = `Overpass API Fehler: ${res.status}`
+      try { msg = JSON.parse(text)?.message ?? msg } catch {}
+      throw new Error(msg)
+    }
+    elements = ((await res.json()) as { elements: OverpassElement[] }).elements ?? []
   }
 
-  const elementMap = new Map<number, OverpassElement>()
-  for (let i = 0; i < chunks.length; i += MAX_CONCURRENT) {
-    const batch = chunks.slice(i, i + MAX_CONCURRENT)
-    const pct = 20 + Math.round(30 * (i / chunks.length))
-    onProgress?.(
-      `OSM-Daten werden geladen (${Math.min(i + MAX_CONCURRENT, chunks.length)}/${chunks.length})`,
-      pct,
-    )
-    const results = await Promise.all(batch.map(fetchChunk))
-    for (const els of results) for (const el of els) elementMap.set(el.id, el)
-  }
-
-  const elements = [...elementMap.values()]
   await osmCacheSet(key, elements)
   return elements
 }
@@ -799,8 +725,17 @@ export async function analyzeSurfaces(
   const pts = track.points
   onProgress?.('Strecke wird vorbereitet', 10)
 
-  onProgress?.('OSM-Oberflächendaten werden geladen', 20)
-  const ways = await queryOverpassAround(pts, onProgress)
+  const lats = pts.map(p => p.lat)
+  const lons = pts.map(p => p.lon)
+  const bbox: [number, number, number, number] = [
+    Math.min(...lats) - 0.0025,
+    Math.min(...lons) - 0.0025,
+    Math.max(...lats) + 0.0025,
+    Math.max(...lons) + 0.0025,
+  ]
+
+  onProgress?.('OSM-Oberflächendaten werden geladen', 25)
+  const ways = await queryOverpass(bbox, onProgress)
   const wayById = new Map<number, OverpassElement>(ways.map(w => [w.id, w]))
 
   onProgress?.('Wegenetz wird aufgebaut', 55)
