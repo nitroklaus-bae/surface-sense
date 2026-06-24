@@ -4,12 +4,13 @@ import Toybox.Math;
 import Toybox.System;
 
 // ── UUIDs (müssen mit der Firmware übereinstimmen) ────────────────────────────
-// Service:     19B10000-E8F2-537E-4F6C-D104768A1214
-// Surface:     19B10000-E8F2-537E-4F6C-D104768A1006  (Notify, 16 Byte, 1 Hz)
-// Temperatur:  19B10000-E8F2-537E-4F6C-D104768A1009  (Notify, 4 Byte float32, alle 5 s)
+// Die Firmware variiert das ERSTE Segment der Basis-UUID:
+//   Service:     19B10000-E8F2-537E-4F6C-D104768A1214  (Basis)
+//   Surface:     19B10006-E8F2-537E-4F6C-D104768A1214  (erstes Segment = 19B10006)
+//   Temperatur:  19B10009-E8F2-537E-4F6C-D104768A1214  (erstes Segment = 19B10009)
 const SURFACE_SVC_UUID  = BluetoothLowEnergy.stringToUuid("19b10000-e8f2-537e-4f6c-d104768a1214");
-const SURFACE_CHAR_UUID = BluetoothLowEnergy.stringToUuid("19b10000-e8f2-537e-4f6c-d104768a1006");
-const TEMP_CHAR_UUID    = BluetoothLowEnergy.stringToUuid("19b10000-e8f2-537e-4f6c-d104768a1009");
+const SURFACE_CHAR_UUID = BluetoothLowEnergy.stringToUuid("19b10006-e8f2-537e-4f6c-d104768a1214");
+const TEMP_CHAR_UUID    = BluetoothLowEnergy.stringToUuid("19b10009-e8f2-537e-4f6c-d104768a1214");
 
 // Sensor-Gerätename (muss mit BLE-Advertising-Name übereinstimmen)
 const SENSOR_NAME = "SurfaceSensor";
