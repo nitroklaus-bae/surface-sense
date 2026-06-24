@@ -40,11 +40,9 @@ class GpsService {
         accuracy: LocationAccuracy.high,
         distanceFilter: 0,
         intervalDuration: const Duration(seconds: 1),
-        foregroundNotificationConfig: const ForegroundNotificationConfig(
-          notificationText: 'GPS-Aufzeichnung läuft',
-          notificationTitle: 'Surface Sensor',
-          enableWakeLock: true,
-        ),
+        // Kein ForegroundNotificationConfig hier — flutter_foreground_task hält
+        // bereits einen Foreground-Service aktiv. Ein zweiter Service für
+        // Location kollidiert mit dem ersten und führt zu GPS-Batching.
       );
     } else if (Platform.isIOS) {
       return AppleSettings(

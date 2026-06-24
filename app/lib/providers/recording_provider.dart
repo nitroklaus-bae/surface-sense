@@ -430,7 +430,10 @@ class RecordingProvider extends ChangeNotifier {
 
     // CSV + GPS + UI-Timer + Foreground Service (in beiden Modi)
     await _openCsvSink();
-    try { await _gps.start(); } catch (e) { _lastError = 'GPS nicht verfügbar: $e'; }
+    try {
+      final gpsOk = await _gps.start();
+      if (!gpsOk) _lastError = 'GPS nicht verfügbar – Standort-Berechtigung prüfen';
+    } catch (e) { _lastError = 'GPS-Fehler: $e'; }
 
     _uiTimer?.cancel();
     _uiTimer = Timer.periodic(const Duration(milliseconds: 33), (_) {
