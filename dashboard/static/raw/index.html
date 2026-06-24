@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Surface Sensor – Dashboard</title>
+
+<!-- Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<!-- Leaflet -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #0D1117;
+    --surface:  #161B22;
+    --border:   #30363D;
+    --text:     #E6EDF3;
+    --muted:    #8B949E;
+    --accent:   #2DD4BF;
+    --green:    #3FB950;
+    --yellow:   #D29922;
+    --orange:   #E3562A;
+    --red:      #F85149;
+  }
+
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 14px; }
+
+  /* ── Auth ── */
+  #auth-screen {
+    display: flex; align-items: center; justify-content: center; min-height: 100vh;
+  }
+  .auth-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 40px 32px; width: 100%; max-width: 380px;
+  }
+  .auth-card h1 { font-size: 20px; margin-bottom: 4px; }
+  .auth-card p  { color: var(--muted); font-size: 13px; margin-bottom: 28px; }
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+  .field input {
+    width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
+    color: var(--text); padding: 9px 12px; font-size: 14px; outline: none;
+  }
+  .field input:focus { border-color: var(--accent); }
+  .btn-primary {
+    width: 100%; background: var(--accent); color: #0D1117; border: none; border-radius: 6px;
+    padding: 10px; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 4px;
+  }
+  .btn-primary:hover { opacity: .9; }
+  .auth-error { color: var(--red); font-size: 12px; margin-top: 10px; min-height: 18px; }
+
+  /* ── App shell ── */
+  #app { display: none; height: 100vh; overflow: hidden; }
+
+  header {
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 0 20px; height: 52px; display: flex; align-items: center; gap: 16px; flex-shrink: 0;
+  }
+  header h1 { font-size: 16px; font-weight: 600; flex: 1; }
+  header .user-email { font-size: 12px; color: var(--muted); }
+  .btn-ghost {
+    background: none; border: 1px solid var(--border); border-radius: 6px;
+    color: var(--muted); padding: 5px 12px; font-size: 12px; cursor: pointer;
+  }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+  .layout { display: flex; height: calc(100vh - 52px); overflow: hidden; }
+
+  /* ── Sidebar (ride list) ── */
+  #sidebar {
+    width: 320px; flex-shrink: 0; border-right: 1px solid var(--border);
+    overflow-y: auto; background: var(--bg);
+  }
+  .sidebar-header {
+    padding: 14px 16px 10px; position: sticky; top: 0; background: var(--bg);
+    border-bottom: 1px solid var(--border); z-index: 10;
+  }
+  .sidebar-header h2 { font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+
+  .ride-item {
+    padding: 12px 16px; border-bottom: 1px solid var(--border);
+    cursor: pointer; transition: background .12s;
+  }
+  .ride-item:hover  { background: var(--surface); }
+  .ride-item.active { background: #1C2128; border-left: 3px solid var(--accent); padding-left: 13px; }
+  .ride-item .ride-name { font-weight: 500; font-size: 13px; }
+  .ride-item .ride-meta { color: var(--muted); font-size: 11px; margin-top: 3px; }
+  .ride-item .ride-badges { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+  .badge {
+    font-size: 10px; padding: 2px 7px; border-radius: 10px;
+    background: rgba(255,255,255,.06); color: var(--muted);
+  }
+  .badge.green  { background: rgba(63,185,80,.15);  color: var(--green);  }
+  .badge.yellow { background: rgba(210,153,34,.15); color: var(--yellow); }
+  .badge.orange { background: rgba(227,86,42,.15);  color: var(--orange); }
+  .badge.red    { background: rgba(248,81,73,.15);  color: var(--red);    }
+
+  #empty-list { padding: 40px 20px; color: var(--muted); text-align: center; font-size: 13px; }
+
+  /* ── Detail panel ── */
+  #detail {
+    flex: 1; overflow-y: auto; padding: 20px 24px; display: none;
+  }
+  #placeholder {
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    color: var(--muted); font-size: 14px;
+  }
+
+  .detail-title { font-size: 20px; font-weight: 600; margin-bottom: 4px; }
+  .detail-sub   { color: var(--muted); font-size: 13px; margin-bottom: 20px; }
+
+  /* Stat cards */
+  .stat-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 10px; margin-bottom: 24px;
+  }
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    padding: 12px 14px;
+  }
+  .stat-card .label { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+  .stat-card .value { font-size: 20px; font-weight: 600; }
+  .stat-card .unit  { font-size: 11px; color: var(--muted); margin-left: 3px; }
+
+  /* Section */
+  .section { margin-bottom: 28px; }
+  .section-title {
+    font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase;
+    letter-spacing: .05em; margin-bottom: 10px;
+  }
+
+  /* Chart tabs */
+  .tab-bar { display: flex; gap: 4px; margin-bottom: 12px; flex-wrap: wrap; }
+  .tab {
+    padding: 5px 14px; border-radius: 6px; font-size: 12px; cursor: pointer;
+    background: var(--surface); border: 1px solid var(--border); color: var(--muted);
+  }
+  .tab.active { background: var(--accent); color: #0D1117; border-color: var(--accent); font-weight: 600; }
+
+  .chart-box {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    padding: 16px; position: relative; height: 260px;
+  }
+
+  /* Map */
+  #map {
+    height: 340px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .map-legend {
+    display: flex; gap: 14px; margin-top: 8px; align-items: center;
+    font-size: 11px; color: var(--muted); flex-wrap: wrap;
+  }
+  .map-legend .dot {
+    width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 4px;
+  }
+
+  /* Histogram */
+  .hist-box {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    padding: 16px; height: 200px; position: relative;
+  }
+
+  /* Note box */
+  .note {
+    background: rgba(45,212,191,.08); border: 1px solid rgba(45,212,191,.25);
+    border-radius: 8px; padding: 10px 14px; font-size: 12px; color: var(--muted);
+    margin-bottom: 24px;
+  }
+  .note strong { color: var(--accent); }
+
+  /* Spinner */
+  .spinner {
+    display: inline-block; width: 18px; height: 18px;
+    border: 2px solid var(--border); border-top-color: var(--accent);
+    border-radius: 50%; animation: spin .7s linear infinite; vertical-align: middle;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Loading overlay for detail */
+  .loading-overlay {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    background: rgba(13,17,23,.7); border-radius: 8px; z-index: 5;
+  }
+
+  /* Raw / FFT controls */
+  .raw-controls {
+    display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 12px;
+  }
+  .raw-controls select, .raw-controls input[type=range] {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 6px;
+    color: var(--text); padding: 5px 10px; font-size: 12px; outline: none; cursor: pointer;
+  }
+  .raw-controls label { font-size: 11px; color: var(--muted); }
+  .raw-status {
+    font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 8px;
+  }
+  .btn-sm {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 6px;
+    color: var(--text); padding: 5px 12px; font-size: 12px; cursor: pointer;
+  }
+  .btn-sm:hover { border-color: var(--accent); color: var(--accent); }
+  .fft-box {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    padding: 16px; position: relative; height: 260px;
+  }
+  .wave-box {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    padding: 16px; position: relative; height: 200px; margin-bottom: 12px;
+  }
+  .window-row {
+    display: flex; gap: 10px; align-items: center; margin-bottom: 10px; flex-wrap: wrap;
+  }
+  .window-row label { font-size: 11px; color: var(--muted); white-space: nowrap; }
+  .window-row input[type=range] {
+    flex: 1; min-width: 120px; accent-color: var(--accent);
+  }
+  #window-val { font-size: 12px; color: var(--accent); min-width: 60px; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- ── Auth ── -->
+<div id="auth-screen">
+  <div class="auth-card">
+    <h1>🚴 Surface Sensor</h1>
+    <p>Dashboard · Vibrations­analyse</p>
+    <div class="field">
+      <label>E-Mail</label>
+      <input id="email" type="email" placeholder="deine@email.de" autocomplete="email">
+    </div>
+    <div class="field">
+      <label>Passwort</label>
+      <input id="password" type="password" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="btn-primary" id="login-btn">Anmelden</button>
+    <div class="auth-error" id="auth-error"></div>
+  </div>
+</div>
+
+<!-- ── App ── -->
+<div id="app">
+  <header>
+    <h1>🚴 Surface Sensor</h1>
+    <span class="user-email" id="user-email"></span>
+    <button class="btn-ghost" id="logout-btn">Abmelden</button>
+  </header>
+  <div class="layout">
+    <!-- Sidebar -->
+    <div id="sidebar">
+      <div class="sidebar-header">
+        <h2>Fahrten <span id="ride-count" style="font-size:11px;"></span></h2>
+      </div>
+      <div id="ride-list"></div>
+      <div id="empty-list" style="display:none;">Noch keine Fahrten vorhanden.</div>
+    </div>
+
+    <!-- Detail / Placeholder -->
+    <div id="placeholder">← Fahrt auswählen</div>
+    <div id="detail">
+      <div class="detail-title" id="d-name"></div>
+      <div class="detail-sub"  id="d-sub"></div>
+
+      <div class="note">
+        <strong>Hinweis:</strong> FFT-Analyse erfordert hochfrequente Rohdaten (bis 1666 Hz).
+        Diese werden lokal im Gerätepuffer gehalten und sind für historische Fahrten nicht verfügbar.
+        Das Dashboard zeigt die 1-Hz-Surface-Metriken (RMS, VDV, IRI, Peak, Crest).
+      </div>
+
+      <!-- Stats -->
+      <div class="stat-grid" id="d-stats"></div>
+
+      <!-- Map -->
+      <div class="section">
+        <div class="section-title">GPS-Track · Vibrations-Heatmap</div>
+        <div id="map"></div>
+        <div class="map-legend">
+          <span><span class="dot" style="background:#22c55e"></span>sehr glatt (&lt;0.05 g)</span>
+          <span><span class="dot" style="background:#eab308"></span>gut (&lt;0.15 g)</span>
+          <span><span class="dot" style="background:#f97316"></span>mäßig (&lt;0.3 g)</span>
+          <span><span class="dot" style="background:#ef4444"></span>rau (&gt;0.3 g)</span>
+        </div>
+      </div>
+
+      <!-- Time series -->
+      <div class="section">
+        <div class="section-title">Zeitreihen</div>
+        <div class="tab-bar" id="chart-tabs">
+          <div class="tab active" data-metric="rms">RMS [g]</div>
+          <div class="tab" data-metric="vdv">VDV [g·s¼]</div>
+          <div class="tab" data-metric="iri">IRI [m/km]</div>
+          <div class="tab" data-metric="peak">Peak [g]</div>
+          <div class="tab" data-metric="crest">Crest Factor</div>
+        </div>
+        <div class="chart-box">
+          <canvas id="time-chart"></canvas>
+          <div class="loading-overlay" id="chart-loading" style="display:none;"><div class="spinner"></div></div>
+        </div>
+      </div>
+
+      <!-- Histogram -->
+      <div class="section">
+        <div class="section-title">RMS-Verteilung (Histogramm)</div>
+        <div class="hist-box">
+          <canvas id="hist-chart"></canvas>
+        </div>
+      </div>
+
+      <!-- Raw data + FFT -->
+      <div class="section" id="raw-section">
+        <div class="section-title">Rohdaten &amp; FFT-Analyse</div>
+
+        <div class="raw-status" id="raw-status">
+          <span id="raw-status-text">Rohdaten werden gesucht…</span>
+        </div>
+
+        <!-- Controls (hidden until data loaded) -->
+        <div id="raw-loaded" style="display:none; margin-top:12px;">
+
+          <div class="raw-controls">
+            <div>
+              <label>Achse</label><br>
+              <select id="raw-axis">
+                <option value="az">Z-Achse (az)</option>
+                <option value="ax">X-Achse (ax)</option>
+                <option value="ay">Y-Achse (ay)</option>
+                <option value="mag">Betrag |a|</option>
+              </select>
+            </div>
+            <div>
+              <label>FFT-Fenster</label><br>
+              <select id="fft-window-size">
+                <option value="512">512 Punkte</option>
+                <option value="1024">1024 Punkte</option>
+                <option value="2048" selected>2048 Punkte</option>
+                <option value="4096">4096 Punkte</option>
+              </select>
+            </div>
+            <div>
+              <label>Max. Frequenz</label><br>
+              <select id="fft-max-freq">
+                <option value="50">0–50 Hz</option>
+                <option value="100" selected>0–100 Hz</option>
+                <option value="200">0–200 Hz</option>
+                <option value="0">Alle</option>
+              </select>
+            </div>
+            <div style="align-self:flex-end;">
+              <span style="font-size:11px;color:var(--muted);" id="raw-sr"></span>
+            </div>
+          </div>
+
+          <!-- Zeit-Cursor -->
+          <div class="window-row">
+            <label>Zeitfenster-Start:</label>
+            <input type="range" id="window-pos" min="0" max="100" value="0" step="0.1">
+            <span id="window-val">0.0 s</span>
+            <button class="btn-sm" id="run-fft-btn">FFT berechnen</button>
+          </div>
+
+          <!-- Wellenform -->
+          <div class="wave-box">
+            <canvas id="wave-chart"></canvas>
+            <div class="loading-overlay" id="wave-loading" style="display:none;"><div class="spinner"></div></div>
+          </div>
+
+          <!-- FFT-Spektrum -->
+          <div class="fft-box">
+            <canvas id="fft-chart"></canvas>
+            <div class="loading-overlay" id="fft-loading" style="display:none;"><div class="spinner"></div></div>
+          </div>
+
+          <div style="font-size:11px;color:var(--muted);margin-top:8px;">
+            Hanning-Fenster · Amplitude in g · Einheit: g/√Hz (Peak-normiert)
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Supabase ──────────────────────────────────────────────────────────────────
+const SUPA_URL  = 'https://cpxdxchlyvdbnsewicbq.supabase.co';
+const SUPA_ANON = 'sb_publishable_RPToUB4fonmTaGfdC3WZ2w_bOYdSGcc';
+const supa = supabase.createClient(SUPA_URL, SUPA_ANON);
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let rides        = [];
+let activeRideId = null;
+let samples      = [];   // surface_samples der aktiven Fahrt
+let timeChart    = null;
+let histChart    = null;
+let map          = null;
+let activeMetric = 'rms';
+
+// ── Auth ──────────────────────────────────────────────────────────────────────
+document.getElementById('login-btn').addEventListener('click', async () => {
+  const email = document.getElementById('email').value.trim();
+  const pw    = document.getElementById('password').value;
+  document.getElementById('auth-error').textContent = '';
+  document.getElementById('login-btn').innerHTML = '<span class="spinner"></span>';
+
+  const { error } = await supa.auth.signInWithPassword({ email, password: pw });
+  document.getElementById('login-btn').textContent = 'Anmelden';
+
+  if (error) {
+    document.getElementById('auth-error').textContent = error.message;
+  } else {
+    showApp();
+  }
+});
+
+document.getElementById('password').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('login-btn').click();
+});
+
+document.getElementById('logout-btn').addEventListener('click', async () => {
+  await supa.auth.signOut();
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('auth-screen').style.display = 'flex';
+});
+
+// ── Boot ──────────────────────────────────────────────────────────────────────
+(async () => {
+  const { data: { session } } = await supa.auth.getSession();
+  if (session) showApp();
+})();
+
+async function showApp() {
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+
+  const { data: { user } } = await supa.auth.getUser();
+  document.getElementById('user-email').textContent = user?.email ?? '';
+
+  await loadRides();
+}
+
+// ── Ride list ─────────────────────────────────────────────────────────────────
+async function loadRides() {
+  const { data, error } = await supa.from('rides').select('*').order('started_at', { ascending: false });
+  if (error) { console.error(error); return; }
+  rides = data || [];
+
+  const list  = document.getElementById('ride-list');
+  const empty = document.getElementById('empty-list');
+  document.getElementById('ride-count').textContent = `(${rides.length})`;
+  list.innerHTML = '';
+
+  if (rides.length === 0) { empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+
+  rides.forEach(r => {
+    const el = document.createElement('div');
+    el.className = 'ride-item';
+    el.dataset.id = r.id;
+
+    const dt   = new Date(r.started_at);
+    const date = dt.toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit', year:'numeric' });
+    const time = dt.toLocaleTimeString('de-DE', { hour:'2-digit', minute:'2-digit' });
+    const dur  = durationLabel(r.duration_s);
+    const dist = distLabel(r.distance_m);
+    const iri  = r.avg_iri != null ? r.avg_iri.toFixed(1) : null;
+
+    el.innerHTML = `
+      <div class="ride-name">${r.name}</div>
+      <div class="ride-meta">${date} · ${time} Uhr</div>
+      <div class="ride-badges">
+        ${dur  ? `<span class="badge">${dur}</span>` : ''}
+        ${dist ? `<span class="badge">${dist}</span>` : ''}
+        ${r.avg_rms_g != null ? `<span class="badge">${(r.avg_rms_g*1000).toFixed(1)} mg</span>` : ''}
+        ${iri  ? `<span class="badge ${iriClass(r.avg_iri)}">IRI ${iri} m/km</span>` : ''}
+        ${r.mount_point ? `<span class="badge">${r.mount_point}</span>` : ''}
+      </div>`;
+
+    el.addEventListener('click', () => selectRide(r));
+    list.appendChild(el);
+  });
+}
+
+function iriClass(v) {
+  if (v == null) return '';
+  if (v < 2) return 'green';
+  if (v < 5) return 'yellow';
+  if (v < 8) return 'orange';
+  return 'red';
+}
+
+// ── Select ride ───────────────────────────────────────────────────────────────
+async function selectRide(ride) {
+  activeRideId = ride.id;
+  document.querySelectorAll('.ride-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.id === ride.id);
+  });
+
+  document.getElementById('placeholder').style.display = 'none';
+  document.getElementById('detail').style.display = 'block';
+
+  // Header
+  const dt   = new Date(ride.started_at);
+  const dtE  = new Date(ride.ended_at);
+  document.getElementById('d-name').textContent = ride.name;
+  document.getElementById('d-sub').textContent  =
+    `${dt.toLocaleDateString('de-DE', {weekday:'long', day:'2-digit', month:'long', year:'numeric'})} ·
+     ${dt.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})}–${dtE.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})} Uhr`;
+
+  // Stats
+  renderStats(ride);
+
+  // Load samples
+  document.getElementById('chart-loading').style.display = 'flex';
+  const { data, error } = await supa
+    .from('surface_samples')
+    .select('ts_ms,rms_g,vdv_g,peak_g,crest_factor,iri_m_km,lat,lon,speed_kmh')
+    .eq('ride_id', ride.id)
+    .order('ts_ms');
+
+  document.getElementById('chart-loading').style.display = 'none';
+
+  if (error) { console.error(error); return; }
+  samples = data || [];
+
+  renderMap(samples);
+  renderTimeChart(activeMetric);
+  renderHistogram(samples);
+
+  // Raw CSV + FFT
+  loadRawData(ride);
+}
+
+// ── Stats ─────────────────────────────────────────────────────────────────────
+function renderStats(ride) {
+  const cards = [
+    { label: 'Dauer',     value: durationLabel(ride.duration_s) ?? '—',  unit: '' },
+    { label: 'Strecke',   value: distLabel(ride.distance_m)     ?? '—',  unit: '' },
+    { label: 'Ø RMS',     value: ride.avg_rms_g != null ? (ride.avg_rms_g*1000).toFixed(1) : '—', unit: 'mg' },
+    { label: 'Ø VDV',     value: ride.avg_vdv_g != null ? ride.avg_vdv_g.toFixed(3) : '—', unit: 'g·s¼' },
+    { label: 'Ø IRI',     value: ride.avg_iri   != null ? ride.avg_iri.toFixed(1)   : '—', unit: 'm/km' },
+    { label: 'Max IRI',   value: ride.max_iri   != null ? ride.max_iri.toFixed(1)   : '—', unit: 'm/km' },
+  ];
+
+  document.getElementById('d-stats').innerHTML = cards.map(c => `
+    <div class="stat-card">
+      <div class="label">${c.label}</div>
+      <div class="value">${c.value}<span class="unit">${c.unit}</span></div>
+    </div>`).join('');
+}
+
+// ── Map ───────────────────────────────────────────────────────────────────────
+function rmsToColor(rms) {
+  if (!rms || rms <= 0) return '#22c55e';
+  if (rms < 0.05)  return '#22c55e';
+  if (rms < 0.15)  return '#eab308';
+  if (rms < 0.30)  return '#f97316';
+  return '#ef4444';
+}
+
+function renderMap(samples) {
+  const pts = samples.filter(s => s.lat && s.lon && s.lat !== 0 && s.lon !== 0);
+
+  if (!map) {
+    map = L.map('map', { zoomControl: true });
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap',
+      maxZoom: 19,
+    }).addTo(map);
+  } else {
+    map.eachLayer(l => { if (l instanceof L.Polyline || l instanceof L.Marker) map.removeLayer(l); });
+  }
+
+  if (pts.length < 2) {
+    map.setView([48.13, 11.57], 13); // Fallback: München
+    return;
+  }
+
+  // Farbige Segmente
+  for (let i = 0; i < pts.length - 1; i++) {
+    const color = rmsToColor(pts[i].rms_g);
+    L.polyline(
+      [[pts[i].lat, pts[i].lon], [pts[i+1].lat, pts[i+1].lon]],
+      { color, weight: 5, opacity: 0.85 }
+    ).addTo(map);
+  }
+
+  // Start/End-Marker
+  const startIcon = L.divIcon({ html: '▶', className: '', iconSize: [20,20],
+    iconAnchor: [10,10], popupAnchor: [0,-10] });
+  const endIcon   = L.divIcon({ html: '⬛', className: '', iconSize: [16,16],
+    iconAnchor: [8,8] });
+
+  L.marker([pts[0].lat,    pts[0].lon],    { icon: startIcon }).addTo(map);
+  L.marker([pts.at(-1).lat, pts.at(-1).lon], { icon: endIcon  }).addTo(map);
+
+  const latLngs = pts.map(p => [p.lat, p.lon]);
+  map.fitBounds(L.latLngBounds(latLngs), { padding: [24, 24] });
+}
+
+// ── Time chart ────────────────────────────────────────────────────────────────
+const metricCfg = {
+  rms:   { key: 'rms_g',        label: 'RMS [g]',       color: '#2DD4BF', scale: 1 },
+  vdv:   { key: 'vdv_g',        label: 'VDV [g·s¼]',   color: '#818CF8', scale: 1 },
+  iri:   { key: 'iri_m_km',     label: 'IRI [m/km]',    color: '#FB923C', scale: 1 },
+  peak:  { key: 'peak_g',       label: 'Peak [g]',      color: '#F472B6', scale: 1 },
+  crest: { key: 'crest_factor', label: 'Crest Factor',  color: '#FACC15', scale: 1 },
+};
+
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    activeMetric = tab.dataset.metric;
+    renderTimeChart(activeMetric);
+  });
+});
+
+function renderTimeChart(metric) {
+  if (!samples.length) return;
+  const cfg = metricCfg[metric];
+  const t0  = samples[0].ts_ms;
+
+  const labels = samples.map(s => {
+    const sec = (s.ts_ms - t0) / 1000;
+    const m   = Math.floor(sec / 60);
+    const s2  = Math.floor(sec % 60);
+    return `${m}:${String(s2).padStart(2,'0')}`;
+  });
+
+  const data = samples.map(s => {
+    const v = s[cfg.key];
+    return v != null ? parseFloat(v.toFixed(4)) : null;
+  });
+
+  // Thin out labels for readability (show every Nth)
+  const n = Math.max(1, Math.floor(labels.length / 20));
+  const sparseLabels = labels.map((l, i) => i % n === 0 ? l : '');
+
+  const ctx = document.getElementById('time-chart').getContext('2d');
+  if (timeChart) timeChart.destroy();
+
+  timeChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: sparseLabels,
+      datasets: [{
+        label: cfg.label,
+        data,
+        borderColor: cfg.color,
+        backgroundColor: cfg.color + '18',
+        borderWidth: 1.5,
+        pointRadius: 0,
+        tension: 0.1,
+        fill: true,
+        spanGaps: true,
+      }],
+    },
+    options: {
+      animation: false,
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            title: (items) => {
+              const idx = items[0].dataIndex;
+              return labels[idx];
+            },
+            label: (item) => ` ${cfg.label}: ${item.raw?.toFixed(4) ?? '—'}`,
+          },
+          backgroundColor: '#21262D',
+          titleColor: '#8B949E',
+          bodyColor: '#E6EDF3',
+          borderColor: '#30363D',
+          borderWidth: 1,
+        },
+      },
+      scales: {
+        x: {
+          ticks: { color: '#8B949E', font: { size: 10 }, maxRotation: 0 },
+          grid:  { color: '#21262D' },
+        },
+        y: {
+          ticks: { color: '#8B949E', font: { size: 10 } },
+          grid:  { color: '#21262D' },
+          beginAtZero: true,
+        },
+      },
+    },
+  });
+}
+
+// ── Histogram ─────────────────────────────────────────────────────────────────
+function renderHistogram(samples) {
+  const vals = samples.map(s => s.rms_g).filter(v => v != null && v > 0);
+  if (!vals.length) return;
+
+  const maxV   = Math.max(...vals);
+  const bins   = 20;
+  const width  = maxV / bins;
+  const counts = new Array(bins).fill(0);
+  vals.forEach(v => {
+    const i = Math.min(Math.floor(v / width), bins - 1);
+    counts[i]++;
+  });
+  const binLabels = counts.map((_, i) => `${(i * width * 1000).toFixed(1)}`);
+
+  const colors = counts.map((_, i) => rmsToColor(i * width + width / 2));
+
+  const ctx = document.getElementById('hist-chart').getContext('2d');
+  if (histChart) histChart.destroy();
+
+  histChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: binLabels,
+      datasets: [{
+        label: 'Anzahl Sekunden',
+        data: counts,
+        backgroundColor: colors,
+        borderWidth: 0,
+        borderRadius: 2,
+      }],
+    },
+    options: {
+      animation: false,
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            title: (items) => `RMS ≈ ${items[0].label} mg`,
+            label: (item) => ` ${item.raw} Sekunden`,
+          },
+          backgroundColor: '#21262D',
+          titleColor: '#8B949E',
+          bodyColor: '#E6EDF3',
+          borderColor: '#30363D',
+          borderWidth: 1,
+        },
+      },
+      scales: {
+        x: {
+          title: { display: true, text: 'RMS [mg]', color: '#8B949E', font: { size: 10 } },
+          ticks: { color: '#8B949E', font: { size: 9 }, maxRotation: 45 },
+          grid:  { color: '#21262D' },
+        },
+        y: {
+          title: { display: true, text: 'Sekunden', color: '#8B949E', font: { size: 10 } },
+          ticks: { color: '#8B949E', font: { size: 10 } },
+          grid:  { color: '#21262D' },
+          beginAtZero: true,
+        },
+      },
+    },
+  });
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function durationLabel(s) {
+  if (s == null || s <= 0) return null;
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const r = s % 60;
+  if (h > 0) return `${h}h ${m}min`;
+  if (m > 0) return `${m}min ${r}s`;
+  return `${r}s`;
+}
+
+function distLabel(m) {
+  if (m == null || m <= 0) return null;
+  return m >= 1000 ? `${(m/1000).toFixed(1)} km` : `${Math.round(m)} m`;
+}
+
+// ── Raw data + FFT ────────────────────────────────────────────────────────────
+
+let rawSamples  = [];   // [{t, ax, ay, az}]
+let rawSr       = 0;    // sample rate [Hz]
+let waveChart   = null;
+let fftChart    = null;
+
+// Cooley-Tukey FFT (in-place, radix-2, DIT)
+function fft(re, im) {
+  const n = re.length;
+  // Bit-reversal permutation
+  for (let i = 1, j = 0; i < n; i++) {
+    let bit = n >> 1;
+    for (; j & bit; bit >>= 1) j ^= bit;
+    j ^= bit;
+    if (i < j) {
+      [re[i], re[j]] = [re[j], re[i]];
+      [im[i], im[j]] = [im[j], im[i]];
+    }
+  }
+  // Butterfly
+  for (let len = 2; len <= n; len <<= 1) {
+    const half = len >> 1;
+    const ang  = -2 * Math.PI / len;
+    const wr   = Math.cos(ang), wi = Math.sin(ang);
+    for (let i = 0; i < n; i += len) {
+      let cr = 1, ci = 0;
+      for (let k = 0; k < half; k++) {
+        const ur = re[i+k], ui = im[i+k];
+        const tr = cr * re[i+k+half] - ci * im[i+k+half];
+        const ti = cr * im[i+k+half] + ci * re[i+k+half];
+        re[i+k] = ur + tr; im[i+k] = ui + ti;
+        re[i+k+half] = ur - tr; im[i+k+half] = ui - ti;
+        const ncr = cr*wr - ci*wi;
+        ci = cr*wi + ci*wr; cr = ncr;
+      }
+    }
+  }
+}
+
+function hanning(n) {
+  return Float64Array.from({length: n}, (_, i) => 0.5 * (1 - Math.cos(2*Math.PI*i/(n-1))));
+}
+
+function nextPow2(n) {
+  let p = 1; while (p < n) p <<= 1; return p;
+}
+
+// Parse raw CSV text → [{t, ax, ay, az}]
+function parseRawCsv(text) {
+  const lines  = text.split('\n');
+  const result = [];
+  for (let i = 1; i < lines.length; i++) {
+    const l = lines[i].trim();
+    if (!l) continue;
+    const [t, ax, ay, az] = l.split(',').map(Number);
+    if (isNaN(t)) continue;
+    result.push({ t, ax, ay, az });
+  }
+  return result;
+}
+
+// Detect sample rate from timestamps
+function detectSr(samples, nCheck = 200) {
+  const n = Math.min(nCheck, samples.length - 1);
+  if (n < 2) return 0;
+  const dt = (samples[n].t - samples[0].t) / n;
+  return dt > 0 ? Math.round(1 / dt) : 0;
+}
+
+// Load raw CSV for current ride
+async function loadRawData(ride) {
+  const statusEl = document.getElementById('raw-status-text');
+  const loadedEl = document.getElementById('raw-loaded');
+  loadedEl.style.display = 'none';
+  rawSamples = []; rawSr = 0;
+
+  if (!ride.raw_csv_path) {
+    statusEl.textContent = 'Keine Rohdaten vorhanden (nur Aufnahmen nach diesem Update).';
+    return;
+  }
+
+  statusEl.innerHTML = '<span class="spinner"></span> Rohdaten werden heruntergeladen…';
+
+  try {
+    const { data: urlData, error } = await supa.storage
+      .from('ride-files')
+      .createSignedUrl(ride.raw_csv_path, 3600);
+
+    if (error || !urlData?.signedUrl) {
+      statusEl.textContent = 'Rohdaten-Datei nicht erreichbar.';
+      return;
+    }
+
+    const resp = await fetch(urlData.signedUrl);
+    if (!resp.ok) { statusEl.textContent = 'Download fehlgeschlagen.'; return; }
+
+    const sizeMb = (parseInt(resp.headers.get('content-length') || '0') / 1e6).toFixed(1);
+    statusEl.innerHTML = `<span class="spinner"></span> Parsen (${sizeMb} MB)…`;
+
+    const text = await resp.text();
+    rawSamples = parseRawCsv(text);
+    rawSr      = detectSr(rawSamples);
+
+    if (rawSamples.length === 0) {
+      statusEl.textContent = 'Rohdaten leer oder ungültiges Format.';
+      return;
+    }
+
+    const dur  = rawSamples.at(-1).t - rawSamples[0].t;
+    statusEl.textContent =
+      `${rawSamples.length.toLocaleString()} Samples · ${rawSr} Hz · ${dur.toFixed(1)} s`;
+    document.getElementById('raw-sr').textContent = `${rawSr} Hz · ${rawSamples.length.toLocaleString()} Samples`;
+
+    // Configure slider
+    const fftN  = parseInt(document.getElementById('fft-window-size').value);
+    const winSec = fftN / rawSr;
+    const slider = document.getElementById('window-pos');
+    slider.max   = Math.max(0, dur - winSec).toFixed(2);
+    slider.value = 0;
+    document.getElementById('window-val').textContent = `${(0).toFixed(1)} s`;
+
+    loadedEl.style.display = 'block';
+    runAnalysis();
+  } catch (e) {
+    statusEl.textContent = `Fehler: ${e.message}`;
+  }
+}
+
+// Get selected signal array
+function getSignal(startIdx, count) {
+  const axis   = document.getElementById('raw-axis').value;
+  const slice  = rawSamples.slice(startIdx, startIdx + count);
+  if (axis === 'mag') return slice.map(s => Math.sqrt(s.ax**2 + s.ay**2 + s.az**2));
+  return slice.map(s => s[axis]);
+}
+
+function runAnalysis() {
+  if (!rawSamples.length || !rawSr) return;
+
+  const fftN    = parseInt(document.getElementById('fft-window-size').value);
+  const winSec  = fftN / rawSr;
+  const posSec  = parseFloat(document.getElementById('window-pos').value);
+  const startIdx = Math.round(posSec * rawSr);
+  const count    = Math.min(fftN, rawSamples.length - startIdx);
+
+  if (count < 32) return;
+
+  document.getElementById('wave-loading').style.display = 'flex';
+  document.getElementById('fft-loading').style.display  = 'flex';
+
+  // Use setTimeout so the loading overlay actually renders
+  setTimeout(() => {
+    const sig = getSignal(startIdx, count);
+
+    // ── Wellenform ──
+    const tLabels = rawSamples.slice(startIdx, startIdx + count)
+      .map(s => s.t.toFixed(2));
+    const nShow   = Math.min(count, 2000);
+    const step    = Math.max(1, Math.floor(count / nShow));
+    const wLabels = [], wData = [];
+    for (let i = 0; i < count; i += step) {
+      wLabels.push(tLabels[i] ?? '');
+      wData.push(parseFloat(sig[i].toFixed(5)));
+    }
+
+    const wCtx = document.getElementById('wave-chart').getContext('2d');
+    if (waveChart) waveChart.destroy();
+    waveChart = new Chart(wCtx, {
+      type: 'line',
+      data: {
+        labels: wLabels,
+        datasets: [{ label: document.getElementById('raw-axis').value,
+          data: wData, borderColor: '#2DD4BF', borderWidth: 1,
+          pointRadius: 0, tension: 0, backgroundColor: 'transparent' }],
+      },
+      options: {
+        animation: false, responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false },
+          tooltip: { callbacks: { label: i => ` ${i.raw?.toFixed(4)} g` },
+            backgroundColor:'#21262D',titleColor:'#8B949E',bodyColor:'#E6EDF3',
+            borderColor:'#30363D',borderWidth:1 } },
+        scales: {
+          x: { ticks:{ color:'#8B949E',font:{size:9},maxTicksLimit:10,maxRotation:0 }, grid:{color:'#21262D'} },
+          y: { ticks:{ color:'#8B949E',font:{size:10} }, grid:{color:'#21262D'} },
+        },
+      },
+    });
+
+    // ── FFT ──
+    const N = nextPow2(count);
+    const re = new Float64Array(N);
+    const im = new Float64Array(N);
+    const win = hanning(count);
+    for (let i = 0; i < count; i++) { re[i] = sig[i] * win[i]; }
+
+    fft(re, im);
+
+    const maxFreq = parseInt(document.getElementById('fft-max-freq').value) || (rawSr / 2);
+    const freqRes = rawSr / N;
+    const maxBin  = Math.min(Math.ceil(maxFreq / freqRes), N / 2);
+
+    const freqLabels = [], ampData = [];
+    for (let k = 1; k < maxBin; k++) {
+      const amp = 2 * Math.sqrt(re[k]**2 + im[k]**2) / count;
+      freqLabels.push((k * freqRes).toFixed(2));
+      ampData.push(parseFloat(amp.toFixed(6)));
+    }
+
+    const fCtx = document.getElementById('fft-chart').getContext('2d');
+    if (fftChart) fftChart.destroy();
+    fftChart = new Chart(fCtx, {
+      type: 'line',
+      data: {
+        labels: freqLabels,
+        datasets: [{ label: 'Amplitude [g]',
+          data: ampData, borderColor: '#818CF8', borderWidth: 1.5,
+          pointRadius: 0, tension: 0,
+          backgroundColor: 'rgba(129,140,248,0.12)', fill: true }],
+      },
+      options: {
+        animation: false, responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false },
+          tooltip: { callbacks: {
+            title: i => `${i[0].label} Hz`,
+            label: i => ` ${i.raw?.toFixed(5)} g`,
+          }, backgroundColor:'#21262D',titleColor:'#8B949E',bodyColor:'#E6EDF3',
+             borderColor:'#30363D',borderWidth:1 } },
+        scales: {
+          x: { title:{display:true,text:'Frequenz [Hz]',color:'#8B949E',font:{size:10}},
+               ticks:{color:'#8B949E',font:{size:9},maxTicksLimit:15,maxRotation:0},
+               grid:{color:'#21262D'} },
+          y: { title:{display:true,text:'Amplitude [g]',color:'#8B949E',font:{size:10}},
+               ticks:{color:'#8B949E',font:{size:10}}, grid:{color:'#21262D'},
+               beginAtZero:true },
+        },
+      },
+    });
+
+    document.getElementById('wave-loading').style.display = 'none';
+    document.getElementById('fft-loading').style.display  = 'none';
+  }, 20);
+}
+
+// Wire up controls
+document.getElementById('run-fft-btn').addEventListener('click', runAnalysis);
+document.getElementById('raw-axis').addEventListener('change', runAnalysis);
+document.getElementById('fft-window-size').addEventListener('change', () => {
+  if (!rawSamples.length || !rawSr) return;
+  const fftN   = parseInt(document.getElementById('fft-window-size').value);
+  const winSec = fftN / rawSr;
+  const dur    = rawSamples.at(-1).t - rawSamples[0].t;
+  const slider = document.getElementById('window-pos');
+  slider.max   = Math.max(0, dur - winSec).toFixed(2);
+  if (parseFloat(slider.value) > parseFloat(slider.max)) slider.value = 0;
+  runAnalysis();
+});
+document.getElementById('fft-max-freq').addEventListener('change', runAnalysis);
+document.getElementById('window-pos').addEventListener('input', (e) => {
+  document.getElementById('window-val').textContent = `${parseFloat(e.target.value).toFixed(1)} s`;
+});
+</script>
+</body>
+</html>

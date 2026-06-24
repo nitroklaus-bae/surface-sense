@@ -51,6 +51,7 @@
         {#if admin}
           <span class="badge-admin">ADMIN</span>
         {/if}
+        <a class="nav-link" href="/raw/">Raw / FFT</a>
         <span class="nav-email">{user.email}</span>
         <button class="btn-logout" on:click={handleSignOut}>Abmelden</button>
       </div>
@@ -124,6 +125,17 @@
     transition: border-color 0.15s, color 0.15s;
   }
   .btn-logout:hover { border-color: #8b949e; color: #e6edf3; }
+
+  .nav-link {
+    font-size: 13px;
+    color: #8b949e;
+    text-decoration: none;
+    border: 1px solid #30363d;
+    padding: 4px 12px;
+    border-radius: 6px;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .nav-link:hover { border-color: #8b949e; color: #e6edf3; }
 
   .badge-admin {
     font-size: 10px;
