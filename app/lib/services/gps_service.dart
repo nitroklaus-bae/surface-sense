@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:geolocator/geolocator.dart';
 import '../models/gps_sample.dart';
 
@@ -22,6 +23,45 @@ class GpsService {
     return perm == LocationPermission.whileInUse || perm == LocationPermission.always;
   }
 
+  /// Plattformspezifische LocationSettings für zuverlässige 1-Hz-Updates.
+  ///
+  /// Android: FusedLocationProvider benötigt explizit [intervalDuration],
+  /// sonst werden Updates gebatcht und kommen nur sporadisch (z. B. nur
+  /// Start + Endpunkt). [foregroundNotificationConfig] hält den WakeLock
+  /// und verhindert, dass Android den GPS-Job im Hintergrund drosselt.
+  ///
+  /// iOS: [pauseLocationUpdatesAutomatically] muss false sein, sonst pausiert
+  /// CoreLocation bei gleichmäßiger Bewegung (Radfahren = "wenig Änderung").
+  /// [activityType.fitness] schaltet den Fitness-Modus ein (optimiert für
+  /// Fahrrad/Laufen) und verhindert Batching durch das OS.
+  static LocationSettings _buildLocationSettings() {
+    if (Platform.isAndroid) {
+      return AndroidSettings(
+        accuracy: LocationAccuracy.high,
+        distanceFilter: 0,
+        intervalDuration: const Duration(seconds: 1),
+        foregroundNotificationConfig: const ForegroundNotificationConfig(
+          notificationText: 'GPS-Aufzeichnung läuft',
+          notificationTitle: 'Surface Sensor',
+          enableWakeLock: true,
+        ),
+      );
+    } else if (Platform.isIOS) {
+      return AppleSettings(
+        accuracy: LocationAccuracy.high,
+        distanceFilter: 0,
+        activityType: ActivityType.fitness,
+        pauseLocationUpdatesAutomatically: false,
+        showBackgroundLocationIndicator: true,
+      );
+    }
+    // Fallback (Desktop / Web)
+    return const LocationSettings(
+      accuracy: LocationAccuracy.high,
+      distanceFilter: 0,
+    );
+  }
+
   /// GPS-Aufzeichnung starten.
   /// Gibt false zurück wenn GPS nicht verfügbar oder nicht berechtigt.
   Future<bool> start() async {
@@ -29,11 +69,7 @@ class GpsService {
     if (!await checkPermission()) return false;
 
     _posSub = Geolocator.getPositionStream(
-      locationSettings: const LocationSettings(
-        accuracy: LocationAccuracy.high,
-        distanceFilter: 0,         // alle Positionen
-        // timeLimit: Duration(seconds: 1),  // zu eng für manche Geräte
-      ),
+      locationSettings: _buildLocationSettings(),
     ).listen(
       (pos) {
         _streamCtrl.add(GpsSample(

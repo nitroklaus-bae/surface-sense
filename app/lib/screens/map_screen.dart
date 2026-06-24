@@ -4,9 +4,8 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 import '../models/gps_sample.dart';
-import '../models/sensor_sample.dart';
+import '../models/surface_sample.dart';
 import '../providers/recording_provider.dart';
-import '../utils/signal_analysis.dart';
 
 class MapScreen extends StatelessWidget {
   const MapScreen({super.key});
@@ -15,7 +14,6 @@ class MapScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final prov       = context.watch<RecordingProvider>();
     final gpsSamples = prov.gpsSamples;
-    final imuSamples = prov.samples;
 
     if (gpsSamples.isEmpty) {
       return Center(
@@ -40,9 +38,10 @@ class MapScreen extends StatelessWidget {
       );
     }
 
-    final segments   = _buildColoredSegments(gpsSamples, imuSamples);
+    final surfaceSamples = prov.surfaceSamples;
+    final segments   = _buildColoredSegments(gpsSamples, surfaceSamples);
     final bounds     = _computeBounds(gpsSamples);
-    final stats      = _computeStats(segments, imuSamples);
+    final stats      = _computeStats(segments);
 
     // Gültige GPS-Punkte für Marker (kein 0.0/NaN)
     final validGps = gpsSamples.where((p) =>
@@ -116,7 +115,7 @@ class MapScreen extends StatelessWidget {
   }
 
   List<_ColoredSegment> _buildColoredSegments(
-    List<GpsSample> gps, List<SensorSample> imu,
+    List<GpsSample> gps, List<SurfaceSample> surface,
   ) {
     // Ungültige GPS-Punkte (0.0 / NaN / Inf) herausfiltern
     final validGps = gps.where((p) =>
@@ -126,16 +125,23 @@ class MapScreen extends StatelessWidget {
 
     final segments = <_ColoredSegment>[];
 
+    // Two-Pointer: beide Listen sind zeitlich sortiert → O(n+m)
+    int si = 0;
     for (int i = 0; i < validGps.length - 1; i++) {
       final gp = validGps[i];
 
-      // IMU-Samples ±500 ms um diesen GPS-Punkt
-      final window = imu
-          .where((s) => (s.timestampMs - gp.timestampMs).abs() <= 500)
-          .map((s) => s.az)
-          .toList();
+      // Surface-Zeiger vorwärts bis wir am nächsten Sample zum GPS-Punkt sind
+      while (si + 1 < surface.length &&
+          (surface[si + 1].timestampMs - gp.timestampMs).abs() <
+          (surface[si].timestampMs     - gp.timestampMs).abs()) {
+        si++;
+      }
 
-      final rms   = SignalAnalysis.rms(window);
+      // Nächstes Surface-Sample verwenden wenn ≤ 1500 ms entfernt
+      final dt = surface.isNotEmpty
+          ? (surface[si].timestampMs - gp.timestampMs).abs()
+          : 999999;
+      final rms   = (surface.isNotEmpty && dt <= 1500) ? surface[si].rmsG : 0.0;
       final color = _rmsToColor(rms);
 
       segments.add(_ColoredSegment(
@@ -179,11 +185,13 @@ class MapScreen extends StatelessWidget {
     return LatLngBounds(LatLng(minLat, minLon), LatLng(maxLat, maxLon));
   }
 
-  _SessionStats _computeStats(List<_ColoredSegment> segs, List<SensorSample> imu) {
+  _SessionStats _computeStats(List<_ColoredSegment> segs) {
     if (segs.isEmpty) return const _SessionStats(0, 0, 0);
-    final rmsVals = segs.map((s) => s.rms).toList();
-    final avg = rmsVals.fold(0.0, (a, b) => a + b) / rmsVals.length;
-    final mx  = rmsVals.reduce(max);
+    final rmsVals = segs.map((s) => s.rms).where((r) => r > 0).toList();
+    final avg = rmsVals.isEmpty
+        ? 0.0
+        : rmsVals.fold(0.0, (a, b) => a + b) / rmsVals.length;
+    final mx  = rmsVals.isEmpty ? 0.0 : rmsVals.reduce(max);
 
     // Strecke aus Segment-Anfangspunkten berechnen
     double dist = 0;

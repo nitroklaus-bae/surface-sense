@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math' show sqrt, sin, cos, asin, pi;
 import 'dart:typed_data';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/surface_sample.dart';
@@ -179,6 +180,36 @@ class SupabaseService {
     }
   }
 
+  /// Lädt die Rohdaten-CSV (alle IMU-Samples) in Supabase Storage hoch.
+  /// Pfad-Schema: {user_id}/{ride_id}_raw.csv
+  Future<String?> uploadRawCsvFile(String rideId, File csvFile) async {
+    final uid = currentUser?.id;
+    if (uid == null) return null;
+    final path = '$uid/${rideId}_raw.csv';
+    try {
+      await _client.storage.from('ride-files').upload(
+        path,
+        csvFile,
+        fileOptions: const FileOptions(contentType: 'text/csv', upsert: true),
+      );
+      await _client.from('rides').update({'raw_csv_path': path}).eq('id', rideId);
+      return path;
+    } catch (e) {
+      return null; // Upload-Fehler nicht fatal — lokale Datei bleibt erhalten
+    }
+  }
+
+  /// Gibt eine signierte Download-URL für eine Rohdaten-CSV zurück (60 min gültig).
+  Future<String?> rawCsvDownloadUrl(String rawCsvPath) async {
+    try {
+      return await _client.storage
+          .from('ride-files')
+          .createSignedUrl(rawCsvPath, 3600);
+    } catch (_) {
+      return null;
+    }
+  }
+
   // ── History-Queries ───────────────────────────────────────────────────────
 
   /// Gibt alle Fahrten des eingeloggten Nutzers zurück, neueste zuerst.
@@ -238,20 +269,13 @@ class SupabaseService {
   /// Haversine-Distanz in Metern zwischen zwei GPS-Punkten.
   double _haversineM(double lat1, double lon1, double lat2, double lon2) {
     const r = 6371000.0;
-    final dLat = _rad(lat2 - lat1);
-    final dLon = _rad(lon2 - lon1);
-    final a = _sin2(dLat / 2) +
-        _cos(_rad(lat1)) * _cos(_rad(lat2)) * _sin2(dLon / 2);
-    return 2 * r * _asin(_sqrt(a));
+    final dLat = (lat2 - lat1) * pi / 180.0;
+    final dLon = (lon2 - lon1) * pi / 180.0;
+    final a = sin(dLat / 2) * sin(dLat / 2) +
+        cos(lat1 * pi / 180.0) * cos(lat2 * pi / 180.0) *
+        sin(dLon / 2) * sin(dLon / 2);
+    return 2 * r * asin(sqrt(a.clamp(0.0, 1.0)));
   }
-
-  double _rad(double d) => d * 3.141592653589793 / 180.0;
-  double _sin2(double x) => _sin(x) * _sin(x);
-  // ignore: avoid_js_rounded_ints
-  double _sin(double x)  => x - x*x*x/6 + x*x*x*x*x/120;
-  double _cos(double x)  => 1 - x*x/2 + x*x*x*x/24;
-  double _asin(double x) => x + x*x*x/6 + 3*x*x*x*x*x/40;
-  double _sqrt(double x) => x <= 0 ? 0 : x < 1 ? x + (1-x)/2 * (x - (x+(1-x)/2)*(x+(1-x)/2)) : x;
 }
 
 // ── Datenmodell: Fahrten-Zusammenfassung ──────────────────────────────────────
@@ -270,6 +294,7 @@ class RideSummary {
   final double?   maxIri;
   final String?   fitPath;
   final String?   csvPath;
+  final String?   rawCsvPath;
   final String?   mountPoint;
 
   const RideSummary({
@@ -286,6 +311,7 @@ class RideSummary {
     this.maxIri,
     this.fitPath,
     this.csvPath,
+    this.rawCsvPath,
     this.mountPoint,
   });
 
@@ -301,9 +327,10 @@ class RideSummary {
     avgVdvG:     (j['avg_vdv_g']  as num?)?.toDouble(),
     avgIri:      (j['avg_iri']    as num?)?.toDouble(),
     maxIri:      (j['max_iri']    as num?)?.toDouble(),
-    fitPath:     j['fit_path']    as String?,
-    csvPath:     j['csv_path']    as String?,
-    mountPoint:  j['mount_point'] as String?,
+    fitPath:     j['fit_path']     as String?,
+    csvPath:     j['csv_path']     as String?,
+    rawCsvPath:  j['raw_csv_path'] as String?,
+    mountPoint:  j['mount_point']  as String?,
   );
 
   String get durationLabel {

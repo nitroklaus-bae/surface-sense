@@ -144,9 +144,14 @@ class RecordingProvider extends ChangeNotifier {
   bool _relayMode = false;
   final RelayService _relay = RelayService.instance;
 
-  // Stream-CSV: IOSink bleibt während der Aufnahme offen → kein Datenverlust
+  // Stream-CSV Surface: IOSink bleibt während der Aufnahme offen → kein Datenverlust
   IOSink? _csvSink;
   File?   _csvFile;
+
+  // Stream-CSV Rohdaten: parallel zu _csvSink — schreibt jeden IMU-Sample
+  IOSink? _rawCsvSink;
+  File?   _rawCsvFile;
+  String? _lastRawCsvPath;
 
   // ── Getter ───────────────────────────────────────────────────────────────────
   BleState get bleState          => _bleState;
@@ -495,9 +500,16 @@ class RecordingProvider extends ChangeNotifier {
           await supa.uploadFitFile(rideId, fitFile);
         }
       }
-      // CSV hochladen falls vorhanden
+      // Surface-CSV hochladen falls vorhanden
       if (_csvFile != null && await _csvFile!.exists()) {
         await supa.uploadCsvFile(rideId, _csvFile!);
+      }
+      // Rohdaten-CSV hochladen falls vorhanden
+      if (_lastRawCsvPath != null) {
+        final rawFile = File(_lastRawCsvPath!);
+        if (await rawFile.exists()) {
+          await supa.uploadRawCsvFile(rideId, rawFile);
+        }
       }
     } catch (e) {
       _lastError = 'Supabase-Upload fehlgeschlagen: $e';
@@ -515,6 +527,10 @@ class RecordingProvider extends ChangeNotifier {
     _sampleQueue.addLast(s);
     _totalSamplesReceived++;
     if (_sampleQueue.length > _kRawBufferMax) _sampleQueue.removeFirst();
+
+    // Rohdaten-CSV: IOSink ist gepuffert → kein messbarer Overhead im Hot-Path
+    _rawCsvSink?.writeln(s.toCsvRow(_sessionStart));
+
     _uiDirty = true;
   }
 
@@ -587,24 +603,44 @@ class RecordingProvider extends ChangeNotifier {
       _csvFile = File('${dir.path}/surface_analysis_${kFsG[_fsIndex]}g_${_mountPoint}_$ts.csv');
       _csvSink = _csvFile!.openWrite();
       _csvSink!.writeln(SurfaceSample.csvHeader());
+
+      // Rohdaten-CSV parallel öffnen
+      _rawCsvFile = File('${dir.path}/raw_imu_${kFsG[_fsIndex]}g_${_mountPoint}_$ts.csv');
+      _rawCsvSink = _rawCsvFile!.openWrite();
+      _rawCsvSink!.writeln(SensorSample.csvHeader());
     } catch (e) {
       _lastError = 'CSV konnte nicht geöffnet werden: $e';
     }
   }
 
   Future<void> _closeCsvSink() async {
-    if (_csvSink == null) return;
-    try {
-      // Metadaten-Footer: finale Statistiken
-      await _csvSink!.flush();
-      await _csvSink!.close();
-      _lastSavedPath = _csvFile?.path;
-      notifyListeners();
-    } catch (e) {
-      _lastError = 'CSV-Abschluss fehlgeschlagen: $e';
-    } finally {
-      _csvSink = null;
-      _csvFile = null;
+    // Surface-CSV schließen
+    if (_csvSink != null) {
+      try {
+        await _csvSink!.flush();
+        await _csvSink!.close();
+        _lastSavedPath = _csvFile?.path;
+        notifyListeners();
+      } catch (e) {
+        _lastError = 'CSV-Abschluss fehlgeschlagen: $e';
+      } finally {
+        _csvSink = null;
+        _csvFile = null;
+      }
+    }
+
+    // Rohdaten-CSV schließen
+    if (_rawCsvSink != null) {
+      try {
+        await _rawCsvSink!.flush();
+        await _rawCsvSink!.close();
+        _lastRawCsvPath = _rawCsvFile?.path;
+      } catch (e) {
+        _lastError = 'Raw-CSV-Abschluss fehlgeschlagen: $e';
+      } finally {
+        _rawCsvSink = null;
+        _rawCsvFile = null;
+      }
     }
   }
 
@@ -685,6 +721,7 @@ class RecordingProvider extends ChangeNotifier {
     _phoneRateSub?.cancel();
     _phoneSensor?.dispose();
     _csvSink?.close();
+    _rawCsvSink?.close();
     _sampleSub?.cancel();
     _surfaceSub?.cancel();
     _stateSub?.cancel();
