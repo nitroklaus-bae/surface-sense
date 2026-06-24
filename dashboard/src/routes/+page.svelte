@@ -7,7 +7,10 @@
   let rides = [];
   let isAdminUser = false;
   let selectedRide = null;
+  let compareRide = null;       // zweite Fahrt im Vergleichsmodus
+  let compareMode = false;
   let samples = [];
+  let compareSamples = [];
   let loadingRides = true;
   let loadingSamples = false;
   let error = '';
@@ -62,14 +65,32 @@
   }
 
   async function selectRide(ride) {
+    if (compareMode) {
+      // Im Vergleichsmodus: zweite Fahrt setzen (nicht dieselbe wie erste)
+      if (ride?.id === selectedRide?.id) return;
+      compareRide = ride;
+      compareSamples = [];
+      if (!ride) { drawMap(samples, []); return; }
+      loadingSamples = true;
+      try {
+        compareSamples = await fetchSamples(ride.id);
+        drawMap(samples, compareSamples);
+      } catch(e) { console.error(e); }
+      finally { loadingSamples = false; }
+      return;
+    }
+
+    // Normalmodus
     selectedRide = ride;
+    compareRide = null;
+    compareSamples = [];
     samples = [];
     if (!ride) return;
 
     loadingSamples = true;
     try {
       samples = await fetchSamples(ride.id);
-      drawMap(samples);
+      drawMap(samples, []);
     } catch(e) {
       console.error(e);
     } finally {
@@ -77,18 +98,36 @@
     }
   }
 
-  function drawMap(pts) {
+  function toggleCompareMode() {
+    compareMode = !compareMode;
+    if (!compareMode) {
+      compareRide = null;
+      compareSamples = [];
+      drawMap(samples, []);
+    }
+  }
+
+  // Farbe für Ride A (IRI-basiert teal) vs Ride B (lila)
+  function iriColorB(iri) {
+    if (iri == null) return '#a855f7';
+    if (iri < 2)    return '#c084fc';
+    if (iri < 5)    return '#a855f7';
+    if (iri < 8)    return '#9333ea';
+    return '#7e22ce';
+  }
+
+  function drawMap(ptsA, ptsB) {
     if (!map || !L) return;
 
-    // Alte Marker entfernen
     markers.forEach(m => m.remove());
     markers = [];
 
-    const valid = pts.filter(p => p.lat && p.lon);
-    if (!valid.length) return;
+    const validA = ptsA.filter(p => p.lat && p.lon);
+    const validB = ptsB.filter(p => p.lat && p.lon);
+    if (!validA.length && !validB.length) return;
 
-    // IRI-farbige Kreise zeichnen
-    valid.forEach(p => {
+    // Ride A — IRI-Farben (teal/grün/gelb/rot)
+    validA.forEach(p => {
       const m = L.circleMarker([p.lat, p.lon], {
         radius: 5,
         color: iriColor(p.iri_m_km),
@@ -96,16 +135,31 @@
         fillOpacity: 0.85,
         weight: 0,
       }).bindTooltip(
-        `IRI: ${p.iri_m_km != null ? p.iri_m_km.toFixed(2) + ' m/km' : '—'}<br>
-         RMS: ${(p.rms_g * 1000).toFixed(1)} mg`,
+        `<b>Fahrt A</b><br>IRI: ${p.iri_m_km != null ? p.iri_m_km.toFixed(2) + ' m/km' : '—'}<br>RMS: ${(p.rms_g * 1000).toFixed(1)} mg`,
         { direction: 'top', offset: [0, -4] }
       );
       m.addTo(map);
       markers.push(m);
     });
 
-    // Karte auf Track zentrieren
-    const bounds = L.latLngBounds(valid.map(p => [p.lat, p.lon]));
+    // Ride B — lila Töne
+    validB.forEach(p => {
+      const m = L.circleMarker([p.lat, p.lon], {
+        radius: 5,
+        color: iriColorB(p.iri_m_km),
+        fillColor: iriColorB(p.iri_m_km),
+        fillOpacity: 0.85,
+        weight: 0,
+      }).bindTooltip(
+        `<b>Fahrt B</b><br>IRI: ${p.iri_m_km != null ? p.iri_m_km.toFixed(2) + ' m/km' : '—'}<br>RMS: ${(p.rms_g * 1000).toFixed(1)} mg`,
+        { direction: 'top', offset: [0, -4] }
+      );
+      m.addTo(map);
+      markers.push(m);
+    });
+
+    const allPts = [...validA, ...validB];
+    const bounds = L.latLngBounds(allPts.map(p => [p.lat, p.lon]));
     map.fitBounds(bounds, { padding: [24, 24] });
   }
 
@@ -150,6 +204,18 @@
       </div>
     </div>
 
+    <!-- Vergleichs-Toggle -->
+    <div class="compare-bar">
+      <button class="btn-compare" class:active={compareMode} on:click={toggleCompareMode}>
+        {compareMode ? '✕ Vergleich beenden' : '⇄ Fahrten vergleichen'}
+      </button>
+      {#if compareMode}
+        <span class="compare-hint">
+          {compareRide ? `B: ${compareRide.name}` : 'Zweite Fahrt wählen →'}
+        </span>
+      {/if}
+    </div>
+
     <!-- Ride-Liste -->
     <div class="ride-list">
       {#if loadingRides}
@@ -162,13 +228,21 @@
         {#each rides as ride (ride.id)}
           <button
             class="ride-card"
-            class:selected={selectedRide?.id === ride.id}
+            class:selected={!compareMode && selectedRide?.id === ride.id}
+            class:selected-a={compareMode && selectedRide?.id === ride.id}
+            class:selected-b={compareMode && compareRide?.id === ride.id}
             on:click={() => selectRide(ride)}
           >
             <div class="ride-header">
               <span class="ride-name">{ride.name}</span>
-              <button class="btn-delete" on:click|stopPropagation={() => handleDelete(ride)}
-                title="Löschen">✕</button>
+              {#if compareMode && selectedRide?.id === ride.id}
+                <span class="badge-ab badge-a">A</span>
+              {:else if compareMode && compareRide?.id === ride.id}
+                <span class="badge-ab badge-b">B</span>
+              {:else}
+                <button class="btn-delete" on:click|stopPropagation={() => handleDelete(ride)}
+                  title="Löschen">✕</button>
+              {/if}
             </div>
             {#if isAdminUser && ride.user_email}
               <div class="ride-user">{ride.user_email}</div>
@@ -208,7 +282,12 @@
         <span style="color:#facc15">● gut &lt;5</span>
         <span style="color:#f97316">● mäßig &lt;8</span>
         <span style="color:#f87171">● rau ≥8</span>
-        <span class="legend-unit">IRI [m/km]</span>
+        <span class="legend-unit">IRI [m/km] · Fahrt A</span>
+        {#if compareMode && compareRide}
+          <span class="legend-unit" style="margin-top:4px; border-top:1px solid #30363d; padding-top:4px">
+            <span style="color:#a855f7">●</span> Fahrt B (lila)
+          </span>
+        {/if}
       </div>
 
       {#if loadingSamples}
@@ -223,38 +302,99 @@
     <!-- Detail-Info + Charts -->
     {#if selectedRide}
       <div class="detail">
-        <div class="detail-header">
-          <h2>{selectedRide.name}</h2>
-          <div class="detail-meta">
-            {#if isAdminUser && selectedRide.user_email}
-              <span style="color:#2dd4bf">{selectedRide.user_email}</span> ·
-            {/if}
-            {fmtDate(selectedRide.started_at)} ·
-            {fmtDuration(selectedRide.duration_s)} ·
-            {fmtDistance(selectedRide.distance_m)}
-          </div>
-        </div>
-        <div class="detail-metrics">
-          <div class="metric">
-            <span class="metric-val">{selectedRide.avg_rms_g != null ? (selectedRide.avg_rms_g * 1000).toFixed(1) : '—'}</span>
-            <span class="metric-lbl">Ø RMS [mg]</span>
-          </div>
-          <div class="metric">
-            <span class="metric-val">{selectedRide.avg_vdv_g != null ? selectedRide.avg_vdv_g.toFixed(3) : '—'}</span>
-            <span class="metric-lbl">Ø VDV [g·s^0.25]</span>
-          </div>
-          <div class="metric" style="color:{iriColor(selectedRide.avg_iri)}">
-            <span class="metric-val">{selectedRide.avg_iri != null ? selectedRide.avg_iri.toFixed(2) : '—'}</span>
-            <span class="metric-lbl">Ø IRI [m/km] · {iriLabel(selectedRide.avg_iri)}</span>
-          </div>
-          <div class="metric" style="color:{iriColor(selectedRide.max_iri)}">
-            <span class="metric-val">{selectedRide.max_iri != null ? selectedRide.max_iri.toFixed(2) : '—'}</span>
-            <span class="metric-lbl">Max IRI [m/km]</span>
-          </div>
-        </div>
+        {#if compareMode && compareRide}
+          <!-- ── Vergleichsmodus: Side-by-Side ────────────────────────────── -->
+          <div class="compare-panels">
+            <div class="compare-panel panel-a">
+              <div class="panel-label">A</div>
+              <div class="detail-header">
+                <h2>{selectedRide.name}</h2>
+                <div class="detail-meta">{fmtDate(selectedRide.started_at)} · {fmtDuration(selectedRide.duration_s)} · {fmtDistance(selectedRide.distance_m)}</div>
+              </div>
+              <div class="detail-metrics">
+                <div class="metric">
+                  <span class="metric-val">{selectedRide.avg_rms_g != null ? (selectedRide.avg_rms_g * 1000).toFixed(1) : '—'}</span>
+                  <span class="metric-lbl">Ø RMS [mg]</span>
+                </div>
+                <div class="metric">
+                  <span class="metric-val">{selectedRide.avg_vdv_g != null ? selectedRide.avg_vdv_g.toFixed(3) : '—'}</span>
+                  <span class="metric-lbl">Ø VDV</span>
+                </div>
+                <div class="metric" style="color:{iriColor(selectedRide.avg_iri)}">
+                  <span class="metric-val">{selectedRide.avg_iri != null ? selectedRide.avg_iri.toFixed(2) : '—'}</span>
+                  <span class="metric-lbl">Ø IRI · {iriLabel(selectedRide.avg_iri)}</span>
+                </div>
+                <div class="metric" style="color:{iriColor(selectedRide.max_iri)}">
+                  <span class="metric-val">{selectedRide.max_iri != null ? selectedRide.max_iri.toFixed(2) : '—'}</span>
+                  <span class="metric-lbl">Max IRI</span>
+                </div>
+              </div>
+            </div>
 
-        {#if samples.length > 0}
-          <RideChart {samples} />
+            <div class="compare-divider"></div>
+
+            <div class="compare-panel panel-b">
+              <div class="panel-label panel-label-b">B</div>
+              <div class="detail-header">
+                <h2>{compareRide.name}</h2>
+                <div class="detail-meta">{fmtDate(compareRide.started_at)} · {fmtDuration(compareRide.duration_s)} · {fmtDistance(compareRide.distance_m)}</div>
+              </div>
+              <div class="detail-metrics">
+                <div class="metric">
+                  <span class="metric-val">{compareRide.avg_rms_g != null ? (compareRide.avg_rms_g * 1000).toFixed(1) : '—'}</span>
+                  <span class="metric-lbl">Ø RMS [mg]</span>
+                </div>
+                <div class="metric">
+                  <span class="metric-val">{compareRide.avg_vdv_g != null ? compareRide.avg_vdv_g.toFixed(3) : '—'}</span>
+                  <span class="metric-lbl">Ø VDV</span>
+                </div>
+                <div class="metric" style="color:{iriColor(compareRide.avg_iri)}">
+                  <span class="metric-val">{compareRide.avg_iri != null ? compareRide.avg_iri.toFixed(2) : '—'}</span>
+                  <span class="metric-lbl">Ø IRI · {iriLabel(compareRide.avg_iri)}</span>
+                </div>
+                <div class="metric" style="color:{iriColor(compareRide.max_iri)}">
+                  <span class="metric-val">{compareRide.max_iri != null ? compareRide.max_iri.toFixed(2) : '—'}</span>
+                  <span class="metric-lbl">Max IRI</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        {:else}
+          <!-- ── Normalmodus ──────────────────────────────────────────────── -->
+          <div class="detail-header">
+            <h2>{selectedRide.name}</h2>
+            <div class="detail-meta">
+              {#if isAdminUser && selectedRide.user_email}
+                <span style="color:#2dd4bf">{selectedRide.user_email}</span> ·
+              {/if}
+              {fmtDate(selectedRide.started_at)} ·
+              {fmtDuration(selectedRide.duration_s)} ·
+              {fmtDistance(selectedRide.distance_m)}
+            </div>
+          </div>
+          <div class="detail-metrics">
+            <div class="metric">
+              <span class="metric-val">{selectedRide.avg_rms_g != null ? (selectedRide.avg_rms_g * 1000).toFixed(1) : '—'}</span>
+              <span class="metric-lbl">Ø RMS [mg]</span>
+            </div>
+            <div class="metric">
+              <span class="metric-val">{selectedRide.avg_vdv_g != null ? selectedRide.avg_vdv_g.toFixed(3) : '—'}</span>
+              <span class="metric-lbl">Ø VDV [g·s^0.25]</span>
+            </div>
+            <div class="metric" style="color:{iriColor(selectedRide.avg_iri)}">
+              <span class="metric-val">{selectedRide.avg_iri != null ? selectedRide.avg_iri.toFixed(2) : '—'}</span>
+              <span class="metric-lbl">Ø IRI [m/km] · {iriLabel(selectedRide.avg_iri)}</span>
+            </div>
+            <div class="metric" style="color:{iriColor(selectedRide.max_iri)}">
+              <span class="metric-val">{selectedRide.max_iri != null ? selectedRide.max_iri.toFixed(2) : '—'}</span>
+              <span class="metric-lbl">Max IRI [m/km]</span>
+            </div>
+          </div>
+
+          {#if samples.length > 0}
+            <RideChart {samples} />
+          {/if}
         {/if}
       </div>
     {/if}
@@ -333,6 +473,57 @@
     transition: color 0.15s;
   }
   .btn-delete:hover { color: #f85149; }
+
+  /* ── Vergleichs-Bar ──────────────────────────────────────────────────── */
+  .compare-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    border-bottom: 1px solid #30363d;
+    flex-shrink: 0;
+  }
+  .btn-compare {
+    background: none;
+    border: 1px solid #30363d;
+    color: #8b949e;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+    white-space: nowrap;
+  }
+  .btn-compare:hover { border-color: #8b949e; color: #e6edf3; }
+  .btn-compare.active { border-color: #2dd4bf; color: #2dd4bf; }
+  .compare-hint { font-size: 11px; color: #8b949e; }
+
+  .ride-card.selected-a { border-color: #2dd4bf; background: #0d2d2a; }
+  .ride-card.selected-b { border-color: #a855f7; background: #1a0d2a; }
+
+  .badge-ab {
+    font-size: 10px; font-weight: 700;
+    padding: 1px 6px; border-radius: 4px;
+  }
+  .badge-a { background: #2dd4bf22; color: #2dd4bf; border: 1px solid #2dd4bf55; }
+  .badge-b { background: #a855f722; color: #a855f7; border: 1px solid #a855f755; }
+
+  /* ── Vergleichs-Panels ───────────────────────────────────────────────── */
+  .compare-panels {
+    display: grid;
+    grid-template-columns: 1fr 1px 1fr;
+    gap: 0;
+  }
+  .compare-panel { padding: 12px 16px; position: relative; }
+  .compare-divider { background: #30363d; }
+  .panel-label {
+    position: absolute; top: 12px; right: 12px;
+    font-size: 11px; font-weight: 700;
+    background: #2dd4bf22; color: #2dd4bf;
+    border: 1px solid #2dd4bf55;
+    border-radius: 4px; padding: 1px 6px;
+  }
+  .panel-label-b { background: #a855f722; color: #a855f7; border-color: #a855f755; }
 
   .ride-user {
     font-size: 10px;

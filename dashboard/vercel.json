@@ -1,3 +1,4 @@
 {
-  "framework": "sveltekit"
+  "framework": "sveltekit",
+  "alias": ["surface-sense.vercel.app"]
 }
