@@ -408,10 +408,50 @@ function buildAroundQuery(pts: Array<{ lat: number; lon: number }>): string {
   return `[out:json][timeout:60];\nway["highway"](around:${AROUND_RADIUS_M},${coords});\nout geom;`
 }
 
+// ── Chunked Overpass fetching ─────────────────────────────────────────────────
+// A single around: query with 500 points causes Overpass 504 timeouts for long
+// routes. Instead we split the decimated track into CHUNK_SIZE-point slices
+// (with a small overlap for continuity), run up to MAX_CONCURRENT in parallel,
+// and merge results by way ID.
+const CHUNK_SIZE    = 100   // points per around: request (~4 KB body)
+const CHUNK_OVERLAP = 15    // overlap between adjacent chunks (avoid coverage gaps)
+const MAX_CONCURRENT = 3    // parallel Overpass requests
+
+/** Fetch one chunk via direct Overpass POST, falling back to the SvelteKit proxy. */
+async function fetchChunk(pts: Array<{ lat: number; lon: number }>): Promise<OverpassElement[]> {
+  const query = buildAroundQuery(pts)
+  const formBody = new URLSearchParams({ data: query }).toString()
+
+  // 1. Direct Overpass
+  try {
+    const res = await fetch('https://overpass-api.de/api/interpreter', {
+      method: 'POST',
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      body: formBody,
+    })
+    if (res.ok) return ((await res.json()) as { elements: OverpassElement[] }).elements ?? []
+  } catch { /* fall through */ }
+
+  // 2. SvelteKit proxy (overpass-api.de + kumi.systems with retry)
+  const res = await fetch('/api/osm/overpass', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ query }),
+  })
+  if (!res.ok) {
+    const text = await res.text()
+    let msg = `Overpass API Fehler: ${res.status}`
+    try { msg = JSON.parse(text)?.message ?? msg } catch {}
+    throw new Error(msg)
+  }
+  return ((await res.json()) as { elements: OverpassElement[] }).elements ?? []
+}
+
 /**
  * Fetch all OSM highway ways within AROUND_RADIUS_M of the GPS track.
- * Tries Overpass directly (POST), then falls back to the SvelteKit proxy POST endpoint.
- * Result is cached in IndexedDB by route fingerprint.
+ * Splits the decimated track into overlapping chunks of CHUNK_SIZE points and
+ * fires up to MAX_CONCURRENT requests in parallel. Results are deduplicated by
+ * way ID and cached in IndexedDB by route fingerprint.
  */
 async function queryOverpassAround(
   points: TrackSegment['points'],
@@ -426,40 +466,27 @@ async function queryOverpassAround(
     return cached
   }
 
-  const query = buildAroundQuery(decimated)
-  const formBody = new URLSearchParams({ data: query }).toString()
-
-  // 1. Direct Overpass (POST — no URL-length limit)
-  let elements: OverpassElement[] | null = null
-  try {
-    const res = await fetch('https://overpass-api.de/api/interpreter', {
-      method: 'POST',
-      headers: { 'content-type': 'application/x-www-form-urlencoded' },
-      body: formBody,
-    })
-    if (res.ok) {
-      const data = await res.json() as { elements: OverpassElement[] }
-      elements = data.elements
-    }
-  } catch { /* fall through to proxy */ }
-
-  // 2. Server-side proxy (relays to overpass-api.de + kumi.systems with retry)
-  if (!elements) {
-    const res = await fetch('/api/osm/overpass', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ query }),
-    })
-    if (!res.ok) {
-      const text = await res.text()
-      let msg = `Overpass API Fehler: ${res.status}`
-      try { msg = JSON.parse(text)?.message ?? msg } catch {}
-      throw new Error(msg)
-    }
-    const data = await res.json() as { elements: OverpassElement[] }
-    elements = data.elements
+  // Split into overlapping chunks
+  const chunks: Array<Array<{ lat: number; lon: number }>> = []
+  const step = CHUNK_SIZE - CHUNK_OVERLAP
+  for (let i = 0; i < decimated.length; i += step) {
+    chunks.push(decimated.slice(i, i + CHUNK_SIZE))
+    if (i + CHUNK_SIZE >= decimated.length) break
   }
 
+  const elementMap = new Map<number, OverpassElement>()
+  for (let i = 0; i < chunks.length; i += MAX_CONCURRENT) {
+    const batch = chunks.slice(i, i + MAX_CONCURRENT)
+    const pct = 20 + Math.round(30 * (i / chunks.length))
+    onProgress?.(
+      `OSM-Daten werden geladen (${Math.min(i + MAX_CONCURRENT, chunks.length)}/${chunks.length})`,
+      pct,
+    )
+    const results = await Promise.all(batch.map(fetchChunk))
+    for (const els of results) for (const el of els) elementMap.set(el.id, el)
+  }
+
+  const elements = [...elementMap.values()]
   await osmCacheSet(key, elements)
   return elements
 }
