@@ -23,6 +23,14 @@ app/.pub/
 # Arduino Build
 firmware/build/
 
+# Garmin Connect IQ Build-Artefakte
+garmin/SurfaceSense/bin/
+garmin/SurfaceSense/connectIQAPP_edge530/
+
+# Dashboard .env (enthält keine Secrets, aber sicherheitshalber)
+dashboard/.env
+dashboard/.env.txt
+
 # Dashboard
 dashboard/node_modules/
 dashboard/.svelte-kit/
