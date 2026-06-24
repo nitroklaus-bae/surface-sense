@@ -356,20 +356,67 @@ interface OverpassElement {
 }
 
 
-// ── Overpass bbox query (ROLLEX_POC strategy) ────────────────────────────────
+// ── Overpass bbox query with adaptive tiling ─────────────────────────────────
 //
-// Single bbox query covering the whole track + 0.0025° padding (~275 m).
-// Overpass handles bbox queries via a spatial index → no timeout risk.
-// Result cached in IndexedDB keyed by the rounded bbox.
+// Strategy (ROLLEX_POC basis + adaptive tiling):
+//   1. Compute track bbox + 0.0025° padding.
+//   2. Split into tiles of ≤ TILE_DEG × TILE_DEG (≈ 11 km × 8 km at 45°N).
+//      Small bboxes → 1 tile; long/wide routes → several tiles in parallel.
+//   3. Each tile uses a highway-type filter to limit returned ways
+//      (avoids fetching motorway_junctions, construction, etc.).
+//   4. Results are deduplicated by way ID and cached by the full bbox key.
+//
+// Why tiling fixes the 504: Overpass's gateway itself times out before the
+// [timeout:N] hint fires for large bboxes. Tiles of 0.12° never hit that limit.
+
+const TILE_DEG      = 0.12   // ≈ 13 km lat × 9 km lon — safe Overpass tile size
+const TILE_PARALLEL = 4      // max concurrent tile requests
+
+// Regex filter keeps only highway types relevant to cycling.
+// Excluding: motorway_junction, construction, proposed, platform, …
+const HW_FILTER =
+  '["highway"~"^(motorway|trunk|primary|secondary|tertiary|unclassified|' +
+  'residential|living_street|service|track|path|cycleway|footway|bridleway|road)$"]'
 
 function bboxCacheKey(bbox: [number, number, number, number]): string {
   return 'osm:v1:' + bbox.map(v => v.toFixed(3)).join(',')
 }
 
+/** Fetch one tile via direct Overpass POST, falling back to the SvelteKit proxy. */
+async function fetchTile(tile: [number, number, number, number]): Promise<OverpassElement[]> {
+  const [s, w, n, e] = tile
+  const query = `[out:json][timeout:30];\nway${HW_FILTER}(${s},${w},${n},${e});\nout geom;`
+  const formBody = new URLSearchParams({ data: query }).toString()
+
+  // 1. Direct Overpass POST
+  try {
+    const res = await fetch('https://overpass-api.de/api/interpreter', {
+      method: 'POST',
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      body: formBody,
+    })
+    if (res.ok) return ((await res.json()) as { elements: OverpassElement[] }).elements ?? []
+  } catch { /* fall through */ }
+
+  // 2. SvelteKit proxy (overpass-api.de + kumi.systems with retry)
+  const res = await fetch('/api/osm/overpass', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ query }),
+  })
+  if (!res.ok) {
+    const text = await res.text()
+    let msg = `Overpass API Fehler: ${res.status}`
+    try { msg = JSON.parse(text)?.message ?? msg } catch {}
+    throw new Error(msg)
+  }
+  return ((await res.json()) as { elements: OverpassElement[] }).elements ?? []
+}
+
 /**
- * Fetch all OSM highway ways within the track's bounding box.
- * Tries Overpass directly (POST), then falls back to the SvelteKit proxy.
- * Result is cached in IndexedDB by bbox.
+ * Fetch all OSM highway ways within the track bbox.
+ * Auto-tiles large bboxes into TILE_DEG chunks and queries them in parallel.
+ * Result is deduplicated by way ID and cached in IndexedDB by bbox.
  */
 async function queryOverpass(
   bbox: [number, number, number, number],
@@ -382,37 +429,36 @@ async function queryOverpass(
     return cached
   }
 
+  // Build tile grid
   const [s, w, n, e] = bbox
-  const query = `[out:json][timeout:30];\nway["highway"](${s},${w},${n},${e});\nout geom;`
-  const formBody = new URLSearchParams({ data: query }).toString()
-
-  // 1. Direct Overpass POST
-  let elements: OverpassElement[] | null = null
-  try {
-    const res = await fetch('https://overpass-api.de/api/interpreter', {
-      method: 'POST',
-      headers: { 'content-type': 'application/x-www-form-urlencoded' },
-      body: formBody,
-    })
-    if (res.ok) elements = ((await res.json()) as { elements: OverpassElement[] }).elements ?? []
-  } catch { /* fall through to proxy */ }
-
-  // 2. SvelteKit proxy (overpass-api.de + kumi.systems with retry)
-  if (!elements) {
-    const res = await fetch('/api/osm/overpass', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ query }),
-    })
-    if (!res.ok) {
-      const text = await res.text()
-      let msg = `Overpass API Fehler: ${res.status}`
-      try { msg = JSON.parse(text)?.message ?? msg } catch {}
-      throw new Error(msg)
+  const latSpan = n - s, lonSpan = e - w
+  const rows = Math.max(1, Math.ceil(latSpan / TILE_DEG))
+  const cols = Math.max(1, Math.ceil(lonSpan / TILE_DEG))
+  const tiles: Array<[number, number, number, number]> = []
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      tiles.push([
+        s + latSpan * r / rows,       w + lonSpan * c / cols,
+        s + latSpan * (r + 1) / rows, w + lonSpan * (c + 1) / cols,
+      ])
     }
-    elements = ((await res.json()) as { elements: OverpassElement[] }).elements ?? []
   }
 
+  const elementMap = new Map<number, OverpassElement>()
+  for (let i = 0; i < tiles.length; i += TILE_PARALLEL) {
+    const batch = tiles.slice(i, i + TILE_PARALLEL)
+    const done = Math.min(i + TILE_PARALLEL, tiles.length)
+    onProgress?.(
+      tiles.length === 1
+        ? 'OSM-Daten werden geladen'
+        : `OSM-Daten werden geladen (${done}/${tiles.length})`,
+      25 + Math.round(25 * done / tiles.length),
+    )
+    const results = await Promise.all(batch.map(fetchTile))
+    for (const els of results) for (const el of els) elementMap.set(el.id, el)
+  }
+
+  const elements = [...elementMap.values()]
   await osmCacheSet(key, elements)
   return elements
 }
