@@ -177,7 +177,9 @@ function readDataRecord(
     }
   }
 
-  if (lat !== undefined && lon !== undefined && Math.abs(lat) < 90 && Math.abs(lon) < 180) {
+  // lat=0 AND lon=0 is "Null Island" — almost certainly an invalid GPS fix, skip it.
+  const nullIsland = lat === 0 && lon === 0
+  if (lat !== undefined && lon !== undefined && Math.abs(lat) < 90 && Math.abs(lon) < 180 && !nullIsland) {
     points.push({
       lat, lon,
       elevation: ele ?? 0,
@@ -228,7 +230,9 @@ export function densifyTrack(points: TrackPoint[], maxSpacingM = MAX_POINT_SPACI
   for (let i = 1; i < points.length; i++) {
     const a = points[i - 1], b = points[i]
     const d = haversineDistance(a, b)
-    if (d > maxSpacingM) {
+    // Skip densification for large gaps (> 500 m = GPS dropout or invalid jump).
+    // Without this cap, a single bad coordinate causes millions of inserts.
+    if (d > maxSpacingM && d <= 500) {
       const inserts = Math.ceil(d / maxSpacingM) - 1
       for (let k = 1; k <= inserts; k++) out.push(lerpPoint(a, b, k / (inserts + 1)))
     }

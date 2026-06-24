@@ -36,3 +36,6 @@ dashboard/node_modules/
 dashboard/.svelte-kit/
 dashboard/.vercel/
 dashboard/build/
+
+ROLLEX_POC/
+.vercel
