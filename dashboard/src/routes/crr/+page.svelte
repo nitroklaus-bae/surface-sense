@@ -1,5 +1,5 @@
 <script>
-  import { onMount } from 'svelte';
+  import { onMount, tick } from 'svelte';
   import { supabase } from '$lib/supabase.js';
   import { parseFIT, parseGPX, trackFromSurfaceSamples } from '$lib/rollex/trackParser';
   import { analyzeSurfaces, SURFACE_PROPS } from '$lib/rollex/surfaceAnalyzer';
@@ -39,6 +39,11 @@
   let progress  = '';
   let error     = '';
   let results   = null; // { surfaces, tireSetups, track, rideInfo }
+
+  // ── Surface map (Leaflet) ──────────────────────────────────────────
+  let L = null;
+  let surfaceMapEl = null;
+  let surfaceMap   = null;
 
   // ── Rider profile (localStorage) ──────────────────────────────────
   let profile = {
@@ -118,7 +123,50 @@
     if (err) { error = 'Fahrten konnten nicht geladen werden: ' + err.message; return; }
     rides = data ?? [];
     if (rides.length > 0 && !selectedRideId) selectedRideId = rides[0].id;
+
+    // Leaflet — browser only (no SSR)
+    L = (await import('leaflet')).default;
+    await import('leaflet/dist/leaflet.css');
   });
+
+  // ── Surface map ────────────────────────────────────────────────────
+  async function drawSurfaceMap(track, surfaces) {
+    await tick(); // wait for map div to appear in DOM
+    if (!L || !surfaceMapEl) return;
+
+    // Destroy previous instance (div may have been re-created by {#key})
+    if (surfaceMap) { surfaceMap.remove(); surfaceMap = null; }
+
+    surfaceMap = L.map(surfaceMapEl, { zoomControl: true });
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      maxZoom: 19,
+    }).addTo(surfaceMap);
+
+    const pts = track.points;
+    for (const seg of surfaces) {
+      const latlngs = pts
+        .slice(seg.startIdx, seg.endIdx + 1)
+        .filter(p => p.lat && p.lon)
+        .map(p => [p.lat, p.lon]);
+      if (latlngs.length < 2) continue;
+      L.polyline(latlngs, {
+        color: seg.surface.color,
+        weight: 5,
+        opacity: 0.85,
+      }).bindTooltip(
+        `<b>${SURFACE_PROPS[seg.surface.category]?.label ?? seg.surface.category}</b><br>${formatKm(seg.distanceMeters)}`,
+        { sticky: true },
+      ).addTo(surfaceMap);
+    }
+
+    const allPts = pts.filter(p => p.lat && p.lon).map(p => [p.lat, p.lon]);
+    if (allPts.length) surfaceMap.fitBounds(L.latLngBounds(allPts), { padding: [20, 20] });
+    surfaceMap.invalidateSize();
+  }
+
+  // Redraw whenever results arrive
+  $: if (results && L) drawSurfaceMap(results.track, results.surfaces);
 
   function saveProfile() {
     try {
@@ -573,6 +621,21 @@
         </div>
       </section>
 
+      <!-- Surface map -->
+      {#key results}
+        <section class="card card-map">
+          <div bind:this={surfaceMapEl} class="surface-map"></div>
+          <div class="map-legend">
+            {#each buildSurfaceBreakdown(results.surfaces) as seg}
+              <span class="legend-item">
+                <span class="dot" style="background:{surfaceColor(seg.cat)}"></span>
+                {surfaceLabel(seg.cat)} {seg.pct}%
+              </span>
+            {/each}
+          </div>
+        </section>
+      {/key}
+
       <!-- Tire recommendations -->
       {#if results.tireSetups.length === 0}
         <section class="card">
@@ -845,6 +908,21 @@
     color: #8b949e;
     line-height: 1.5;
     margin-top: 4px;
+  }
+
+  /* ── Surface map ── */
+  .card-map { padding: 0; overflow: hidden; }
+  .surface-map { height: 320px; width: 100%; }
+  /* Leaflet z-index fix inside overflow:hidden card */
+  :global(.leaflet-pane),
+  :global(.leaflet-top),
+  :global(.leaflet-bottom) { z-index: 400; }
+  .map-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 14px;
+    padding: 10px 16px;
+    border-top: 1px solid #30363d;
   }
 
   /* ── Right panel ── */

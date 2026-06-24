@@ -3,7 +3,7 @@
 const DB_NAME = 'tireoptimizer-osm'
 const STORE = 'cache'
 const DB_VERSION = 1
-const MAX_ENTRIES = 20
+const MAX_ENTRIES = 500
 
 interface CacheEntry { key: string; ts: number; data: unknown }
 

@@ -81,6 +81,51 @@ async function queryTile(serverFetch, tile) {
   throw new Error(errors.join(' | '));
 }
 
+/**
+ * POST /api/osm/overpass
+ * Body: { query: string }  — raw Overpass QL (used by the around: strategy)
+ * Relays the query to Overpass endpoints with automatic failover.
+ */
+export async function POST({ request, fetch }) {
+  let query;
+  try {
+    const body = await request.json();
+    query = body?.query;
+    if (!query || typeof query !== 'string') throw new Error('Kein gültiger Query im Body.');
+  } catch (err) {
+    return json({ message: err instanceof Error ? err.message : String(err) }, { status: 400 });
+  }
+
+  const formBody = new URLSearchParams({ data: query }).toString();
+  const errors = [];
+
+  for (const endpoint of OVERPASS_ENDPOINTS) {
+    try {
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          accept: 'application/json',
+          'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
+          'user-agent': 'SurfaceSense Dashboard/1.0',
+        },
+        body: formBody,
+      });
+      const text = await res.text();
+      if (res.ok) {
+        return json(
+          { elements: JSON.parse(text).elements ?? [] },
+          { headers: { 'cache-control': 'public, max-age=3600' } },
+        );
+      }
+      errors.push(`${new URL(endpoint).hostname}: ${res.status} ${text.slice(0, 180)}`);
+    } catch (err) {
+      errors.push(`${new URL(endpoint).hostname}: ${err instanceof Error ? err.message : String(err)}`);
+    }
+  }
+
+  return json({ message: `Overpass nicht erreichbar: ${errors.join(' | ')}` }, { status: 502 });
+}
+
 export async function GET({ url, fetch }) {
   let bbox;
   try {

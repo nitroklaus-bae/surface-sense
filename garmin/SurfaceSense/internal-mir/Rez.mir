@@ -1,0 +1,58 @@
+[ @file = "c:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\gen\006-B3121-00\source\Rez.mcgen"; @line = 1; @symbol_importdef<0> = [Toybox,1,7,13]; @symbol_importdef<1> = [Lang,1,14,18]; ]
+import Toybox.Lang;
+[ @file = "c:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\gen\006-B3121-00\source\Rez.mcgen"; @line = 2; @symbol_usingdef<0> = [Toybox,2,6,12]; @symbol_usingdef<1> = [WatchUi,2,13,20]; ]
+using Toybox.WatchUi;
+[ @file = "c:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\gen\006-B3121-00\source\Rez.mcgen"; @line = 3; @symbol_usingdef<0> = [Toybox,3,6,12]; @symbol_usingdef<1> = [WatchUi,3,13,20]; @symbol_usingAlias = [Ui,3,24,26]; ]
+using Toybox.WatchUi as :Ui;
+[ @file = "c:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\gen\006-B3121-00\source\Rez.mcgen"; @line = 4; @symbol_usingdef<0> = [Toybox,4,6,12]; @symbol_usingdef<1> = [Graphics,4,13,21]; ]
+using Toybox.Graphics;
+[ @file = "c:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\gen\006-B3121-00\source\Rez.mcgen"; @line = 5; @symbol_usingdef<0> = [Toybox,5,6,12]; @symbol_usingdef<1> = [Graphics,5,13,21]; @symbol_usingAlias = [Gfx,5,25,28]; ]
+using Toybox.Graphics as :Gfx;
+[ @file = "c:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\gen\006-B3121-00\source\Rez.mcgen"; @line = 7; @symbol_moduledef = [Rez,7,7,10]; ]
+module Rez {
+    [ @file = "c:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\gen\006-B3121-00\source\Rez.mcgen"; @line = 7; ]
+    <init> {
+    }
+    [ @file = "c:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\gen\006-B3121-00\source\Rez.mcgen"; @line = 8; @symbol_moduledef = [Drawables,8,11,20]; ]
+    module Drawables {
+        [ @file = "c:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\gen\006-B3121-00\source\Rez.mcgen"; @line = 8; ]
+        <init> {
+        }
+        [ @file = "c:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\gen\006-B3121-00\source\Rez.mcgen"; @line = 9; @position = 27; initialized = true; @symbol_vardef = [LauncherIcon,9,27,39]; @symbol_type<0> = [ResourceId,9,43,53]; ]
+        var LauncherIcon as ResourceId;
+    }
+    [ @file = "c:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\gen\006-B3121-00\source\Rez.mcgen"; @line = 12; @symbol_moduledef = [Layouts,12,11,18]; ]
+    module Layouts {
+        [ @file = "c:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\gen\006-B3121-00\source\Rez.mcgen"; @line = 12; ]
+        <init> {
+        }
+        [ @file = "c:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\gen\006-B3121-00\source\Rez.mcgen"; @line = 13; @symbol_functiondef = [MainLayout,13,17,27]; @symbol_param<0> = [dc,13,28,30]; @symbol_param<0>_type<0> = [Graphics,13,34,42]; @symbol_param<0>_type<1> = [Dc,13,43,45]; @symbol_return<0> = [Array,13,50,55]; @symbol_return<1> = [WatchUi,13,56,63]; @symbol_return<2> = [Drawable,13,64,72]; ]
+        function MainLayout(dc as Graphics.Dc) as Array<WatchUi.Drawable> {
+c__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_gen_006_B3121_00_source_Rez_mcgen_13_74_15_8_start:
+[ "c:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\gen\006-B3121-00\source\Rez.mcgen" 14 12 ]
+            %tmp.1 = newa 0 Array<WatchUi.Drawable>;
+            symbol [ Array %tmp.1 14 25 30 ];
+            symbol [ WatchUi %tmp.1 14 31 38 ];
+            symbol [ Drawable %tmp.1 14 39 47 ];
+            ret %tmp.1;
+c__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_gen_006_B3121_00_source_Rez_mcgen_13_74_15_8_stop:
+        }
+    }
+    [ @file = "c:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\gen\006-B3121-00\source\Rez.mcgen"; @line = 18; @symbol_moduledef = [Strings,18,11,18]; ]
+    module Strings {
+        [ @file = "c:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\gen\006-B3121-00\source\Rez.mcgen"; @line = 18; ]
+        <init> {
+        }
+        [ @file = "c:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\gen\006-B3121-00\source\Rez.mcgen"; @line = 19; @position = 27; initialized = true; @symbol_vardef = [Searching,19,27,36]; @symbol_type<0> = [ResourceId,19,40,50]; ]
+        var Searching as ResourceId;
+        [ @file = "c:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\gen\006-B3121-00\source\Rez.mcgen"; @line = 20; @position = 27; initialized = true; @symbol_vardef = [Connected,20,27,36]; @symbol_type<0> = [ResourceId,20,40,50]; ]
+        var Connected as ResourceId;
+        [ @file = "c:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\gen\006-B3121-00\source\Rez.mcgen"; @line = 21; @position = 27; initialized = true; @symbol_vardef = [NoData,21,27,33]; @symbol_type<0> = [ResourceId,21,37,47]; ]
+        var NoData as ResourceId;
+        [ @file = "c:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\gen\006-B3121-00\source\Rez.mcgen"; @line = 22; @position = 27; initialized = true; @symbol_vardef = [AppName,22,27,34]; @symbol_type<0> = [ResourceId,22,38,48]; ]
+        var AppName as ResourceId;
+    }
+}
+[ @file = "c:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\gen\006-B3121-00\source\Rez.mcgen"; @line = 1; ]
+<init> {
+}

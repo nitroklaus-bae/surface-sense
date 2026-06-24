@@ -1,0 +1,474 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<debugInfo>
+    <manifest filename="C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\manifest.xml"/>
+    <pcToLineNum>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="1" lineNum="11" parent="globals" pc="268435457" symbol="&lt;init&gt;"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="1" lineNum="12" parent="globals" pc="268435485" symbol="&lt;init&gt;"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="1" lineNum="13" parent="globals" pc="268435513" symbol="&lt;init&gt;"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="4" lineNum="46" parent="globals/SurfaceSenseDataField" pc="268435542" symbol="&lt;init&gt;"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="4" lineNum="66" parent="globals/SurfaceSenseDataField" pc="268435560" symbol="&lt;init&gt;"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="5" lineNum="25" parent="globals/BleManager" pc="268435575" symbol="&lt;init&gt;"/>
+        <entry filename="c:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\gen\\006-B3121-00\\source\\Rez.mcgen" id="6" lineNum="7" parent="globals/Rez" pc="268435594" symbol="&lt;init&gt;"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="8" lineNum="184" parent="globals/SurfaceSenseDataField" pc="268435618" symbol="&lt;globals/SurfaceSenseDataField/&lt;&gt;_uploadBuffer&gt;"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="8" lineNum="185" parent="globals/SurfaceSenseDataField" pc="268435622" symbol="&lt;globals/SurfaceSenseDataField/&lt;&gt;_uploadBuffer&gt;"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="8" lineNum="185" parent="globals/SurfaceSenseDataField" pc="268435659" symbol="&lt;globals/SurfaceSenseDataField/&lt;&gt;_uploadBuffer&gt;"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="8" lineNum="187" parent="globals/SurfaceSenseDataField" pc="268435660" symbol="&lt;globals/SurfaceSenseDataField/&lt;&gt;_uploadBuffer&gt;"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="8" lineNum="188" parent="globals/SurfaceSenseDataField" pc="268435670" symbol="&lt;globals/SurfaceSenseDataField/&lt;&gt;_uploadBuffer&gt;"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="8" lineNum="191" parent="globals/SurfaceSenseDataField" pc="268435702" symbol="&lt;globals/SurfaceSenseDataField/&lt;&gt;_uploadBuffer&gt;"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="8" lineNum="192" parent="globals/SurfaceSenseDataField" pc="268435712" symbol="&lt;globals/SurfaceSenseDataField/&lt;&gt;_uploadBuffer&gt;"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="8" lineNum="194" parent="globals/SurfaceSenseDataField" pc="268435726" symbol="&lt;globals/SurfaceSenseDataField/&lt;&gt;_uploadBuffer&gt;"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="9" lineNum="112" parent="globals/SurfaceSenseDataField" pc="268435865" symbol="onSurfaceData"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="9" lineNum="119" parent="globals/SurfaceSenseDataField" pc="268435867" symbol="onSurfaceData"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="9" lineNum="120" parent="globals/SurfaceSenseDataField" pc="268435877" symbol="onSurfaceData"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="9" lineNum="121" parent="globals/SurfaceSenseDataField" pc="268435887" symbol="onSurfaceData"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="9" lineNum="122" parent="globals/SurfaceSenseDataField" pc="268435897" symbol="onSurfaceData"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="9" lineNum="125" parent="globals/SurfaceSenseDataField" pc="268435910" symbol="onSurfaceData"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="9" lineNum="126" parent="globals/SurfaceSenseDataField" pc="268435930" symbol="onSurfaceData"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="9" lineNum="127" parent="globals/SurfaceSenseDataField" pc="268435950" symbol="onSurfaceData"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="9" lineNum="128" parent="globals/SurfaceSenseDataField" pc="268435970" symbol="onSurfaceData"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="9" lineNum="129" parent="globals/SurfaceSenseDataField" pc="268435990" symbol="onSurfaceData"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="10" lineNum="134" parent="globals/SurfaceSenseDataField" pc="268436011" symbol="compute"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="10" lineNum="135" parent="globals/SurfaceSenseDataField" pc="268436015" symbol="compute"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="10" lineNum="135" parent="globals/SurfaceSenseDataField" pc="268436032" symbol="compute"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="10" lineNum="138" parent="globals/SurfaceSenseDataField" pc="268436051" symbol="compute"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="10" lineNum="139" parent="globals/SurfaceSenseDataField" pc="268436058" symbol="compute"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="10" lineNum="140" parent="globals/SurfaceSenseDataField" pc="268436082" symbol="compute"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="10" lineNum="141" parent="globals/SurfaceSenseDataField" pc="268436092" symbol="compute"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="10" lineNum="144" parent="globals/SurfaceSenseDataField" pc="268436102" symbol="compute"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="10" lineNum="145" parent="globals/SurfaceSenseDataField" pc="268436113" symbol="compute"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="10" lineNum="146" parent="globals/SurfaceSenseDataField" pc="268436136" symbol="compute"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="10" lineNum="147" parent="globals/SurfaceSenseDataField" pc="268436170" symbol="compute"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="10" lineNum="148" parent="globals/SurfaceSenseDataField" pc="268436195" symbol="compute"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="10" lineNum="154" parent="globals/SurfaceSenseDataField" pc="268436221" symbol="compute"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="10" lineNum="161" parent="globals/SurfaceSenseDataField" pc="268436290" symbol="compute"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="10" lineNum="162" parent="globals/SurfaceSenseDataField" pc="268436309" symbol="compute"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="10" lineNum="171" parent="globals/SurfaceSenseDataField" pc="268436409" symbol="compute"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="10" lineNum="172" parent="globals/SurfaceSenseDataField" pc="268436435" symbol="compute"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="10" lineNum="173" parent="globals/SurfaceSenseDataField" pc="268436460" symbol="compute"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="10" lineNum="175" parent="globals/SurfaceSenseDataField" pc="268436479" symbol="compute"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="10" lineNum="176" parent="globals/SurfaceSenseDataField" pc="268436527" symbol="compute"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="10" lineNum="179" parent="globals/SurfaceSenseDataField" pc="268436539" symbol="compute"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="11" lineNum="210" parent="globals/SurfaceSenseDataField" pc="268436548" symbol="onUploadResponse"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="11" lineNum="211" parent="globals/SurfaceSenseDataField" pc="268436550" symbol="onUploadResponse"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="11" lineNum="212" parent="globals/SurfaceSenseDataField" pc="268436560" symbol="onUploadResponse"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="11" lineNum="213" parent="globals/SurfaceSenseDataField" pc="268436582" symbol="onUploadResponse"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="11" lineNum="215" parent="globals/SurfaceSenseDataField" pc="268436602" symbol="onUploadResponse"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="11" lineNum="216" parent="globals/SurfaceSenseDataField" pc="268436621" symbol="onUploadResponse"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="12" lineNum="74" parent="globals/SurfaceSenseDataField" pc="268436646" symbol="initialize"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="12" lineNum="75" parent="globals/SurfaceSenseDataField" pc="268436648" symbol="initialize"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="12" lineNum="78" parent="globals/SurfaceSenseDataField" pc="268436666" symbol="initialize"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="12" lineNum="83" parent="globals/SurfaceSenseDataField" pc="268436732" symbol="initialize"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="12" lineNum="88" parent="globals/SurfaceSenseDataField" pc="268436798" symbol="initialize"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="12" lineNum="93" parent="globals/SurfaceSenseDataField" pc="268436864" symbol="initialize"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="12" lineNum="98" parent="globals/SurfaceSenseDataField" pc="268436930" symbol="initialize"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="12" lineNum="105" parent="globals/SurfaceSenseDataField" pc="268436996" symbol="initialize"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="12" lineNum="107" parent="globals/SurfaceSenseDataField" pc="268437042" symbol="initialize"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="13" lineNum="227" parent="globals/SurfaceSenseDataField" pc="268437075" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="13" lineNum="228" parent="globals/SurfaceSenseDataField" pc="268437079" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="13" lineNum="229" parent="globals/SurfaceSenseDataField" pc="268437092" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="13" lineNum="231" parent="globals/SurfaceSenseDataField" pc="268437105" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="13" lineNum="232" parent="globals/SurfaceSenseDataField" pc="268437118" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="13" lineNum="236" parent="globals/SurfaceSenseDataField" pc="268437144" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="13" lineNum="237" parent="globals/SurfaceSenseDataField" pc="268437160" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="13" lineNum="240" parent="globals/SurfaceSenseDataField" pc="268437172" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="13" lineNum="241" parent="globals/SurfaceSenseDataField" pc="268437190" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="13" lineNum="242" parent="globals/SurfaceSenseDataField" pc="268437226" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="13" lineNum="243" parent="globals/SurfaceSenseDataField" pc="268437262" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="13" lineNum="244" parent="globals/SurfaceSenseDataField" pc="268437307" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="13" lineNum="248" parent="globals/SurfaceSenseDataField" pc="268437308" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="13" lineNum="254" parent="globals/SurfaceSenseDataField" pc="268437337" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="13" lineNum="255" parent="globals/SurfaceSenseDataField" pc="268437347" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="13" lineNum="256" parent="globals/SurfaceSenseDataField" pc="268437354" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="13" lineNum="257" parent="globals/SurfaceSenseDataField" pc="268437364" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="13" lineNum="258" parent="globals/SurfaceSenseDataField" pc="268437371" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="13" lineNum="261" parent="globals/SurfaceSenseDataField" pc="268437378" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="13" lineNum="262" parent="globals/SurfaceSenseDataField" pc="268437397" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="13" lineNum="263" parent="globals/SurfaceSenseDataField" pc="268437420" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="13" lineNum="267" parent="globals/SurfaceSenseDataField" pc="268437455" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="13" lineNum="268" parent="globals/SurfaceSenseDataField" pc="268437462" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="13" lineNum="269" parent="globals/SurfaceSenseDataField" pc="268437496" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="13" lineNum="270" parent="globals/SurfaceSenseDataField" pc="268437506" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="13" lineNum="271" parent="globals/SurfaceSenseDataField" pc="268437523" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="13" lineNum="273" parent="globals/SurfaceSenseDataField" pc="268437555" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="13" lineNum="274" parent="globals/SurfaceSenseDataField" pc="268437571" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="13" lineNum="277" parent="globals/SurfaceSenseDataField" pc="268437601" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="13" lineNum="278" parent="globals/SurfaceSenseDataField" pc="268437620" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="13" lineNum="280" parent="globals/SurfaceSenseDataField" pc="268437663" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="13" lineNum="281" parent="globals/SurfaceSenseDataField" pc="268437679" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="13" lineNum="286" parent="globals/SurfaceSenseDataField" pc="268437745" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="13" lineNum="287" parent="globals/SurfaceSenseDataField" pc="268437764" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="13" lineNum="289" parent="globals/SurfaceSenseDataField" pc="268437807" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="13" lineNum="290" parent="globals/SurfaceSenseDataField" pc="268437823" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="13" lineNum="295" parent="globals/SurfaceSenseDataField" pc="268437883" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="13" lineNum="296" parent="globals/SurfaceSenseDataField" pc="268437902" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="13" lineNum="299" parent="globals/SurfaceSenseDataField" pc="268437945" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="13" lineNum="299" parent="globals/SurfaceSenseDataField" pc="268437962" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="13" lineNum="300" parent="globals/SurfaceSenseDataField" pc="268437972" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="13" lineNum="300" parent="globals/SurfaceSenseDataField" pc="268437989" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="13" lineNum="301" parent="globals/SurfaceSenseDataField" pc="268437999" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="13" lineNum="301" parent="globals/SurfaceSenseDataField" pc="268438016" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="13" lineNum="302" parent="globals/SurfaceSenseDataField" pc="268438026" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="13" lineNum="303" parent="globals/SurfaceSenseDataField" pc="268438033" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="13" lineNum="304" parent="globals/SurfaceSenseDataField" pc="268438074" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="14" lineNum="311" parent="globals/SurfaceSenseDataField" pc="268438135" symbol="&lt;globals/SurfaceSenseDataField/&lt;&gt;_drawCentered&gt;"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="14" lineNum="319" parent="globals/SurfaceSenseDataField" pc="268438137" symbol="&lt;globals/SurfaceSenseDataField/&lt;&gt;_drawCentered&gt;"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\SurfaceSenseDataField.mc" id="14" lineNum="320" parent="globals/SurfaceSenseDataField" pc="268438156" symbol="&lt;globals/SurfaceSenseDataField/&lt;&gt;_drawCentered&gt;"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="15" lineNum="139" parent="globals/BleManager" pc="268438188" symbol="onCharacteristicChanged"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="15" lineNum="143" parent="globals/BleManager" pc="268438192" symbol="onCharacteristicChanged"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="15" lineNum="148" parent="globals/BleManager" pc="268438205" symbol="onCharacteristicChanged"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="15" lineNum="149" parent="globals/BleManager" pc="268438227" symbol="onCharacteristicChanged"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="15" lineNum="149" parent="globals/BleManager" pc="268438247" symbol="onCharacteristicChanged"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="15" lineNum="150" parent="globals/BleManager" pc="268438248" symbol="onCharacteristicChanged"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="15" lineNum="151" parent="globals/BleManager" pc="268438274" symbol="onCharacteristicChanged"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="15" lineNum="152" parent="globals/BleManager" pc="268438300" symbol="onCharacteristicChanged"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="15" lineNum="153" parent="globals/BleManager" pc="268438326" symbol="onCharacteristicChanged"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="15" lineNum="155" parent="globals/BleManager" pc="268438376" symbol="onCharacteristicChanged"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="15" lineNum="156" parent="globals/BleManager" pc="268438398" symbol="onCharacteristicChanged"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="15" lineNum="157" parent="globals/BleManager" pc="268438456" symbol="onCharacteristicChanged"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="15" lineNum="161" parent="globals/BleManager" pc="268438457" symbol="onCharacteristicChanged"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="15" lineNum="162" parent="globals/BleManager" pc="268438479" symbol="onCharacteristicChanged"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="15" lineNum="162" parent="globals/BleManager" pc="268438499" symbol="onCharacteristicChanged"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="15" lineNum="163" parent="globals/BleManager" pc="268438500" symbol="onCharacteristicChanged"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="15" lineNum="165" parent="globals/BleManager" pc="268438520" symbol="onCharacteristicChanged"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="15" lineNum="165" parent="globals/BleManager" pc="268438542" symbol="onCharacteristicChanged"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="16" lineNum="128" parent="globals/BleManager" pc="268438553" symbol="onDescriptorWrite"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="16" lineNum="133" parent="globals/BleManager" pc="268438555" symbol="onDescriptorWrite"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="16" lineNum="134" parent="globals/BleManager" pc="268438566" symbol="onDescriptorWrite"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="17" lineNum="109" parent="globals/BleManager" pc="268438591" symbol="onConnectedStateChanged"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="17" lineNum="113" parent="globals/BleManager" pc="268438593" symbol="onConnectedStateChanged"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="17" lineNum="114" parent="globals/BleManager" pc="268438604" symbol="onConnectedStateChanged"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="17" lineNum="115" parent="globals/BleManager" pc="268438614" symbol="onConnectedStateChanged"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="17" lineNum="116" parent="globals/BleManager" pc="268438624" symbol="onConnectedStateChanged"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="17" lineNum="117" parent="globals/BleManager" pc="268438634" symbol="onConnectedStateChanged"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="17" lineNum="119" parent="globals/BleManager" pc="268438647" symbol="onConnectedStateChanged"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="17" lineNum="120" parent="globals/BleManager" pc="268438656" symbol="onConnectedStateChanged"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="17" lineNum="121" parent="globals/BleManager" pc="268438666" symbol="onConnectedStateChanged"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="17" lineNum="123" parent="globals/BleManager" pc="268438676" symbol="onConnectedStateChanged"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="18" lineNum="84" parent="globals/BleManager" pc="268438689" symbol="stopScan"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="18" lineNum="85" parent="globals/BleManager" pc="268438691" symbol="stopScan"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="18" lineNum="85" parent="globals/BleManager" pc="268438703" symbol="stopScan"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="18" lineNum="86" parent="globals/BleManager" pc="268438704" symbol="stopScan"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="18" lineNum="87" parent="globals/BleManager" pc="268438725" symbol="stopScan"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="19" lineNum="78" parent="globals/BleManager" pc="268438736" symbol="startScan"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="19" lineNum="79" parent="globals/BleManager" pc="268438738" symbol="startScan"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="19" lineNum="79" parent="globals/BleManager" pc="268438760" symbol="startScan"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="19" lineNum="80" parent="globals/BleManager" pc="268438761" symbol="startScan"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="19" lineNum="81" parent="globals/BleManager" pc="268438782" symbol="startScan"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="20" lineNum="195" parent="globals/BleManager" pc="268438793" symbol="&lt;globals/BleManager/&lt;&gt;_f32LE&gt;"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="20" lineNum="198" parent="globals/BleManager" pc="268438797" symbol="&lt;globals/BleManager/&lt;&gt;_f32LE&gt;"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="20" lineNum="199" parent="globals/BleManager" pc="268438819" symbol="&lt;globals/BleManager/&lt;&gt;_f32LE&gt;"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="20" lineNum="200" parent="globals/BleManager" pc="268438847" symbol="&lt;globals/BleManager/&lt;&gt;_f32LE&gt;"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="20" lineNum="201" parent="globals/BleManager" pc="268438875" symbol="&lt;globals/BleManager/&lt;&gt;_f32LE&gt;"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="20" lineNum="202" parent="globals/BleManager" pc="268438903" symbol="&lt;globals/BleManager/&lt;&gt;_f32LE&gt;"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="20" lineNum="205" parent="globals/BleManager" pc="268438946" symbol="&lt;globals/BleManager/&lt;&gt;_f32LE&gt;"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="20" lineNum="205" parent="globals/BleManager" pc="268438976" symbol="&lt;globals/BleManager/&lt;&gt;_f32LE&gt;"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="20" lineNum="208" parent="globals/BleManager" pc="268438982" symbol="&lt;globals/BleManager/&lt;&gt;_f32LE&gt;"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="20" lineNum="209" parent="globals/BleManager" pc="268439006" symbol="&lt;globals/BleManager/&lt;&gt;_f32LE&gt;"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="20" lineNum="209" parent="globals/BleManager" pc="268439021" symbol="&lt;globals/BleManager/&lt;&gt;_f32LE&gt;"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="20" lineNum="211" parent="globals/BleManager" pc="268439027" symbol="&lt;globals/BleManager/&lt;&gt;_f32LE&gt;"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="20" lineNum="212" parent="globals/BleManager" pc="268439051" symbol="&lt;globals/BleManager/&lt;&gt;_f32LE&gt;"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="20" lineNum="214" parent="globals/BleManager" pc="268439070" symbol="&lt;globals/BleManager/&lt;&gt;_f32LE&gt;"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="20" lineNum="216" parent="globals/BleManager" pc="268439103" symbol="&lt;globals/BleManager/&lt;&gt;_f32LE&gt;"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="20" lineNum="217" parent="globals/BleManager" pc="268439158" symbol="&lt;globals/BleManager/&lt;&gt;_f32LE&gt;"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="21" lineNum="172" parent="globals/BleManager" pc="268439187" symbol="&lt;globals/BleManager/&lt;&gt;_subscribeCharacteristics&gt;"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="21" lineNum="173" parent="globals/BleManager" pc="268439191" symbol="&lt;globals/BleManager/&lt;&gt;_subscribeCharacteristics&gt;"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="21" lineNum="173" parent="globals/BleManager" pc="268439203" symbol="&lt;globals/BleManager/&lt;&gt;_subscribeCharacteristics&gt;"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="21" lineNum="174" parent="globals/BleManager" pc="268439204" symbol="&lt;globals/BleManager/&lt;&gt;_subscribeCharacteristics&gt;"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="21" lineNum="175" parent="globals/BleManager" pc="268439231" symbol="&lt;globals/BleManager/&lt;&gt;_subscribeCharacteristics&gt;"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="21" lineNum="175" parent="globals/BleManager" pc="268439237" symbol="&lt;globals/BleManager/&lt;&gt;_subscribeCharacteristics&gt;"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="21" lineNum="178" parent="globals/BleManager" pc="268439238" symbol="&lt;globals/BleManager/&lt;&gt;_subscribeCharacteristics&gt;"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="21" lineNum="179" parent="globals/BleManager" pc="268439259" symbol="&lt;globals/BleManager/&lt;&gt;_subscribeCharacteristics&gt;"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="21" lineNum="180" parent="globals/BleManager" pc="268439266" symbol="&lt;globals/BleManager/&lt;&gt;_subscribeCharacteristics&gt;"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="21" lineNum="181" parent="globals/BleManager" pc="268439294" symbol="&lt;globals/BleManager/&lt;&gt;_subscribeCharacteristics&gt;"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="21" lineNum="181" parent="globals/BleManager" pc="268439301" symbol="&lt;globals/BleManager/&lt;&gt;_subscribeCharacteristics&gt;"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="21" lineNum="185" parent="globals/BleManager" pc="268439345" symbol="&lt;globals/BleManager/&lt;&gt;_subscribeCharacteristics&gt;"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="21" lineNum="186" parent="globals/BleManager" pc="268439366" symbol="&lt;globals/BleManager/&lt;&gt;_subscribeCharacteristics&gt;"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="21" lineNum="187" parent="globals/BleManager" pc="268439373" symbol="&lt;globals/BleManager/&lt;&gt;_subscribeCharacteristics&gt;"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="21" lineNum="188" parent="globals/BleManager" pc="268439401" symbol="&lt;globals/BleManager/&lt;&gt;_subscribeCharacteristics&gt;"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="21" lineNum="188" parent="globals/BleManager" pc="268439408" symbol="&lt;globals/BleManager/&lt;&gt;_subscribeCharacteristics&gt;"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="22" lineNum="45" parent="globals/BleManager" pc="268439453" symbol="initialize"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="22" lineNum="46" parent="globals/BleManager" pc="268439455" symbol="initialize"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="22" lineNum="47" parent="globals/BleManager" pc="268439473" symbol="initialize"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="22" lineNum="51" parent="globals/BleManager" pc="268439483" symbol="initialize"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="22" lineNum="54" parent="globals/BleManager" pc="268439495" symbol="initialize"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="22" lineNum="57" parent="globals/BleManager" pc="268439513" symbol="initialize"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="23" lineNum="60" parent="globals/BleManager" pc="268439526" symbol="&lt;globals/BleManager/&lt;&gt;_registerProfile&gt;"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="23" lineNum="61" parent="globals/BleManager" pc="268439528" symbol="&lt;globals/BleManager/&lt;&gt;_registerProfile&gt;"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="24" lineNum="94" parent="globals/BleManager" pc="268439715" symbol="onScanResults"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="24" lineNum="95" parent="globals/BleManager" pc="268439719" symbol="onScanResults"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="24" lineNum="96" parent="globals/BleManager" pc="268439732" symbol="onScanResults"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="24" lineNum="97" parent="globals/BleManager" pc="268439739" symbol="onScanResults"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="24" lineNum="98" parent="globals/BleManager" pc="268439743" symbol="onScanResults"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="24" lineNum="99" parent="globals/BleManager" pc="268439756" symbol="onScanResults"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="24" lineNum="100" parent="globals/BleManager" pc="268439782" symbol="onScanResults"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="24" lineNum="101" parent="globals/BleManager" pc="268439800" symbol="onScanResults"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="24" lineNum="102" parent="globals/BleManager" pc="268439812" symbol="onScanResults"/>
+        <entry filename="C:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\source\\BleManager.mc" id="24" lineNum="104" parent="globals/BleManager" pc="268439813" symbol="onScanResults"/>
+        <entry filename="c:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\gen\\006-B3121-00\\source\\Rez.mcgen" id="25" lineNum="13" parent="globals/Rez/Layouts" pc="268439830" symbol="MainLayout"/>
+        <entry filename="c:\\Users\\nikol\\Claude\\Projects\\surface-sense\\garmin\\SurfaceSense\\gen\\006-B3121-00\\source\\Rez.mcgen" id="25" lineNum="14" parent="globals/Rez/Layouts" pc="268439840" symbol="MainLayout"/>
+    </pcToLineNum>
+    <symbolTable>
+        <entry id="8388639" module="true" symbol="Graphics"/>
+        <entry field="true" id="45" symbol="vdv"/>
+        <entry field="true" id="7" symbol="SURFACE_CHAR_UUID"/>
+        <entry id="8388632" method="true" symbol="&lt;init&gt;"/>
+        <entry id="8389849" symbol="units"/>
+        <entry field="true" id="51" symbol="NoData"/>
+        <entry id="23" method="true" symbol="&lt;globals/SurfaceSenseDataField/&lt;&gt;_uploadBuffer&gt;"/>
+        <entry id="48" method="true" symbol="MainLayout"/>
+        <entry field="true" id="50" symbol="Connected"/>
+        <entry field="true" id="31" symbol="&lt;globals/BleManager/&lt;&gt;_connected&gt;"/>
+        <entry field="true" id="21" symbol="&lt;globals/SurfaceSenseDataField/&lt;&gt;_lastUploadS&gt;"/>
+        <entry id="28" method="true" symbol="onSurfaceData"/>
+        <entry field="true" id="16" symbol="&lt;globals/SurfaceSenseDataField/&lt;&gt;_fitPeak&gt;"/>
+        <entry field="true" id="8388611" module="true" symbol="Toybox"/>
+        <entry field="true" id="24" symbol="&lt;globals/SurfaceSenseDataField/&lt;&gt;_uploadErr&gt;"/>
+        <entry id="29" method="true" symbol="onUploadResponse"/>
+        <entry id="8391256" method="true" symbol="onScanResults"/>
+        <entry field="true" id="10" symbol="TEMP_CHAR_UUID"/>
+        <entry field="true" id="49" symbol="AppName"/>
+        <entry id="8391262" method="true" symbol="onDescriptorWrite"/>
+        <entry id="5" module="true" symbol="globals/Rez/Strings"/>
+        <entry id="8389594" symbol="headers"/>
+        <entry id="8388631" module="true" symbol="Activity"/>
+        <entry id="8388648" module="true" symbol="WatchUi"/>
+        <entry field="true" id="26" symbol="&lt;globals/SurfaceSenseDataField/&lt;&gt;_uploading&gt;"/>
+        <entry id="2" module="true" symbol="globals/Rez"/>
+        <entry id="8391340" symbol="descriptors"/>
+        <entry id="8389124" method="true" symbol="onUpdate"/>
+        <entry field="true" id="38" symbol="crest"/>
+        <entry id="8391263" method="true" symbol="onCharacteristicChanged"/>
+        <entry id="8388771" module="true" object="true" symbol="Drawables"/>
+        <entry id="8391258" method="true" symbol="onConnectedStateChanged"/>
+        <entry id="4" module="true" symbol="globals/Rez/Layouts"/>
+        <entry id="8389122" method="true" symbol="onLayout"/>
+        <entry field="true" id="8388738" symbol="currentSpeed"/>
+        <entry field="true" id="44" symbol="tempC"/>
+        <entry id="8389137" method="true" symbol="compute"/>
+        <entry field="true" id="12" symbol="&lt;globals/SurfaceSenseDataField/&lt;&gt;_dataAge&gt;"/>
+        <entry field="true" id="14" symbol="&lt;globals/SurfaceSenseDataField/&lt;&gt;_fitCrest&gt;"/>
+        <entry id="43" method="true" symbol="stopScan"/>
+        <entry id="9" object="true" symbol="SurfaceSenseDataField"/>
+        <entry id="8388637" module="true" symbol="Communications"/>
+        <entry field="true" id="40" symbol="peak"/>
+        <entry id="3" module="true" symbol="globals/Rez/Drawables"/>
+        <entry id="13" method="true" symbol="&lt;globals/SurfaceSenseDataField/&lt;&gt;_drawCentered&gt;"/>
+        <entry id="8389844" symbol="responseType"/>
+        <entry field="true" id="11" symbol="&lt;globals/SurfaceSenseDataField/&lt;&gt;_ble&gt;"/>
+        <entry field="true" id="41" symbol="rms"/>
+        <entry id="8388786" method="true" symbol="method"/>
+        <entry id="8388644" module="true" symbol="System"/>
+        <entry id="6" object="true" symbol="BleManager"/>
+        <entry id="8388645" module="true" symbol="Time"/>
+        <entry id="8388769" module="true" object="true" symbol="Rez"/>
+        <entry field="true" id="37" symbol="connected"/>
+        <entry field="true" id="25" symbol="&lt;globals/SurfaceSenseDataField/&lt;&gt;_uploadOk&gt;"/>
+        <entry field="true" id="19" symbol="&lt;globals/SurfaceSenseDataField/&lt;&gt;_iri&gt;"/>
+        <entry id="8388640" module="true" symbol="Lang"/>
+        <entry field="true" id="47" symbol="LauncherIcon"/>
+        <entry field="true" id="8" symbol="SURFACE_SVC_UUID"/>
+        <entry id="8388610" symbol="statics"/>
+        <entry field="true" id="30" symbol="&lt;globals/BleManager/&lt;&gt;_callback&gt;"/>
+        <entry id="8389350" module="true" symbol="globals"/>
+        <entry id="8391334" symbol="uuid"/>
+        <entry field="true" id="27" symbol="&lt;globals/SurfaceSenseDataField/&lt;&gt;_vdv&gt;"/>
+        <entry id="8388770" module="true" object="true" symbol="Strings"/>
+        <entry field="true" id="22" symbol="&lt;globals/SurfaceSenseDataField/&lt;&gt;_rms&gt;"/>
+        <entry field="true" id="15" symbol="&lt;globals/SurfaceSenseDataField/&lt;&gt;_fitIri&gt;"/>
+        <entry field="true" id="20" symbol="&lt;globals/SurfaceSenseDataField/&lt;&gt;_iriBuffer&gt;"/>
+        <entry id="8391193" module="true" symbol="BluetoothLowEnergy"/>
+        <entry id="8388702" method="true" symbol="initialize"/>
+        <entry id="34" method="true" symbol="&lt;globals/BleManager/&lt;&gt;_registerProfile&gt;"/>
+        <entry id="8389780" module="true" symbol="FitContributor"/>
+        <entry id="33" method="true" symbol="&lt;globals/BleManager/&lt;&gt;_f32LE&gt;"/>
+        <entry id="8388641" module="true" symbol="Math"/>
+        <entry field="true" id="8388736" symbol="currentLocation"/>
+        <entry field="true" id="18" symbol="&lt;globals/SurfaceSenseDataField/&lt;&gt;_fitVdv&gt;"/>
+        <entry id="8389847" symbol="mesgType"/>
+        <entry field="true" id="17" symbol="&lt;globals/SurfaceSenseDataField/&lt;&gt;_fitRms&gt;"/>
+        <entry id="8391341" symbol="characteristics"/>
+        <entry field="true" id="35" symbol="&lt;globals/BleManager/&lt;&gt;_scanning&gt;"/>
+        <entry id="46" module="true" symbol="Layouts"/>
+        <entry field="true" id="32" symbol="&lt;globals/BleManager/&lt;&gt;_device&gt;"/>
+        <entry id="42" method="true" symbol="startScan"/>
+        <entry id="36" method="true" symbol="&lt;globals/BleManager/&lt;&gt;_subscribeCharacteristics&gt;"/>
+        <entry field="true" id="52" symbol="Searching"/>
+        <entry field="true" id="39" symbol="iri"/>
+    </symbolTable>
+    <localVars>
+        <entry endPc="268435863" name="toSend" stackId="1" startPc="268435622"/>
+        <entry arg="true" endPc="268436010" name="rms" stackId="1" startPc="268435865"/>
+        <entry arg="true" endPc="268436010" name="vdv" stackId="2" startPc="268435865"/>
+        <entry arg="true" endPc="268436010" name="peak" stackId="3" startPc="268435865"/>
+        <entry arg="true" endPc="268436010" name="crest" stackId="4" startPc="268435865"/>
+        <entry arg="true" endPc="268436010" name="iri" stackId="5" startPc="268435865"/>
+        <entry arg="true" endPc="268436547" name="info" stackId="1" startPc="268436011"/>
+        <entry endPc="268436220" name="speedMs" stackId="3" startPc="268436082"/>
+        <entry endPc="268436220" name="vClamped" stackId="4" startPc="268436113"/>
+        <entry endPc="268436220" name="speedFactor" stackId="5" startPc="268436113"/>
+        <entry endPc="268436408" name="loc" stackId="6" startPc="268436290"/>
+        <entry arg="true" endPc="268436645" name="responseCode" stackId="1" startPc="268436548"/>
+        <entry arg="true" endPc="268436645" name="data" stackId="2" startPc="268436548"/>
+        <entry arg="true" endPc="268438134" name="dc" stackId="1" startPc="268437075"/>
+        <entry endPc="268438133" name="w" stackId="2" startPc="268437079"/>
+        <entry endPc="268438133" name="h" stackId="3" startPc="268437079"/>
+        <entry endPc="268438133" name="bg" stackId="4" startPc="268437079"/>
+        <entry endPc="268438133" name="fg" stackId="5" startPc="268437079"/>
+        <entry endPc="268438133" name="valueColor" stackId="6" startPc="268437079"/>
+        <entry endPc="268438133" name="rowH" stackId="7" startPc="268437079"/>
+        <entry endPc="268438133" name="labelX" stackId="8" startPc="268437079"/>
+        <entry endPc="268438133" name="valueX" stackId="9" startPc="268437079"/>
+        <entry endPc="268438133" name="labelFont" stackId="10" startPc="268437079"/>
+        <entry endPc="268438133" name="valueFont" stackId="11" startPc="268437079"/>
+        <entry endPc="268438133" name="dotColor" stackId="12" startPc="268437079"/>
+        <entry endPc="268438133" name="iriColor" stackId="13" startPc="268437079"/>
+        <entry arg="true" endPc="268438187" name="dc" stackId="1" startPc="268438135"/>
+        <entry arg="true" endPc="268438187" name="w" stackId="2" startPc="268438135"/>
+        <entry arg="true" endPc="268438187" name="y" stackId="3" startPc="268438135"/>
+        <entry arg="true" endPc="268438187" name="font" stackId="4" startPc="268438135"/>
+        <entry arg="true" endPc="268438187" name="text" stackId="5" startPc="268438135"/>
+        <entry arg="true" endPc="268438187" name="color" stackId="6" startPc="268438135"/>
+        <entry arg="true" endPc="268438552" name="char" stackId="1" startPc="268438188"/>
+        <entry arg="true" endPc="268438552" name="value" stackId="2" startPc="268438188"/>
+        <entry endPc="268438551" name="uuid" stackId="3" startPc="268438192"/>
+        <entry endPc="268438551" name="t" stackId="4" startPc="268438479"/>
+        <entry arg="true" endPc="268438590" name="descriptor" stackId="1" startPc="268438553"/>
+        <entry arg="true" endPc="268438590" name="status" stackId="2" startPc="268438553"/>
+        <entry arg="true" endPc="268438688" name="device" stackId="1" startPc="268438591"/>
+        <entry arg="true" endPc="268438688" name="state" stackId="2" startPc="268438591"/>
+        <entry arg="true" endPc="268439186" name="data" stackId="1" startPc="268438793"/>
+        <entry arg="true" endPc="268439186" name="off" stackId="2" startPc="268438793"/>
+        <entry endPc="268439451" name="svc" stackId="1" startPc="268439191"/>
+        <entry endPc="268439451" name="surfCh" stackId="2" startPc="268439191"/>
+        <entry endPc="268439344" name="desc" stackId="3" startPc="268439266"/>
+        <entry endPc="268439451" name="tempCh" stackId="4" startPc="268439191"/>
+        <entry endPc="268439451" name="desc" stackId="5" startPc="268439373"/>
+        <entry arg="true" endPc="268439525" name="callback" stackId="1" startPc="268439453"/>
+        <entry arg="true" endPc="268439829" name="scanResults" stackId="1" startPc="268439715"/>
+        <entry endPc="268439828" name="item" stackId="2" startPc="268439719"/>
+        <entry endPc="268439825" name="result" stackId="3" startPc="268439739"/>
+        <entry endPc="268439825" name="name" stackId="4" startPc="268439739"/>
+        <entry arg="true" endPc="268439846" name="dc" stackId="1" startPc="268439830"/>
+    </localVars>
+    <deviceInfo deviceVersion="45fe3cbb0de8ea0a70e12628d2697915f1272301" partNumber="006-B3121-00"/>
+    <annotations>
+        <annotationEntry annotation="initialized" class="Strings" module="globals/Rez" symbol="Connected"/>
+        <annotationEntry annotation="initialized" class="Drawables" module="globals/Rez" symbol="LauncherIcon"/>
+        <annotationEntry annotation="initialized" class="Strings" module="globals/Rez" symbol="Searching"/>
+        <annotationEntry annotation="initialized" class="Strings" module="globals/Rez" symbol="NoData"/>
+        <annotationEntry annotation="initialized" class="Strings" module="globals/Rez" symbol="AppName"/>
+    </annotations>
+    <dataEntryOffsetMappings>
+        <dataEntry label="globals" offset="63" parentId="" symbolId="globals" type="module"/>
+        <dataEntry label="globals/SurfaceSenseDataField" offset="270" parentId="globals" symbolId="SurfaceSenseDataField" type="class"/>
+        <dataEntry label="globals/BleManager" offset="493" parentId="globals" symbolId="BleManager" type="class"/>
+        <dataEntry label="globals/Rez" offset="700" parentId="globals" symbolId="Rez" type="module"/>
+        <dataEntry label="globals/Rez/Drawables" offset="755" parentId="Rez" symbolId="Drawables" type="module"/>
+        <dataEntry label="globals/Rez/Layouts" offset="794" parentId="Rez" symbolId="Layouts" type="module"/>
+        <dataEntry label="globals/Rez/Strings" offset="833" parentId="Rez" symbolId="Strings" type="module"/>
+    </dataEntryOffsetMappings>
+    <functions>
+        <functionEntry accessMode="public" endPc="268435574" name="&lt;init&gt;" parent="SurfaceSenseDataField" startPc="268435542">
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268435593" name="&lt;init&gt;" parent="BleManager" startPc="268435575">
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268435617" name="&lt;init&gt;" parent="Rez" startPc="268435594">
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" name="onLayout" parent="SurfaceSenseDataField">
+            <param id="dc"/>
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="private" endPc="268435864" name="&lt;globals/SurfaceSenseDataField/&lt;&gt;_uploadBuffer&gt;" parent="SurfaceSenseDataField" startPc="268435618">
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268436010" name="onSurfaceData" parent="SurfaceSenseDataField" startPc="268435865">
+            <param id="rms"/>
+            <param id="vdv"/>
+            <param id="peak"/>
+            <param id="crest"/>
+            <param id="iri"/>
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268436547" name="compute" parent="SurfaceSenseDataField" startPc="268436011">
+            <param id="info"/>
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268436645" name="onUploadResponse" parent="SurfaceSenseDataField" startPc="268436548">
+            <param id="responseCode"/>
+            <param id="data"/>
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268437074" name="initialize" parent="SurfaceSenseDataField" startPc="268436646">
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268438134" name="onUpdate" parent="SurfaceSenseDataField" startPc="268437075">
+            <param id="dc"/>
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="private" endPc="268438187" name="&lt;globals/SurfaceSenseDataField/&lt;&gt;_drawCentered&gt;" parent="SurfaceSenseDataField" startPc="268438135">
+            <param id="dc"/>
+            <param id="w"/>
+            <param id="y"/>
+            <param id="font"/>
+            <param id="text"/>
+            <param id="color"/>
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268438552" name="onCharacteristicChanged" parent="BleManager" startPc="268438188">
+            <param id="char"/>
+            <param id="value"/>
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268438590" name="onDescriptorWrite" parent="BleManager" startPc="268438553">
+            <param id="descriptor"/>
+            <param id="status"/>
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268438688" name="onConnectedStateChanged" parent="BleManager" startPc="268438591">
+            <param id="device"/>
+            <param id="state"/>
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268438735" name="stopScan" parent="BleManager" startPc="268438689">
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268438792" name="startScan" parent="BleManager" startPc="268438736">
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="private" endPc="268439186" name="&lt;globals/BleManager/&lt;&gt;_f32LE&gt;" parent="BleManager" startPc="268438793">
+            <param id="data"/>
+            <param id="off"/>
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="private" endPc="268439452" name="&lt;globals/BleManager/&lt;&gt;_subscribeCharacteristics&gt;" parent="BleManager" startPc="268439187">
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268439525" name="initialize" parent="BleManager" startPc="268439453">
+            <param id="callback"/>
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="private" endPc="268439714" name="&lt;globals/BleManager/&lt;&gt;_registerProfile&gt;" parent="BleManager" startPc="268439526">
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268439829" name="onScanResults" parent="BleManager" startPc="268439715">
+            <param id="scanResults"/>
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" name="&lt;init&gt;" parent="Drawables">
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" name="&lt;init&gt;" parent="Layouts">
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" name="&lt;init&gt;" parent="Strings">
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268439846" name="MainLayout" parent="Layouts" startPc="268439830">
+            <param id="dc"/>
+            <documentation/>
+        </functionEntry>
+    </functions>
+</debugInfo>
