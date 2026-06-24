@@ -51,6 +51,8 @@ Füge in `android/app/src/main/AndroidManifest.xml` ein (vor `<application>`):
 <!-- GPS (Karte + geolocator) -->
 <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
 <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+<uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/>
+<uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION"/>
 <uses-feature android:name="android.hardware.location.gps"/>
 ```
 
@@ -68,6 +70,11 @@ Füge in `ios/Runner/Info.plist` ein:
 <string>GPS-Aufzeichnung für Strecken-Korrelation der Vibrationsdaten</string>
 <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 <string>GPS-Aufzeichnung während der Fahrt</string>
+<key>UIBackgroundModes</key>
+<array>
+  <string>bluetooth-central</string>
+  <string>location</string>
+</array>
 ```
 
 ---

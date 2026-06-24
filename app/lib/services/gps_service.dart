@@ -11,38 +11,32 @@ class GpsService {
   Stream<GpsSample> get stream => _streamCtrl.stream;
   bool get isRunning => _running;
 
-  /// Prüft Berechtigungen und gibt true zurück wenn GPS verfügbar ist
+  /// Checks location services and asks for foreground location permission.
   static Future<bool> checkPermission() async {
-    bool enabled = await Geolocator.isLocationServiceEnabled();
+    final enabled = await Geolocator.isLocationServiceEnabled();
     if (!enabled) return false;
 
-    LocationPermission perm = await Geolocator.checkPermission();
+    var perm = await Geolocator.checkPermission();
     if (perm == LocationPermission.denied) {
       perm = await Geolocator.requestPermission();
     }
-    return perm == LocationPermission.whileInUse || perm == LocationPermission.always;
+
+    return perm == LocationPermission.whileInUse ||
+        perm == LocationPermission.always;
   }
 
-  /// Plattformspezifische LocationSettings für zuverlässige 1-Hz-Updates.
-  ///
-  /// Android: FusedLocationProvider benötigt explizit [intervalDuration],
-  /// sonst werden Updates gebatcht und kommen nur sporadisch (z. B. nur
-  /// Start + Endpunkt). [foregroundNotificationConfig] hält den WakeLock
-  /// und verhindert, dass Android den GPS-Job im Hintergrund drosselt.
-  ///
-  /// iOS: [pauseLocationUpdatesAutomatically] muss false sein, sonst pausiert
-  /// CoreLocation bei gleichmäßiger Bewegung (Radfahren = "wenig Änderung").
-  /// [activityType.fitness] schaltet den Fitness-Modus ein (optimiert für
-  /// Fahrrad/Laufen) und verhindert Batching durch das OS.
+  /// Platform-specific settings for reliable 1 Hz ride recording.
   static LocationSettings _buildLocationSettings() {
     if (Platform.isAndroid) {
       return AndroidSettings(
         accuracy: LocationAccuracy.high,
         distanceFilter: 0,
         intervalDuration: const Duration(seconds: 1),
-        // Kein ForegroundNotificationConfig hier — flutter_foreground_task hält
-        // bereits einen Foreground-Service aktiv. Ein zweiter Service für
-        // Location kollidiert mit dem ersten und führt zu GPS-Batching.
+        foregroundNotificationConfig: const ForegroundNotificationConfig(
+          notificationTitle: 'Surface Sensor GPS',
+          notificationText: 'GPS-Aufzeichnung laeuft fuer die Fahrt.',
+          enableWakeLock: true,
+        ),
       );
     } else if (Platform.isIOS) {
       return AppleSettings(
@@ -53,15 +47,15 @@ class GpsService {
         showBackgroundLocationIndicator: true,
       );
     }
-    // Fallback (Desktop / Web)
+
     return const LocationSettings(
       accuracy: LocationAccuracy.high,
       distanceFilter: 0,
     );
   }
 
-  /// GPS-Aufzeichnung starten.
-  /// Gibt false zurück wenn GPS nicht verfügbar oder nicht berechtigt.
+  /// Starts GPS recording.
+  /// Returns false when location services or permissions are unavailable.
   Future<bool> start() async {
     if (_running) return true;
     if (!await checkPermission()) return false;
@@ -72,11 +66,11 @@ class GpsService {
       (pos) {
         _streamCtrl.add(GpsSample(
           timestampMs: pos.timestamp.millisecondsSinceEpoch,
-          latitude:  pos.latitude,
+          latitude: pos.latitude,
           longitude: pos.longitude,
-          altitude:  pos.altitude,
-          accuracy:  pos.accuracy,
-          speed:     pos.speed >= 0 ? pos.speed : null,
+          altitude: pos.altitude,
+          accuracy: pos.accuracy,
+          speed: pos.speed >= 0 ? pos.speed : null,
         ));
       },
       onError: (_) {},

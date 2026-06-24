@@ -135,6 +135,35 @@ export function parseFIT(buffer: ArrayBuffer): TrackSegment {
   return buildSegment(points)
 }
 
+export function trackFromSurfaceSamples(samples: Array<{
+  ts_ms?: number
+  lat?: number | null
+  lon?: number | null
+  speed_kmh?: number | null
+  iri_m_km?: number | null
+}>): TrackSegment {
+  const points: TrackPoint[] = samples
+    .filter(s =>
+      typeof s.lat === 'number' &&
+      typeof s.lon === 'number' &&
+      Number.isFinite(s.lat) &&
+      Number.isFinite(s.lon) &&
+      s.lat !== 0 &&
+      s.lon !== 0
+    )
+    .map(s => ({
+      lat: s.lat!,
+      lon: s.lon!,
+      elevation: 0,
+      time: typeof s.ts_ms === 'number' ? new Date(s.ts_ms) : undefined,
+      speed: typeof s.speed_kmh === 'number' ? s.speed_kmh / 3.6 : undefined,
+      iri: typeof s.iri_m_km === 'number' ? s.iri_m_km : undefined,
+    }))
+
+  if (points.length === 0) throw new Error('Keine GPS-Punkte in SurfaceSense-Samples gefunden.')
+  return buildSegment(points)
+}
+
 /** Process one data record, push a TrackPoint if lat+lon are valid, return new pos. */
 function readDataRecord(
   view: DataView,

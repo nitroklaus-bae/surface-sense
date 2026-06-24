@@ -5,18 +5,22 @@ import Toybox.Activity;
 import Toybox.Lang;
 import Toybox.System;
 import Toybox.Math;
+import Toybox.Communications;
+import Toybox.Time;
 
 //
-// SurfaceSenseDataField  v2.0
+// SurfaceSenseDataField  v3.0
 //
 // Connect IQ Data Field für Garmin Edge-Radcomputer.
 //
 // Funktion:
 //   - Verbindet sich per BLE mit dem XIAO nRF52840-Sensor ("SurfaceSensor")
+//     (oder dem Phone im Relay-Modus — gleiche UUIDs)
 //   - Empfängt 1-Hz Surface-Pakete (RMS, VDV, Peak in g)
 //   - Berechnet IRI (International Roughness Index) aus RMS + Fahrgeschwindigkeit
 //   - Schreibt Vibrationsdaten als Developer Fields in die FIT-Datei
 //   - Zeigt RMS / VDV / IRI live auf dem Display
+//   - Sendet GPS + IRI alle 60 s per HTTPS an Supabase (Community-Layer)
 //
 // FIT Developer Fields:
 //   0  vibration_rms   [g]          – mittlere Vibrationsintensität
@@ -28,6 +32,17 @@ import Toybox.Math;
 // IRI-Berechnung (vereinfacht, Referenz 20 km/h):
 //   IRI = 2.21 × RMS_g × sqrt(20 / max(speed_kmh, 5))
 //
+
+// ── Supabase-Konfiguration ────────────────────────────────────────────────────
+// Anon-Key ist öffentlich (nur Lesen + ingest_garmin_iri RPC erlaubt)
+const SUPABASE_RPC_URL = "https://cpxdxchlyvdbnsewicbq.supabase.co/rest/v1/rpc/ingest_garmin_iri";
+const SUPABASE_ANON_KEY = "sb_publishable_RPToUB4fonmTaGfdC3WZ2w_bOYdSGcc";
+
+// Wie viele Sekunden zwischen zwei Uploads (60 s = 1 Minute)
+const UPLOAD_INTERVAL_S = 60;
+// Maximale Puffergröße (bei Überschreitung wird sofort gesendet)
+const BUFFER_MAX = 60;
+
 class SurfaceSenseDataField extends WatchUi.DataField {
 
     // ── FIT-Felder ────────────────────────────────────────────────────────────
@@ -45,6 +60,14 @@ class SurfaceSenseDataField extends WatchUi.DataField {
     private var _vdv     as Float  = 0.0f;
     private var _iri     as Float  = 0.0f;
     private var _dataAge as Number = 99;   // Sekunden seit letztem Paket
+
+    // ── Supabase Upload ───────────────────────────────────────────────────────
+    // Puffer: Array von Dictionaries {lat, lon, iri, speed_kmh}
+    private var _iriBuffer   as Array   = [];
+    private var _lastUploadS as Number  = 0;  // Time.now().value() beim letzten Upload
+    private var _uploading   as Boolean = false;
+    private var _uploadOk    as Number  = 0;  // erfolgreiche Uploads (für Debug)
+    private var _uploadErr   as Number  = 0;  // fehlgeschlagene Uploads
 
     // ── Initialisierung ───────────────────────────────────────────────────────
 
@@ -80,6 +103,8 @@ class SurfaceSenseDataField extends WatchUi.DataField {
 
         // BLE initialisieren und Scan starten
         _ble = new BleManager(method(:onSurfaceData));
+
+        _lastUploadS = Time.now().value();
     }
 
     // ── BLE-Callback (aufgerufen wenn neues 1-Hz-Paket eintrifft) ────────────
@@ -109,10 +134,13 @@ class SurfaceSenseDataField extends WatchUi.DataField {
     function compute(info as Activity.Info) as Lang.Object or Null {
         if (_dataAge < 99) { _dataAge++; }
 
-        // IRI mit aktueller GPS-Geschwindigkeit nachberechnen (falls vorhanden)
+        // Aktuelle GPS-Geschwindigkeit
+        var speedKmh = 0.0f;
         if (info has :currentSpeed && info.currentSpeed != null) {
-            var speedMs  = info.currentSpeed as Float;
-            var speedKmh = speedMs * 3.6f;
+            var speedMs = info.currentSpeed as Float;
+            speedKmh = speedMs * 3.6f;
+
+            // IRI mit aktueller GPS-Geschwindigkeit nachberechnen
             if (speedKmh > 2.0f) {
                 var vClamped = (speedKmh < 5.0f) ? 5.0f : speedKmh;
                 var speedFactor = Math.sqrt(20.0f / vClamped).toFloat();
@@ -121,7 +149,72 @@ class SurfaceSenseDataField extends WatchUi.DataField {
             }
         }
 
+        // ── GPS + IRI in Puffer schreiben ─────────────────────────────────────
+        // Nur wenn: Sensor verbunden, IRI > 0, GPS verfügbar, Fahrt läuft (> 3 km/h)
+        if (
+            _ble.connected
+            && _iri > 0.0f
+            && speedKmh >= 3.0f
+            && info has :currentLocation
+            && info.currentLocation != null
+        ) {
+            var loc = info.currentLocation.toDegrees();
+            _iriBuffer.add({
+                "lat"       => loc[0].toFloat(),
+                "lon"       => loc[1].toFloat(),
+                "iri"       => _iri,
+                "speed_kmh" => speedKmh
+            });
+        }
+
+        // ── Upload-Check ──────────────────────────────────────────────────────
+        var nowS = Time.now().value();
+        var bufferFull = (_iriBuffer.size() >= BUFFER_MAX);
+        var timeReached = (nowS - _lastUploadS >= UPLOAD_INTERVAL_S);
+
+        if (!_uploading && _iriBuffer.size() > 0 && (bufferFull || timeReached)) {
+            _uploadBuffer();
+        }
+
         return _rms;
+    }
+
+    // ── Supabase Upload ───────────────────────────────────────────────────────
+
+    private function _uploadBuffer() as Void {
+        if (_uploading || _iriBuffer.size() == 0) { return; }
+
+        _uploading = true;
+        _lastUploadS = Time.now().value();
+
+        // Puffer leeren und lokal merken (wird bei Fehler NICHT zurückgelegt)
+        var toSend = _iriBuffer;
+        _iriBuffer = [];
+
+        Communications.makeWebRequest(
+            SUPABASE_RPC_URL,
+            { "points" => toSend },
+            {
+                :method       => Communications.HTTP_REQUEST_METHOD_POST,
+                :headers      => {
+                    "Content-Type"  => "application/json",
+                    "apikey"        => SUPABASE_ANON_KEY,
+                    "Authorization" => "Bearer " + SUPABASE_ANON_KEY
+                },
+                :responseType => Communications.HTTP_RESPONSE_CONTENT_TYPE_JSON
+            },
+            method(:onUploadResponse)
+        );
+    }
+
+    function onUploadResponse(responseCode as Number, data as Dictionary?) as Void {
+        _uploading = false;
+        if (responseCode == 200 || responseCode == 204) {
+            _uploadOk++;
+        } else {
+            _uploadErr++;
+            System.println("[SurfaceSense] Upload failed: HTTP " + responseCode);
+        }
     }
 
     // ── onLayout(): einmalig beim Aufbau ──────────────────────────────────────
@@ -157,7 +250,7 @@ class SurfaceSenseDataField extends WatchUi.DataField {
         // ── 3-Zeilen-Layout ───────────────────────────────────────────────────
         // Zeile 1: RMS [mg]
         // Zeile 2: VDV [g·s^0.25]
-        // Zeile 3: IRI [m/km]  (International Roughness Index)
+        // Zeile 3: IRI [m/km] (Farbe je nach Qualitätsstufe)
         var rowH      = h / 3;
         var labelX    = 4;
         var valueX    = w - 4;
@@ -169,7 +262,18 @@ class SurfaceSenseDataField extends WatchUi.DataField {
         dc.drawLine(0, rowH,     w, rowH);
         dc.drawLine(0, rowH * 2, w, rowH * 2);
 
-        // Zeile 1 – RMS [mg] (in mg für bessere Lesbarkeit auf kleinem Display)
+        // Upload-Indikator: kleiner Punkt oben rechts
+        // Grün = letzter Upload OK, Rot = Fehler, Grau = noch kein Upload
+        var dotColor = Graphics.COLOR_LT_GRAY;
+        if (_uploadOk > 0 && _uploadErr == 0) {
+            dotColor = Graphics.COLOR_GREEN;
+        } else if (_uploadErr > 0) {
+            dotColor = (_uploadOk > 0) ? Graphics.COLOR_YELLOW : Graphics.COLOR_RED;
+        }
+        dc.setColor(dotColor, bg);
+        dc.fillCircle(w - 6, 6, 4);
+
+        // Zeile 1 – RMS [mg]
         dc.setColor(Graphics.COLOR_BLUE, bg);
         dc.drawText(labelX, rowH * 0 + rowH / 2, labelFont,
             "RMS mg", Graphics.TEXT_JUSTIFY_LEFT | Graphics.TEXT_JUSTIFY_VCENTER);
@@ -187,7 +291,7 @@ class SurfaceSenseDataField extends WatchUi.DataField {
             _vdv.format("%.4f"),
             Graphics.TEXT_JUSTIFY_RIGHT | Graphics.TEXT_JUSTIFY_VCENTER);
 
-        // Zeile 3 – IRI [m/km] (Farbe je nach Qualitätsstufe)
+        // Zeile 3 – IRI [m/km]
         dc.setColor(Graphics.COLOR_BLUE, bg);
         dc.drawText(labelX, rowH * 2 + rowH / 2, labelFont,
             "IRI m/km", Graphics.TEXT_JUSTIFY_LEFT | Graphics.TEXT_JUSTIFY_VCENTER);

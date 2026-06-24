@@ -355,15 +355,17 @@ interface OverpassElement {
   geometry?: Array<{ lat: number; lon: number }>
 }
 
+type Bbox = [number, number, number, number]
+
 // ── Overpass response cache (IndexedDB, keyed by rounded bbox) ────────────────
 // IndexedDB has no practical quota limit (unlike localStorage's ~5 MB).
 // Cache entries survive page reload and are pruned to MAX_ENTRIES by osmCache.ts.
-function osmCacheKey(bbox: [number, number, number, number]): string {
+function osmCacheKey(bbox: Bbox): string {
   // ~100 m rounding so near-identical rides share a cache entry.
   return 'osm:v1:' + bbox.map(v => v.toFixed(3)).join(',')
 }
 
-async function queryOverpass(bbox: [number, number, number, number]): Promise<OverpassElement[]> {
+async function queryOverpass(bbox: Bbox): Promise<OverpassElement[]> {
   const key = osmCacheKey(bbox)
   const cached = await osmCacheGet<OverpassElement[]>(key)
   if (cached) return cached
@@ -373,11 +375,101 @@ async function queryOverpass(bbox: [number, number, number, number]): Promise<Ov
 way["highway"](${s},${w},${n},${e});
 out geom;`
   const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`
-  const res = await fetch(url)
-  if (!res.ok) throw new Error(`Overpass API Fehler: ${res.status}`)
+  let res: Response | null = null
+  try {
+    res = await fetch(url)
+  } catch {}
+  if (!res?.ok) {
+    const params = new URLSearchParams({ bbox: bbox.join(',') })
+    const fallback = await fetch(`/api/osm/overpass?${params}`)
+    if (!fallback.ok) {
+      const body = await fallback.text()
+      let message = `Overpass API Fehler: ${fallback.status}`
+      try { message = JSON.parse(body)?.message ?? message } catch {}
+      throw new Error(message)
+    }
+    res = fallback
+  }
   const json = await res.json() as { elements: OverpassElement[] }
   await osmCacheSet(key, json.elements)
   return json.elements
+}
+
+const OSM_QUERY_PAD_DEG = 0.0025
+const OSM_CHUNK_MAX_DISTANCE_M = 3000
+const OSM_CHUNK_MAX_POINTS = 160
+const OSM_CHUNK_MAX_SPAN_DEG = 0.04
+
+function padBbox(s: number, w: number, n: number, e: number): Bbox {
+  return [
+    Math.max(-90, s - OSM_QUERY_PAD_DEG),
+    Math.max(-180, w - OSM_QUERY_PAD_DEG),
+    Math.min(90, n + OSM_QUERY_PAD_DEG),
+    Math.min(180, e + OSM_QUERY_PAD_DEG),
+  ]
+}
+
+function bboxForPoints(points: TrackSegment['points']): Bbox {
+  const lats = points.map(p => p.lat)
+  const lons = points.map(p => p.lon)
+  return padBbox(Math.min(...lats), Math.min(...lons), Math.max(...lats), Math.max(...lons))
+}
+
+function buildTrackBboxes(points: TrackSegment['points']): Bbox[] {
+  const boxes = new Map<string, Bbox>()
+  let start = 0
+
+  for (let i = 1; i <= points.length; i++) {
+    const chunk = points.slice(start, i + 1)
+    const lats = chunk.map(p => p.lat)
+    const lons = chunk.map(p => p.lon)
+    const dist = (points[i - 1]?.distance ?? 0) - (points[start]?.distance ?? 0)
+    const latSpan = Math.max(...lats) - Math.min(...lats)
+    const lonSpan = Math.max(...lons) - Math.min(...lons)
+    const shouldClose =
+      i === points.length ||
+      chunk.length >= OSM_CHUNK_MAX_POINTS ||
+      dist >= OSM_CHUNK_MAX_DISTANCE_M ||
+      latSpan >= OSM_CHUNK_MAX_SPAN_DEG ||
+      lonSpan >= OSM_CHUNK_MAX_SPAN_DEG
+
+    if (!shouldClose) continue
+
+    const bbox = bboxForPoints(chunk)
+    boxes.set(osmCacheKey(bbox), bbox)
+    start = Math.max(i - 1, start + 1)
+  }
+
+  return Array.from(boxes.values())
+}
+
+async function queryOverpassAlongTrack(
+  points: TrackSegment['points'],
+  onProgress?: ProgressFn,
+): Promise<OverpassElement[]> {
+  const boxes = buildTrackBboxes(points)
+  const byId = new Map<string, OverpassElement>()
+  const failures: string[] = []
+
+  for (let i = 0; i < boxes.length; i++) {
+    const pct = 20 + Math.round(((i + 1) / boxes.length) * 30)
+    onProgress?.(`OSM-Oberflaechendaten werden geladen ${i + 1}/${boxes.length}`, pct)
+    try {
+      const elements = await queryOverpass(boxes[i])
+      for (const element of elements) {
+        byId.set(`${element.type}:${element.id}`, element)
+      }
+    } catch (err) {
+      failures.push(err instanceof Error ? err.message : String(err))
+    }
+  }
+
+  if (byId.size === 0) {
+    const detail = failures[failures.length - 1] ?? 'keine OSM-Daten erhalten'
+    throw new Error(`Overpass API Fehler: ${detail}`)
+  }
+
+  return Array.from(byId.values())
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -621,17 +713,8 @@ export async function analyzeSurfaces(
   const pts = track.points
   onProgress?.('Strecke wird vorbereitet', 10)
 
-  const lats = pts.map(p => p.lat)
-  const lons = pts.map(p => p.lon)
-  const bbox: [number, number, number, number] = [
-    Math.min(...lats) - 0.0025,
-    Math.min(...lons) - 0.0025,
-    Math.max(...lats) + 0.0025,
-    Math.max(...lons) + 0.0025,
-  ]
-
   onProgress?.('OSM-Oberflächendaten werden geladen', 25)
-  const ways = await queryOverpass(bbox)
+  const ways = await queryOverpassAlongTrack(pts, onProgress)
   const wayById = new Map<number, OverpassElement>(ways.map(w => [w.id, w]))
 
   onProgress?.('Wegenetz wird aufgebaut', 55)

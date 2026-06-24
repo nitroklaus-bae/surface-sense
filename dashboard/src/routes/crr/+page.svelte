@@ -1,7 +1,7 @@
 <script>
   import { onMount } from 'svelte';
   import { supabase } from '$lib/supabase.js';
-  import { parseFIT, parseGPX } from '$lib/rollex/trackParser';
+  import { parseFIT, parseGPX, trackFromSurfaceSamples } from '$lib/rollex/trackParser';
   import { analyzeSurfaces, SURFACE_PROPS } from '$lib/rollex/surfaceAnalyzer';
   import { optimizeTires, formatTime } from '$lib/rollex/tireOptimizer';
   import { stravaStreamsToTrack } from '$lib/rollex/stravaAdapter';
@@ -246,7 +246,18 @@
           .from('ride-files').download(ride.fit_path);
         if (dlErr) throw new Error('FIT-Download: ' + dlErr.message);
         progress = 'GPS-Track wird eingelesen…';
-        track    = parseFIT(await blob.arrayBuffer());
+        try {
+          track = parseFIT(await blob.arrayBuffer());
+        } catch (fitErr) {
+          progress = 'FIT ungueltig - Track wird aus SurfaceSense-Samples rekonstruiert...';
+          const { data: sampleRows, error: sampleErr } = await supabase
+            .from('surface_samples')
+            .select('ts_ms,lat,lon,speed_kmh,iri_m_km')
+            .eq('ride_id', ride.id)
+            .order('ts_ms');
+          if (sampleErr) throw new Error('Surface-Samples: ' + sampleErr.message);
+          track = trackFromSurfaceSamples(sampleRows ?? []);
+        }
         rideInfo = { name: ride.name ?? 'Fahrt', startedAt: ride.started_at, avgIri: ride.avg_iri, source };
 
       // ── Upload ────────────────────────────────────────────────────

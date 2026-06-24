@@ -14,13 +14,14 @@ import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 ///
 ///   <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
 ///   <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE"/>
+///   <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION"/>
 ///   <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
 ///
 ///   <application ...>
 ///     <!-- Foreground Service für flutter_foreground_task -->
 ///     <service
 ///       android:name="com.pravera.flutter_foreground_task.service.ForegroundService"
-///       android:foregroundServiceType="connectedDevice"
+///       android:foregroundServiceType="connectedDevice|location"
 ///       android:stopWithTask="true"/>
 ///   </application>
 ///
@@ -28,6 +29,7 @@ import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 ///   <key>UIBackgroundModes</key>
 ///   <array>
 ///     <string>bluetooth-central</string>
+///     <string>location</string>
 ///   </array>
 /// ─────────────────────────────────────────────────────────────────────────────
 
