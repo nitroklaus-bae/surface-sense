@@ -528,6 +528,66 @@ function ptWayMeters(p: Pt2, way: ProjWay): number {
   return best
 }
 
+// ── Spatial grid index ────────────────────────────────────────────────────────
+// Partition projWays into a 2-D grid of GRID_M × GRID_M metre cells.
+// For each GPS point we look up only the 3 × 3 neighbourhood (~9 cells) instead
+// of all ways → candidate search drops from O(W) to O(local_ways) per point.
+const GRID_M = 100   // cell size in metres
+
+interface SpatialGrid {
+  cells: Map<number, number[]>   // encoded cell key → [wayIndex, ...]
+  originX: number
+  originY: number
+}
+
+function buildSpatialGrid(projWays: ProjWay[]): SpatialGrid {
+  let minX = Infinity, minY = Infinity
+  for (const w of projWays) for (const p of w.pts) {
+    if (p.x < minX) minX = p.x
+    if (p.y < minY) minY = p.y
+  }
+  const originX = minX - GRID_M
+  const originY = minY - GRID_M
+
+  const cells = new Map<number, number[]>()
+  const encode = (cx: number, cy: number) => cx * 1_000_000 + cy
+
+  for (let wi = 0; wi < projWays.length; wi++) {
+    const w = projWays[wi]
+    let wMinX = Infinity, wMinY = Infinity, wMaxX = -Infinity, wMaxY = -Infinity
+    for (const p of w.pts) {
+      if (p.x < wMinX) wMinX = p.x; if (p.x > wMaxX) wMaxX = p.x
+      if (p.y < wMinY) wMinY = p.y; if (p.y > wMaxY) wMaxY = p.y
+    }
+    // Expand bbox by RADIUS_M so a point in cell C finds all ways that could be
+    // within RADIUS_M of any point in that cell.
+    const r = MM.RADIUS_M
+    const cx0 = Math.floor((wMinX - r - originX) / GRID_M)
+    const cx1 = Math.floor((wMaxX + r - originX) / GRID_M)
+    const cy0 = Math.floor((wMinY - r - originY) / GRID_M)
+    const cy1 = Math.floor((wMaxY + r - originY) / GRID_M)
+    for (let cx = cx0; cx <= cx1; cx++) {
+      for (let cy = cy0; cy <= cy1; cy++) {
+        const k = encode(cx, cy)
+        const arr = cells.get(k)
+        if (arr) arr.push(wi)
+        else cells.set(k, [wi])
+      }
+    }
+  }
+  return { cells, originX, originY }
+}
+
+/** Return all projWay indices whose cells overlap the point's cell. */
+function nearbyWayIndices(p: Pt2, grid: SpatialGrid): number[] {
+  const cx = Math.floor((p.x - grid.originX) / GRID_M)
+  const cy = Math.floor((p.y - grid.originY) / GRID_M)
+  // single-cell lookup: the bbox expansion in buildSpatialGrid already ensures
+  // every way within RADIUS_M is in this cell.
+  const k = cx * 1_000_000 + cy
+  return grid.cells.get(k) ?? []
+}
+
 // Build way connectivity from shared OSM nodes. Overpass `out geom` gives each
 // node's lat/lon; ways that meet at a junction share byte-identical coordinates,
 // so hashing rounded coordinates recovers the graph without needing node IDs.
@@ -578,11 +638,18 @@ export function mapMatch(
 
   const UNK_EMIT = 0.5 * (MM.UNKNOWN_DIST_M / MM.SIGMA_M) ** 2
 
-  // Candidate ways per point (distinct ways within RADIUS_M + always the unknown state)
+  // Build spatial grid for fast candidate lookup (replaces O(W) linear scan).
+  const grid = buildSpatialGrid(projWays)
+
+  // Candidate ways per point — only ways in the local grid cell, not all ways.
   const candsPerPt: Cand[][] = pts.map((pt) => {
     const p = proj(pt.lat, pt.lon)
     const cands: Cand[] = []
-    for (const w of projWays) {
+    const seen = new Set<number>()
+    for (const wi of nearbyWayIndices(p, grid)) {
+      if (seen.has(wi)) continue
+      seen.add(wi)
+      const w = projWays[wi]
       const d = ptWayMeters(p, w)
       if (d <= MM.RADIUS_M) cands.push({ wayId: w.id, emit: 0.5 * (d / MM.SIGMA_M) ** 2 })
     }
