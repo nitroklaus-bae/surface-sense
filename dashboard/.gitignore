@@ -1,1 +1,13 @@
 .vercel
+
+# Dependencies
+node_modules/
+
+# Build output
+.svelte-kit/output/
+.svelte-kit/vercel-tmp/
+
+# Env files (use Vercel env vars for deployment)
+.env
+.env.local
+.env.*.local

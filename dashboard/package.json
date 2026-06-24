@@ -11,15 +11,16 @@
     "prepare": "svelte-kit sync"
   },
   "devDependencies": {
-    "@sveltejs/adapter-vercel":     "^4.0.0",
-    "@sveltejs/kit":                "^2.5.0",
+    "@sveltejs/adapter-vercel": "^4.0.0",
+    "@sveltejs/kit": "^2.5.0",
     "@sveltejs/vite-plugin-svelte": "^3.1.0",
-    "svelte":                       "^4.2.0",
-    "vite":                         "^5.4.0"
+    "svelte": "^4.2.0",
+    "typescript": "^5.4.0",
+    "vite": "^5.4.0"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.46.0",
-    "chart.js":              "^4.4.0",
-    "leaflet":               "^1.9.4"
+    "chart.js": "^4.4.0",
+    "leaflet": "^1.9.4"
   }
 }

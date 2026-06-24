@@ -40,18 +40,19 @@
 {:else}
   {#if user}
     <nav>
-      <div class="nav-brand">
+      <a class="nav-brand" href="/">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M12 2L2 7l10 5 10-5-10-5z"/>
           <path d="M2 17l10 5 10-5M2 12l10 5 10-5"/>
         </svg>
         SurfaceSense
-      </div>
+      </a>
       <div class="nav-right">
         {#if admin}
           <span class="badge-admin">ADMIN</span>
         {/if}
-        <a class="nav-link" href="/raw/">Raw / FFT</a>
+        <a class="nav-link" href="/">Fahrten</a>
+        <a class="nav-link" href="/crr/">Reifen & CRR</a>
         <span class="nav-email">{user.email}</span>
         <button class="btn-logout" on:click={handleSignOut}>Abmelden</button>
       </div>
@@ -104,7 +105,9 @@
     font-weight: 700;
     font-size: 15px;
     color: #2dd4bf;
+    text-decoration: none;
   }
+  .nav-brand:hover { opacity: 0.8; }
   .nav-right {
     display: flex;
     align-items: center;
