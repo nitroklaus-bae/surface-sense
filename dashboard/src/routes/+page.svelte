@@ -63,6 +63,9 @@
       attribution: '© OpenStreetMap',
       maxZoom: 19,
     }).addTo(map);
+
+    // Leaflet braucht invalidateSize() nachdem das DOM seine finale Größe hat
+    requestAnimationFrame(() => map?.invalidateSize());
   }
 
   async function selectRide(ride) {
@@ -566,14 +569,21 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    height: 100%;
   }
 
   .map-wrap {
     position: relative;
-    flex: 1;
+    flex: 1 1 0;
     min-height: 0;
+    /* Explizite Mindesthöhe damit Leaflet nie mit 0px initialisiert */
+    min-height: 300px;
   }
-  .map { width: 100%; height: 100%; }
+  /* Absolut positioniert = Leaflet bekommt immer die korrekte Container-Größe */
+  .map {
+    position: absolute;
+    inset: 0;
+  }
 
   .legend {
     position: absolute;
