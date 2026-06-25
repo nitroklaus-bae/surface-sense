@@ -53,7 +53,7 @@
   let mapColorMode = 'surface'; // 'surface' | 'iri'
 
   // ── Tab navigation ─────────────────────────────────────────────────
-  let activeTab = restoredSession.activeTab ?? 'analyse'; // 'analyse' | 'karte' | 'modelle'
+  let activeTab = restoredSession.activeTab === 'karte' ? 'karte' : 'analyse'; // 'analyse' | 'karte'
   let pressureUnits = 'bar';
   let exportNotice = '';
 
@@ -462,7 +462,7 @@
         : `${source}:${rideInfo.name}:${track.points.length}:${Math.round(track.totalDistance ?? 0)}`;
       results   = { surfaces, tireSetups, track, rideInfo };
       progress  = '';
-      activeTab = tireSetups.length > 0 ? 'modelle' : 'analyse';
+      activeTab = 'analyse';
     } catch (e) {
       error    = e instanceof Error ? e.message : String(e);
       progress = '';
@@ -716,7 +716,6 @@
       <!-- ── Tab bar ─────────────────────────────────────────────── -->
       <div class="tabs">
         <button class:active={activeTab === 'analyse'} on:click={() => activeTab = 'analyse'}>Analyse</button>
-        <button class:active={activeTab === 'modelle'} on:click={() => activeTab = 'modelle'}>3D Modelle</button>
         <button class:active={activeTab === 'karte'}   on:click={() => activeTab = 'karte'}>Karte</button>
       </div>
 
@@ -844,27 +843,22 @@
             {/each}
           </div>
         </section>
+        <section class="detail-crr-analysis" aria-label="Detail-CRR-Analyse">
+          <div class="detail-crr-heading">
+            <span>Detail-CRR-Analyse</span>
+            <small>3D-Modellvergleich fuer den ausgewaehlten Reifen</small>
+          </div>
+          <CrrSurface3DChart
+            setups={results.tireSetups}
+            totalWeightKg={profile.riderWeightKg + profile.bikeWeightKg}
+            tempCelsius={profile.ambientTempCelsius}
+          />
+        </section>
       {/if}
         </div> <!-- end .panel-scroll -->
       {/if} <!-- end analyse tab -->
 
       <!-- ── Karte tab ───────────────────────────────────────────── -->
-      {#if activeTab === 'modelle'}
-        <div class="panel-scroll">
-          {#if results.tireSetups.length > 0}
-            <CrrSurface3DChart
-              setups={results.tireSetups}
-              totalWeightKg={profile.riderWeightKg + profile.bikeWeightKg}
-              tempCelsius={profile.ambientTempCelsius}
-            />
-          {:else}
-            <section class="card">
-              <p class="hint">Keine Reifen-Setups vorhanden. Bitte Breitenbereich pruefen und erneut analysieren.</p>
-            </section>
-          {/if}
-        </div>
-      {/if}
-
       {#if activeTab === 'karte'}
         <div class="map-wrapper">
           <div bind:this={surfaceMapEl} class="map-full"></div>
@@ -1318,6 +1312,28 @@
   }
   .card-header h3 { font-size: 14px; font-weight: 600; color: #e6edf3; margin: 0; }
   .card h3 { font-size: 14px; font-weight: 600; margin-bottom: 14px; color: #e6edf3; }
+  .detail-crr-analysis {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .detail-crr-heading {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 0 2px;
+  }
+  .detail-crr-heading span {
+    color: #e6edf3;
+    font-size: 14px;
+    font-weight: 700;
+  }
+  .detail-crr-heading small {
+    color: #8b949e;
+    font-size: 12px;
+    text-align: right;
+  }
 
   /* Source badge */
   .source-badge {
