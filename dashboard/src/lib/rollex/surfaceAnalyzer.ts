@@ -382,23 +382,15 @@ function bboxCacheKey(bbox: [number, number, number, number]): string {
   return 'osm:v1:' + bbox.map(v => v.toFixed(3)).join(',')
 }
 
-/** Fetch one tile via direct Overpass POST, falling back to the SvelteKit proxy. */
+/** Fetch one tile via the SvelteKit proxy (overpass-api.de → kumi.systems fallback).
+ *  Direct Overpass POST is intentionally skipped — browsers block cross-origin
+ *  requests to overpass-api.de (no CORS headers), so the try/catch always falls
+ *  through and only adds latency.
+ */
 async function fetchTile(tile: [number, number, number, number]): Promise<OverpassElement[]> {
   const [s, w, n, e] = tile
   const query = `[out:json][timeout:30];\nway${HW_FILTER}(${s},${w},${n},${e});\nout geom;`
-  const formBody = new URLSearchParams({ data: query }).toString()
 
-  // 1. Direct Overpass POST
-  try {
-    const res = await fetch('https://overpass-api.de/api/interpreter', {
-      method: 'POST',
-      headers: { 'content-type': 'application/x-www-form-urlencoded' },
-      body: formBody,
-    })
-    if (res.ok) return ((await res.json()) as { elements: OverpassElement[] }).elements ?? []
-  } catch { /* fall through */ }
-
-  // 2. SvelteKit proxy (overpass-api.de + kumi.systems with retry)
   const res = await fetch('/api/osm/overpass', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
@@ -534,7 +526,7 @@ function ptWayMeters(p: Pt2, way: ProjWay): number {
 const GRID_M = 100   // cell size in metres
 
 interface SpatialGrid {
-  cells: Map<number, number[]>   // encoded cell key → [wayIndex, ...]
+  cells: Map<string, number[]>   // encoded cell key → [wayIndex, ...]
   originX: number
   originY: number
 }
@@ -549,7 +541,7 @@ function buildSpatialGrid(projWays: ProjWay[]): SpatialGrid {
   const originY = minY - GRID_M
 
   const cells = new Map<number, number[]>()
-  const encode = (cx: number, cy: number) => cx * 1_000_000 + cy
+  const encode = (cx: number, cy: number) => `${cx},${cy}`
 
   for (let wi = 0; wi < projWays.length; wi++) {
     const w = projWays[wi]
@@ -583,7 +575,7 @@ function nearbyWayIndices(p: Pt2, grid: SpatialGrid): number[] {
   const cy = Math.floor((p.y - grid.originY) / GRID_M)
   // single-cell lookup: the bbox expansion in buildSpatialGrid already ensures
   // every way within RADIUS_M is in this cell.
-  const k = cx * 1_000_000 + cy
+  const k = `${cx},${cy}`
   return grid.cells.get(k) ?? []
 }
 

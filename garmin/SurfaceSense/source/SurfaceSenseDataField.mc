@@ -63,11 +63,12 @@ class SurfaceSenseDataField extends WatchUi.DataField {
 
     // ── Supabase Upload ───────────────────────────────────────────────────────
     // Puffer: Array von Dictionaries {lat, lon, iri, speed_kmh}
-    private var _iriBuffer   as Array   = [];
-    private var _lastUploadS as Number  = 0;  // Time.now().value() beim letzten Upload
-    private var _uploading   as Boolean = false;
-    private var _uploadOk    as Number  = 0;  // erfolgreiche Uploads (für Debug)
-    private var _uploadErr   as Number  = 0;  // fehlgeschlagene Uploads
+    private var _iriBuffer    as Array        = [];
+    private var _uploadToSend as Array or Null = null;  // Referenz für Fehler-Restore
+    private var _lastUploadS  as Number        = 0;  // Time.now().value() beim letzten Upload
+    private var _uploading    as Boolean       = false;
+    private var _uploadOk     as Number        = 0;  // erfolgreiche Uploads (für Debug)
+    private var _uploadErr    as Number        = 0;  // fehlgeschlagene Uploads
 
     // ── Initialisierung ───────────────────────────────────────────────────────
 
@@ -134,6 +135,14 @@ class SurfaceSenseDataField extends WatchUi.DataField {
     function compute(info as Activity.Info) as Lang.Object or Null {
         if (_dataAge < 99) { _dataAge++; }
 
+        // Reconnect erkennen: _dataAge zurücksetzen wenn Sensor gerade wieder verbunden.
+        // Ohne dies würde das Display 1-3 s gelb bleiben bis das erste Surface-Paket eintrifft.
+        var nowConnected = _ble.connected;
+        if (nowConnected && !_wasBleConnected) {
+            _dataAge = 0;
+        }
+        _wasBleConnected = nowConnected;
+
         // Aktuelle GPS-Geschwindigkeit
         var speedKmh = 0.0f;
         if (info has :currentSpeed && info.currentSpeed != null) {
@@ -187,7 +196,8 @@ class SurfaceSenseDataField extends WatchUi.DataField {
         _uploading = true;
         _lastUploadS = Time.now().value();
 
-        // Puffer leeren und lokal merken (wird bei Fehler NICHT zurückgelegt)
+        // Puffer leeren und in _uploadToSend merken (wird bei Fehler zurückgelegt)
+        _uploadToSend = _iriBuffer;
         var toSend = _iriBuffer;
         _iriBuffer = [];
 
@@ -214,6 +224,15 @@ class SurfaceSenseDataField extends WatchUi.DataField {
         } else {
             _uploadErr++;
             System.println("[SurfaceSense] Upload failed: HTTP " + responseCode);
+            // Datenpunkte nicht verlieren — zurück in den Puffer schieben.
+            // _toSend wurde in _uploadBuffer lokal gespeichert und hier wieder
+            // verfügbar gemacht, damit bei transientem Netzwerkfehler kein Verlust entsteht.
+            if (_uploadToSend != null) {
+                var restored = _uploadToSend as Array;
+                restored.addAll(_iriBuffer);
+                _iriBuffer = restored;
+                _uploadToSend = null;
+            }
         }
     }
 

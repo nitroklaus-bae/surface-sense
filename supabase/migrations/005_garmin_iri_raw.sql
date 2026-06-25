@@ -19,10 +19,22 @@ CREATE TABLE IF NOT EXISTS garmin_iri_raw (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- Spatial Index für spätere OSM-Zuordnung (PostGIS)
-CREATE INDEX IF NOT EXISTS garmin_iri_raw_geom_idx
-    ON garmin_iri_raw
-    USING GIST (ST_SetSRID(ST_MakePoint(lon::DOUBLE PRECISION, lat::DOUBLE PRECISION), 4326));
+-- Spatial Index für spätere OSM-Zuordnung (PostGIS, optional)
+-- Wird nur angelegt wenn die PostGIS-Extension aktiv ist; sonst kein Fehler.
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'postgis') THEN
+        EXECUTE $idx$
+            CREATE INDEX IF NOT EXISTS garmin_iri_raw_geom_idx
+                ON garmin_iri_raw
+                USING GIST (ST_SetSRID(ST_MakePoint(lon::DOUBLE PRECISION, lat::DOUBLE PRECISION), 4326))
+        $idx$;
+    END IF;
+EXCEPTION WHEN OTHERS THEN
+    -- PostGIS nicht verfügbar — kein Problem, GiST-Index wird übersprungen.
+    NULL;
+END;
+$$;
 
 -- Zeitindex für Abfragen nach Datum
 CREATE INDEX IF NOT EXISTS garmin_iri_raw_created_idx

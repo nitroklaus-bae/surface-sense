@@ -32,11 +32,9 @@ class GpsService {
         accuracy: LocationAccuracy.high,
         distanceFilter: 0,
         intervalDuration: const Duration(seconds: 1),
-        foregroundNotificationConfig: const ForegroundNotificationConfig(
-          notificationTitle: 'Surface Sensor GPS',
-          notificationText: 'GPS-Aufzeichnung laeuft fuer die Fahrt.',
-          enableWakeLock: true,
-        ),
+        // ForegroundNotificationConfig entfernt — flutter_foreground_task
+        // verwaltet bereits den Android-Foreground-Service mit Notification.
+        // Ein zweiter würde zu Konflikt/doppelter Notification führen.
       );
     } else if (Platform.isIOS) {
       return AppleSettings(

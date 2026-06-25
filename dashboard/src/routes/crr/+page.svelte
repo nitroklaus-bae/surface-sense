@@ -1,7 +1,7 @@
 <script>
-  import { onMount, tick } from 'svelte';
+  import { onMount } from 'svelte';
   import { supabase } from '$lib/supabase.js';
-  import { parseFIT, parseGPX, trackFromSurfaceSamples } from '$lib/rollex/trackParser';
+  import { parseFIT, parseGPX } from '$lib/rollex/trackParser';
   import { analyzeSurfaces, SURFACE_PROPS } from '$lib/rollex/surfaceAnalyzer';
   import { optimizeTires, formatTime } from '$lib/rollex/tireOptimizer';
   import { stravaStreamsToTrack } from '$lib/rollex/stravaAdapter';
@@ -39,14 +39,6 @@
   let progress  = '';
   let error     = '';
   let results   = null; // { surfaces, tireSetups, track, rideInfo }
-
-  // ── Surface map (Leaflet) ──────────────────────────────────────────
-  let L = null;
-  let surfaceMapEl = null;
-  let surfaceMap   = null;
-
-  // ── Tab navigation ─────────────────────────────────────────────────
-  let activeTab = 'analyse'; // 'analyse' | 'karte'
 
   // ── Rider profile (localStorage) ──────────────────────────────────
   let profile = {
@@ -126,51 +118,7 @@
     if (err) { error = 'Fahrten konnten nicht geladen werden: ' + err.message; return; }
     rides = data ?? [];
     if (rides.length > 0 && !selectedRideId) selectedRideId = rides[0].id;
-
-    // Leaflet — browser only (no SSR)
-    L = (await import('leaflet')).default;
-    await import('leaflet/dist/leaflet.css');
   });
-
-  // ── Surface map ────────────────────────────────────────────────────
-  async function drawSurfaceMap(track, surfaces) {
-    await tick(); // wait for map div to appear in DOM
-    if (!L || !surfaceMapEl) return;
-
-    // Destroy previous instance (div may have been re-created by {#key})
-    if (surfaceMap) { surfaceMap.remove(); surfaceMap = null; }
-
-    surfaceMap = L.map(surfaceMapEl, { zoomControl: true });
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-      maxZoom: 19,
-    }).addTo(surfaceMap);
-
-    const pts = track.points;
-    for (const seg of surfaces) {
-      const latlngs = pts
-        .slice(seg.startIdx, seg.endIdx + 1)
-        .filter(p => p.lat && p.lon)
-        .map(p => [p.lat, p.lon]);
-      if (latlngs.length < 2) continue;
-      L.polyline(latlngs, {
-        color: seg.surface.color,
-        weight: 5,
-        opacity: 0.85,
-      }).bindTooltip(
-        `<b>${SURFACE_PROPS[seg.surface.category]?.label ?? seg.surface.category}</b><br>${formatKm(seg.distanceMeters)}`,
-        { sticky: true },
-      ).addTo(surfaceMap);
-    }
-
-    const allPts = pts.filter(p => p.lat && p.lon).map(p => [p.lat, p.lon]);
-    if (allPts.length) surfaceMap.fitBounds(L.latLngBounds(allPts), { padding: [20, 20] });
-    surfaceMap.invalidateSize();
-    requestAnimationFrame(() => surfaceMap?.invalidateSize());
-  }
-
-  // Redraw whenever results arrive or map tab becomes active
-  $: if (results && L && activeTab === 'karte') drawSurfaceMap(results.track, results.surfaces);
 
   function saveProfile() {
     try {
@@ -298,18 +246,7 @@
           .from('ride-files').download(ride.fit_path);
         if (dlErr) throw new Error('FIT-Download: ' + dlErr.message);
         progress = 'GPS-Track wird eingelesen…';
-        try {
-          track = parseFIT(await blob.arrayBuffer());
-        } catch (fitErr) {
-          progress = 'FIT ungueltig - Track wird aus SurfaceSense-Samples rekonstruiert...';
-          const { data: sampleRows, error: sampleErr } = await supabase
-            .from('surface_samples')
-            .select('ts_ms,lat,lon,speed_kmh,iri_m_km')
-            .eq('ride_id', ride.id)
-            .order('ts_ms');
-          if (sampleErr) throw new Error('Surface-Samples: ' + sampleErr.message);
-          track = trackFromSurfaceSamples(sampleRows ?? []);
-        }
+        track    = parseFIT(await blob.arrayBuffer());
         rideInfo = { name: ride.name ?? 'Fahrt', startedAt: ride.started_at, avgIri: ride.avg_iri, source };
 
       // ── Upload ────────────────────────────────────────────────────
@@ -586,53 +523,44 @@
     {/if}
 
     {#if results}
-      <!-- ── Tab bar ─────────────────────────────────────────────── -->
-      <div class="tabs">
-        <button class:active={activeTab === 'analyse'} on:click={() => activeTab = 'analyse'}>Analyse</button>
-        <button class:active={activeTab === 'karte'}   on:click={() => activeTab = 'karte'}>Karte</button>
-      </div>
-
-      <!-- ── Analyse tab ─────────────────────────────────────────── -->
-      {#if activeTab === 'analyse'}
-        <div class="panel-scroll">
-          <!-- Surface breakdown -->
-          <section class="card">
-            <div class="card-header">
-              <h3>
-                Oberflächenverteilung — {results.rideInfo.name}
-                {#if results.rideInfo.startedAt} ({fmtDate(results.rideInfo.startedAt)}){/if}
-              </h3>
-              <span class="source-badge src-{results.rideInfo.source}">{SOURCE_LABELS[results.rideInfo.source]}</span>
-            </div>
-            <div class="surface-bar">
-              {#each buildSurfaceBreakdown(results.surfaces) as seg}
-                <div
-                  class="surface-segment"
-                  style="width:{seg.pct}%; background:{surfaceColor(seg.cat)}"
-                  title="{surfaceLabel(seg.cat)}: {formatKm(seg.m)} ({seg.pct}%)"
-                ></div>
-              {/each}
-            </div>
-            <div class="surface-legend">
-              {#each buildSurfaceBreakdown(results.surfaces) as seg}
-                <span class="legend-item">
-                  <span class="dot" style="background:{surfaceColor(seg.cat)}"></span>
-                  {surfaceLabel(seg.cat)} {seg.pct}%
-                </span>
-              {/each}
-            </div>
-            <div class="meta-row">
-              <span>Strecke: {formatKm(results.track.totalDistance)}</span>
-              {#if results.rideInfo.avgIri}
-                {@const q = iriQuality(results.rideInfo.avgIri)}
-                <span>Ø IRI: <b style="color:{q.color}">{results.rideInfo.avgIri.toFixed(1)} m/km</b> — {q.label}</span>
-              {/if}
-              {#if results.track.hasPowerData}
-                <span>⚡ Power-Daten vorhanden</span>
-              {/if}
-              <span>{results.surfaces.filter(s => s.measuredIri !== undefined).length} Segmente mit Sensor-IRI</span>
-            </div>
-          </section>
+      <!-- Surface breakdown -->
+      <section class="card">
+        <div class="card-header">
+          <h3>
+            Oberflächenverteilung — {results.rideInfo.name}
+            {#if results.rideInfo.startedAt} ({fmtDate(results.rideInfo.startedAt)}){/if}
+          </h3>
+          <span class="source-badge src-{results.rideInfo.source}">{SOURCE_LABELS[results.rideInfo.source]}</span>
+        </div>
+        <div class="surface-bar">
+          {#each buildSurfaceBreakdown(results.surfaces) as seg}
+            <div
+              class="surface-segment"
+              style="width:{seg.pct}%; background:{surfaceColor(seg.cat)}"
+              title="{surfaceLabel(seg.cat)}: {formatKm(seg.m)} ({seg.pct}%)"
+            ></div>
+          {/each}
+        </div>
+        <div class="surface-legend">
+          {#each buildSurfaceBreakdown(results.surfaces) as seg}
+            <span class="legend-item">
+              <span class="dot" style="background:{surfaceColor(seg.cat)}"></span>
+              {surfaceLabel(seg.cat)} {seg.pct}%
+            </span>
+          {/each}
+        </div>
+        <div class="meta-row">
+          <span>Strecke: {formatKm(results.track.totalDistance)}</span>
+          {#if results.rideInfo.avgIri}
+            {@const q = iriQuality(results.rideInfo.avgIri)}
+            <span>Ø IRI: <b style="color:{q.color}">{results.rideInfo.avgIri.toFixed(1)} m/km</b> — {q.label}</span>
+          {/if}
+          {#if results.track.hasPowerData}
+            <span>⚡ Power-Daten vorhanden</span>
+          {/if}
+          <span>{results.surfaces.filter(s => s.measuredIri !== undefined).length} Segmente mit Sensor-IRI</span>
+        </div>
+      </section>
 
       <!-- Tire recommendations -->
       {#if results.tireSetups.length === 0}
@@ -702,13 +630,6 @@
             {/each}
           </div>
         </section>
-      {/if}
-        </div> <!-- end .panel-scroll -->
-      {/if} <!-- end analyse tab -->
-
-      <!-- ── Karte tab ───────────────────────────────────────────── -->
-      {#if activeTab === 'karte'}
-        <div bind:this={surfaceMapEl} class="map-full"></div>
       {/if}
     {/if}
   </div>
@@ -915,61 +836,14 @@
     margin-top: 4px;
   }
 
-  /* Leaflet z-index fix */
-  :global(.leaflet-pane),
-  :global(.leaflet-top),
-  :global(.leaflet-bottom) { z-index: 400; }
-  .map-legend {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px 14px;
-    padding: 10px 16px;
-    border-top: 1px solid #30363d;
-  }
-
   /* ── Right panel ── */
   .panel-right {
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    padding: 0;
-  }
-
-  /* scrollable wrapper inside Analyse tab */
-  .panel-scroll {
-    flex: 1;
     overflow-y: auto;
     padding: 20px;
     display: flex;
     flex-direction: column;
     gap: 16px;
   }
-
-  /* Tab bar */
-  .tabs {
-    display: flex;
-    gap: 0;
-    border-bottom: 1px solid #30363d;
-    background: #161b22;
-    flex-shrink: 0;
-  }
-  .tabs button {
-    background: none;
-    border: none;
-    border-bottom: 2px solid transparent;
-    color: #8b949e;
-    padding: 10px 20px;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: color 0.15s, border-color 0.15s;
-    margin-bottom: -1px;
-  }
-  .tabs button:hover { color: #e6edf3; }
-  .tabs button.active { color: #e6edf3; border-bottom-color: #2dd4bf; }
-
-  /* Map fills remaining panel height */
-  .map-full { flex: 1; min-height: 0; }
 
   .empty-state {
     display: flex;
@@ -978,7 +852,6 @@
     justify-content: center;
     gap: 12px;
     height: 100%;
-    padding: 20px;
     color: #8b949e;
     text-align: center;
     max-width: 460px;
