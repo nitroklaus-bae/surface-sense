@@ -111,8 +111,6 @@ class RecordingProvider extends ChangeNotifier {
   int _sessionEnd   = 0;
 
   String? _lastSavedPath;
-  String? _lastSurfaceCsvPath;
-  String? _lastFitPath;
   String? _lastError;
 
   bool               _isCalibrating  = false;
@@ -413,9 +411,6 @@ class RecordingProvider extends ChangeNotifier {
     _gpsSamples.clear();
     _surfaceSamples.clear();
     _lastSavedPath = null;
-    _lastSurfaceCsvPath = null;
-    _lastFitPath = null;
-    _lastRawCsvPath = null;
     _lastError     = null;
     _sessionStart  = DateTime.now().millisecondsSinceEpoch;
 
@@ -435,15 +430,6 @@ class RecordingProvider extends ChangeNotifier {
 
     // CSV + GPS + UI-Timer + Foreground Service (in beiden Modi)
     await _openCsvSink();
-    _isRecording = true;
-    notifyListeners();
-
-    await ForegroundService.start(
-      title: _testMode ? 'Surface Sensor - Test-Modus' : 'Surface Sensor - Aufnahme laeuft',
-      text:  _testMode
-          ? 'Handy-IMU - $_mountPoint'
-          : '$_frequencyHz Hz - +/-${kFsG[_fsIndex]}g - $_mountPoint',
-    );
     try {
       final gpsOk = await _gps.start();
       if (!gpsOk) _lastError = 'GPS nicht verfügbar – Standort-Berechtigung prüfen';
@@ -510,21 +496,19 @@ class RecordingProvider extends ChangeNotifier {
 
       await supa.uploadSurfaceSamples(rideId, _surfaceSamples, _gpsSamples);
 
-      // FIT-Datei hochladen: fuer den Dashboard-Reifenmodus muss das wirklich
-      // ein FIT sein, nicht der zuletzt gespeicherte Exportpfad.
-      final fitPath = await _ensureFitFileForUpload();
-      if (fitPath != null) {
-        final fitFile = File(fitPath);
+      // FIT-Datei automatisch generieren (falls noch nicht vorhanden) und hochladen
+      if (_lastSavedPath == null) {
+        await exportFit();  // generiert FIT und setzt _lastSavedPath
+      }
+      if (_lastSavedPath != null) {
+        final fitFile = File(_lastSavedPath!);
         if (await fitFile.exists()) {
           await supa.uploadFitFile(rideId, fitFile);
         }
       }
       // Surface-CSV hochladen falls vorhanden
-      if (_lastSurfaceCsvPath != null) {
-        final csvFile = File(_lastSurfaceCsvPath!);
-        if (await csvFile.exists()) {
-          await supa.uploadCsvFile(rideId, csvFile);
-        }
+      if (_csvFile != null && await _csvFile!.exists()) {
+        await supa.uploadCsvFile(rideId, _csvFile!);
       }
       // Rohdaten-CSV hochladen falls vorhanden
       if (_lastRawCsvPath != null) {
@@ -536,34 +520,6 @@ class RecordingProvider extends ChangeNotifier {
     } catch (e) {
       _lastError = 'Supabase-Upload fehlgeschlagen: $e';
       notifyListeners();
-    }
-  }
-
-  Future<String?> _ensureFitFileForUpload() async {
-    if (_lastFitPath != null) return _lastFitPath;
-    if (_gpsSamples.isEmpty) return null;
-
-    try {
-      final dir  = await getApplicationDocumentsDirectory();
-      final ts   = _isoTimestamp();
-      final path = '${dir.path}/surface_${kFsG[_fsIndex]}g_${_mountPoint}_$ts.fit';
-
-      await compute(
-        _fitIsolateEntry,
-        _FitIsolateParams(
-          path:           path,
-          gpsSamples:     List.from(_gpsSamples),
-          surfaceSamples: List.from(_surfaceSamples),
-          sessionStart:   _sessionStart > 0 ? _sessionStart : DateTime.now().millisecondsSinceEpoch,
-          sessionEnd:     _sessionEnd   > 0 ? _sessionEnd   : DateTime.now().millisecondsSinceEpoch,
-        ),
-      );
-      _lastFitPath = path;
-      return path;
-    } catch (e) {
-      _lastError = 'FIT-Erzeugung fuer Upload fehlgeschlagen: $e';
-      notifyListeners();
-      return null;
     }
   }
 
@@ -669,8 +625,7 @@ class RecordingProvider extends ChangeNotifier {
       try {
         await _csvSink!.flush();
         await _csvSink!.close();
-        _lastSurfaceCsvPath = _csvFile?.path;
-        _lastSavedPath = _lastSurfaceCsvPath;
+        _lastSavedPath = _csvFile?.path;
         notifyListeners();
       } catch (e) {
         _lastError = 'CSV-Abschluss fehlgeschlagen: $e';
@@ -699,15 +654,13 @@ class RecordingProvider extends ChangeNotifier {
 
   Future<String?> exportCsv() async {
     // CSV wurde bereits beim Stop gespeichert; gibt gespeicherten Pfad zurück
-    if (_lastSurfaceCsvPath != null) return _lastSurfaceCsvPath;
+    if (_lastSavedPath != null) return _lastSavedPath;
     // Fallback: neu schreiben wenn kein Pfad vorhanden
     if (_surfaceSamples.isEmpty) return null;
     await _openCsvSink();
-    for (final s in _surfaceSamples) {
-      _csvSink?.writeln(s.toCsvRow(_sessionStart));
-    }
+    for (final s in _surfaceSamples) _csvSink?.writeln(s.toCsvRow(_sessionStart));
     await _closeCsvSink();
-    return _lastSurfaceCsvPath;
+    return _lastSavedPath;
   }
 
   Future<String?> exportRawCsv() async {
@@ -718,9 +671,7 @@ class RecordingProvider extends ChangeNotifier {
       final file = File('${dir.path}/surface_raw_${kFsG[_fsIndex]}g_$ts.csv');
       final sink = file.openWrite();
       sink.writeln(SensorSample.csvHeader());
-      for (final s in _sampleQueue) {
-        sink.writeln(s.toCsvRow(_sessionStart));
-      }
+      for (final s in _sampleQueue) sink.writeln(s.toCsvRow(_sessionStart));
       await sink.flush();
       await sink.close();
       _lastSavedPath = file.path;
@@ -751,7 +702,6 @@ class RecordingProvider extends ChangeNotifier {
           sessionEnd:     _sessionEnd   > 0 ? _sessionEnd   : DateTime.now().millisecondsSinceEpoch,
         ),
       );
-      _lastFitPath = path;
       _lastSavedPath = path;
       notifyListeners();
       return path;

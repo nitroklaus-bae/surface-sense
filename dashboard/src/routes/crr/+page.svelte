@@ -332,16 +332,26 @@
       // ── Supabase ──────────────────────────────────────────────────
       if (source === 'supabase') {
         const ride = rides.find(r => r.id === selectedRideId);
-        if (!ride?.fit_path) throw new Error('Kein FIT-File für diese Fahrt vorhanden.');
-        progress = 'FIT-Datei wird geladen…';
-        const { data: blob, error: dlErr } = await supabase.storage
-          .from('ride-files').download(ride.fit_path);
-        if (dlErr) throw new Error('FIT-Download: ' + dlErr.message);
-        progress = 'GPS-Track wird eingelesen…';
-        try {
-          track = parseFIT(await blob.arrayBuffer());
-        } catch (fitErr) {
-          progress = 'FIT ungueltig - Track wird aus SurfaceSense-Samples rekonstruiert...';
+        if (!ride) throw new Error('Fahrt nicht gefunden.');
+
+        // 1. Versuch: FIT-Datei aus Storage laden und parsen
+        if (ride.fit_path) {
+          progress = 'FIT-Datei wird geladen…';
+          try {
+            const { data: blob, error: dlErr } = await supabase.storage
+              .from('ride-files').download(ride.fit_path);
+            if (!dlErr && blob) {
+              progress = 'GPS-Track wird eingelesen…';
+              track = parseFIT(await blob.arrayBuffer());
+            }
+          } catch (_) {
+            // FIT fehlerhaft → Fallback unten
+          }
+        }
+
+        // 2. Fallback: GPS-Track aus surface_samples rekonstruieren
+        if (!track) {
+          progress = 'GPS-Track aus SurfaceSense-Samples rekonstruieren…';
           const { data: sampleRows, error: sampleErr } = await supabase
             .from('surface_samples')
             .select('ts_ms,lat,lon,speed_kmh,iri_m_km')
@@ -350,6 +360,7 @@
           if (sampleErr) throw new Error('Surface-Samples: ' + sampleErr.message);
           track = trackFromSurfaceSamples(sampleRows ?? []);
         }
+
         rideInfo = { name: ride.name ?? 'Fahrt', startedAt: ride.started_at, avgIri: ride.avg_iri, source };
 
       // ── Upload ────────────────────────────────────────────────────
