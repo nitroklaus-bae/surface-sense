@@ -29,7 +29,7 @@ declare module "$app/types" {
 	type MatcherParam<M> = M extends (param : string) => param is (infer U extends string) ? U : string;
 
 	export interface AppTypes {
-		RouteId(): "/" | "/api" | "/api/intervals" | "/api/intervals/fit" | "/api/osm" | "/api/osm/overpass" | "/api/strava" | "/api/strava/activities" | "/api/strava/auth" | "/api/strava/callback" | "/api/strava/streams" | "/crr" | "/login";
+		RouteId(): "/" | "/api" | "/api/intervals" | "/api/intervals/fit" | "/api/osm" | "/api/osm/overpass" | "/api/strava" | "/api/strava/activities" | "/api/strava/auth" | "/api/strava/callback" | "/api/strava/streams" | "/crr" | "/login" | "/performance";
 		RouteParams(): {
 			
 		};
@@ -46,9 +46,10 @@ declare module "$app/types" {
 			"/api/strava/callback": Record<string, never>;
 			"/api/strava/streams": Record<string, never>;
 			"/crr": Record<string, never>;
-			"/login": Record<string, never>
+			"/login": Record<string, never>;
+			"/performance": Record<string, never>
 		};
-		Pathname(): "/" | "/api/intervals" | "/api/intervals/fit" | "/api/osm/overpass" | "/api/strava/activities" | "/api/strava/auth" | "/api/strava/callback" | "/api/strava/streams" | "/crr" | "/login";
+		Pathname(): "/" | "/api/intervals" | "/api/intervals/fit" | "/api/osm/overpass" | "/api/strava/activities" | "/api/strava/auth" | "/api/strava/callback" | "/api/strava/streams" | "/crr" | "/login" | "/performance";
 		ResolvedPathname(): `${"" | `/${string}`}${ReturnType<AppTypes['Pathname']>}`;
 		Asset(): "/raw/index.html" | string & {};
 	}

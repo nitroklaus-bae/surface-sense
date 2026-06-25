@@ -58,19 +58,24 @@ class BleManager extends BluetoothLowEnergy.BleDelegate {
     }
 
     private function _registerProfile() as Void {
-        BluetoothLowEnergy.registerProfile({
-            :uuid            => SURFACE_SVC_UUID,
-            :characteristics => [
-                {
-                    :uuid        => SURFACE_CHAR_UUID,
-                    :descriptors => [BluetoothLowEnergy.cccdUuid()]
-                },
-                {
-                    :uuid        => TEMP_CHAR_UUID,
-                    :descriptors => [BluetoothLowEnergy.cccdUuid()]
-                }
-            ]
-        });
+        try {
+            BluetoothLowEnergy.registerProfile({
+                :uuid            => SURFACE_SVC_UUID,
+                :characteristics => [
+                    {
+                        :uuid        => SURFACE_CHAR_UUID,
+                        :descriptors => [BluetoothLowEnergy.cccdUuid()]
+                    },
+                    {
+                        :uuid        => TEMP_CHAR_UUID,
+                        :descriptors => [BluetoothLowEnergy.cccdUuid()]
+                    }
+                ]
+            });
+        } catch (e instanceof Lang.Exception) {
+            // Profil bereits registriert — kein Fehler, Scan trotzdem starten
+            System.println("[BleManager] registerProfile: " + e.getErrorMessage());
+        }
     }
 
     // ── Scan ─────────────────────────────────────────────────────────────────

@@ -903,16 +903,17 @@ class _RelayRow extends StatelessWidget {
 
     Color statusColor;
     String statusText;
+    final count = prov.relayPublishCount;
     switch (state) {
       case RelayState.garminConnected:
         statusColor = Colors.greenAccent;
-        statusText  = 'Garmin verbunden · leitet 1 Hz weiter';
+        statusText  = 'Garmin verbunden · $count Pakete gesendet';
       case RelayState.advertising:
         statusColor = Colors.amberAccent;
         statusText  = 'Warte auf Garmin…';
       case RelayState.off:
         statusColor = Colors.grey;
-        statusText  = 'Inaktiv';
+        statusText  = count > 0 ? 'Inaktiv · $count Pakete gesendet' : 'Inaktiv';
     }
 
     return Container(

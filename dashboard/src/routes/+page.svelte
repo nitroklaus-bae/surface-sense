@@ -1,11 +1,16 @@
 <script>
   import { onMount, onDestroy } from 'svelte';
-  import { fetchRides, fetchSamples, deleteRide,
+  import { fetchSamples, deleteRide,
            fmtDuration, fmtDistance, fmtDate, iriColor, iriLabel } from '$lib/supabase.js';
   import RideChart from '$lib/RideChart.svelte';
+  import {
+    loadCentralRides,
+    removeRideFromSelection,
+    rideSelection,
+    selectedRide as centralRide,
+    setSelectedRide,
+  } from '$lib/rideSelection.js';
 
-  let rides = [];
-  let isAdminUser = false;
   let selectedRide = null;
   let compareRide = null;       // zweite Fahrt im Vergleichsmodus
   let compareMode = false;
@@ -20,6 +25,9 @@
   let mapEl;
 
   // ── Stats ─────────────────────────────────────────────────────────────────
+  $: rides = $rideSelection.rides;
+  $: isAdminUser = $rideSelection.admin;
+  $: selectedRide = $centralRide;
   $: totalDist  = rides.reduce((s, r) => s + (r.distance_m ?? 0), 0);
   $: totalRides = rides.length;
   $: avgIri     = rides.filter(r => r.avg_iri).length
@@ -36,10 +44,8 @@
   async function loadRides() {
     loadingRides = true;
     try {
-      const result = await fetchRides();
-      rides = result.rides;
-      isAdminUser = result.admin;
-      if (rides.length > 0) selectRide(rides[0]);
+      await loadCentralRides({ force: true });
+      if ($centralRide) selectRide($centralRide);
     } catch (e) {
       error = e.message;
     } finally {
@@ -82,7 +88,7 @@
     }
 
     // Normalmodus
-    selectedRide = ride;
+    setSelectedRide(ride);
     compareRide = null;
     compareSamples = [];
     samples = [];
@@ -168,7 +174,7 @@
     if (!confirm(`Fahrt "${ride.name}" wirklich löschen?`)) return;
     try {
       await deleteRide(ride.id, ride.fit_path, ride.csv_path);
-      rides = rides.filter(r => r.id !== ride.id);
+      removeRideFromSelection(ride.id);
       if (selectedRide?.id === ride.id) {
         selectedRide = null;
         samples = [];

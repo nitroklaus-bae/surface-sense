@@ -4,29 +4,22 @@ import Toybox.Math;
 import Toybox.System;
 
 //
-// GarminAccelSensor  v1.2
+// GarminAccelSensor  v2.0
 //
-// Nutzt den eingebauten Beschleunigungssensor des Garmin Edge.
+// Nutzt den eingebauten Beschleunigungssensor des Garmin Edge via
+// Sensor.enableSensorEvents → Sensor.Info.accel.
 //
-// Architektur (wie XIAO-Firmware, aber im DataField):
-//   Raw-Samples bei bis zu 200 Hz einlesen
-//   → RMS / VDV / Peak pro Fenster selbst berechnen
-//   → DataField schreibt Ergebnis 1×/s ins FIT (FIT-Rate ist device-fix)
+// Hinweis Edge 530:
+//   registerSensorDataCallback (100-200 Hz) ist auf Radcomputern NICHT
+//   verfügbar — das ist eine Watch-API (Fenix, Forerunner etc.).
+//   enableSensorEvents liefert accel-Daten falls das Gerät sie exponiert;
+//   auf dem Edge 530 ist Sensor.Info.accel wahrscheinlich null → _available = false.
 //
-// Fensterrate: WINDOW_PERIOD_S (Standard 1.0 s, alternativ 0.5 s möglich).
-// FIT-Record wird immer bei compute() = 1×/s gesetzt, daher ist 0.5 s-Fenster
-// nur sinnvoll wenn man zwei Fenster pro Sekunde mitteln will.
+//   Für High-Freq-Accel auf dem Edge 530 → externen XIAO-Sensor per BLE nutzen.
 //
-// Das Gerät liefert stillschweigend die max. unterstützte Rate
-// (Edge 530 praktisch ~100 Hz, API-Limit = 200 Hz).
-//
-// Berechnet pro 1-Sekunden-Fenster:
-//   RMS  = sqrt( mean( (az − mean_az)² ) )             [g]
-//   VDV  ≈ ( mean( (az − mean_az)⁴ ) × 1s )^0.25      [g·s^0.25]
-//   Peak = max| az − mean_az |                         [g]
-//
-// Die Fenstermittelwert-Subtraktion entfernt den Gravitationsanteil ohne
-// Orientierungskalibrierung — geeignet für Straßenrauigkeitsschätzung.
+// Auf Geräten mit accel-Support (Fenix, Vivoactive…):
+//   Samples kommen mit Sensor-Update-Rate (~1 Hz aus enableSensorEvents).
+//   Fensterauswertung: RMS / VDV / Peak (Gravitationsanteil subtrahiert).
 //
 // Callback-Signatur: function(rms as Float, vdv as Float, peak as Float)
 //
@@ -35,74 +28,84 @@ class GarminAccelSensor {
     private var _callback  as Method;
     private var _available as Boolean = false;
 
-    // Sample-Puffer für aktuelles 1-Sekunden-Fenster (Float, in g)
+    // Sample-Puffer für aktuelles Fenster
     private var _buf as Array = [];
 
-    // Öffentliche Ergebnisse (letztes abgeschlossenes Fenster)
+    // Letztes abgeschlossenes Fenster
     public var rms     as Float  = 0.0f;
     public var vdv     as Float  = 0.0f;
     public var peak    as Float  = 0.0f;
     public var dataAge as Number = 99;
 
+    // Sekunden-Zähler für 1-Sekunden-Flush
+    private var _lastFlushS as Number = 0;
+
     // ── Initialisierung ───────────────────────────────────────────────────────
 
-    function initialize(callback as Method) as Void {
+    function initialize(callback as Method) {
         _callback = callback;
-        _setup();
+        // _setup() wird NICHT im Konstruktor aufgerufen — erst wenn BLE nicht
+        // verbunden ist (lazy). Verhindert Crash im DataField-Initialize.
     }
 
-    private function _setup() as Void {
+    /// Einmalig aufrufen wenn BLE nicht verfügbar ist.
+    function tryStart() as Void {
+        if (_tried) { return; }
+        _tried = true;
         try {
-            Sensor.setEnabledSensors([Sensor.SENSOR_ACCEL]);
-            Sensor.registerSensorDataCallback(
-                method(:onSensorData),
-                {
-                    :period        => 1,     // Callback einmal pro Sekunde
-                    :accelerometer => {
-                        :enabled        => true,
-                        :samplingPeriod => 5   // 5 ms → 200 Hz (Gerät liefert max. unterstützte Rate)
-                    }
-                }
-            );
-            _available = true;
-            System.println("[GarminAccel] OK (angefordert: 200 Hz)");
+            Sensor.enableSensorEvents(method(:onSensorInfo));
+            System.println("[GarminAccel] enableSensorEvents OK");
         } catch (e instanceof Lang.Exception) {
-            System.println("[GarminAccel] Nicht verfügbar: " + e.getErrorMessage());
+            System.println("[GarminAccel] n/a: " + e.getErrorMessage());
             _available = false;
         }
     }
 
-    // ── Sensor-Callback (1× pro Sekunde, liefert ~40 Samples) ────────────────
+    private var _tried as Boolean = false;
 
-    function onSensorData(sensorData as Sensor.SensorData) as Void {
-        if (sensorData.accelerometerData == null) { return; }
-        var accel = sensorData.accelerometerData;
+    // ── Sensor-Callback ───────────────────────────────────────────────────────
 
-        var n    = accel.sampleCount;
-        var zArr = accel.z;
-        if (n <= 0 || zArr == null) { return; }
-
-        // Z-Samples in Puffer laden: milli-g → g
-        for (var i = 0; i < n; i++) {
-            _buf.add(zArr[i] / 1000.0f);
+    function onSensorInfo(info as Sensor.Info) as Void {
+        // Kein Beschleunigungssensor auf diesem Gerät (z.B. Edge 530)
+        if (info.accel == null) {
+            if (_available) {
+                _available = false;
+                System.println("[GarminAccel] accel = null → nicht verfügbar");
+            }
+            return;
         }
 
-        // Fenster auswerten (period=1 → Callback einmal pro Sekunde)
-        _flushWindow();
+        // Erstes accel-Paket → Sensor als verfügbar markieren
+        if (!_available) {
+            _available = true;
+            System.println("[GarminAccel] accel verfügbar");
+        }
+
+        // info.accel = [x, y, z] in milli-g
+        var accel = info.accel;
+        var z = (accel[2] as Lang.Number) / 1000.0f;  // milli-g → g
+        _buf.add(z);
+
+        // 1-Sekunden-Fenster abschließen
+        var nowS = System.getTimer() / 1000;
+        if (nowS - _lastFlushS >= 1) {
+            _lastFlushS = nowS;
+            _flushWindow();
+        }
     }
 
     // ── Fensterauswertung ─────────────────────────────────────────────────────
 
     private function _flushWindow() as Void {
         var n = _buf.size();
-        if (n < 5) { _buf = []; return; }  // Zu wenig Samples → verwerfen
+        if (n < 1) { _buf = []; return; }
 
-        // Pass 1: Fenstermittelwert (= statischer Gravitationsanteil entlang Z)
+        // Pass 1: Fenstermittelwert (Gravitationsanteil)
         var sumAz = 0.0f;
         for (var i = 0; i < n; i++) { sumAz += _buf[i]; }
         var mean = sumAz / n.toFloat();
 
-        // Pass 2: Dynamische Kennwerte (Gravitationsanteil abgezogen)
+        // Pass 2: Dynamische Kennwerte
         var sumAz2 = 0.0f;
         var sumAz4 = 0.0f;
         var pk     = 0.0f;
@@ -116,7 +119,6 @@ class GarminAccelSensor {
         }
 
         var rmsVal = Math.sqrt(sumAz2 / n.toFloat()).toFloat();
-        // VDV nach ISO 2631-1: (∫a⁴ dt)^0.25 ≈ (mean(a⁴) × T)^0.25, T=1 s
         var vdvVal = Math.pow((sumAz4 / n.toFloat()).toDouble(), 0.25d).toFloat();
 
         rms     = rmsVal;

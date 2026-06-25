@@ -1,0 +1,600 @@
+[ @file = "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc"; @line = 1; @symbol_importdef<0> = [Toybox,1,7,13]; @symbol_importdef<1> = [Sensor,1,14,20]; ]
+import Toybox.Sensor;
+[ @file = "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc"; @line = 2; @symbol_importdef<0> = [Toybox,2,7,13]; @symbol_importdef<1> = [Lang,2,14,18]; ]
+import Toybox.Lang;
+[ @file = "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc"; @line = 3; @symbol_importdef<0> = [Toybox,3,7,13]; @symbol_importdef<1> = [Math,3,14,18]; ]
+import Toybox.Math;
+[ @file = "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc"; @line = 4; @symbol_importdef<0> = [Toybox,4,7,13]; @symbol_importdef<1> = [System,4,14,20]; ]
+import Toybox.System;
+[ @file = "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc"; @line = 26; @symbol_classdef = [GarminAccelSensor,26,6,23]; ]
+class GarminAccelSensor {
+    [ @file = "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc"; @line = 26; ]
+    <init> {
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc" 32 16 ]
+        %tmp.1 = newa 0;
+        putv self :_buf %tmp.1;
+    }
+    [ @file = "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc"; @line = 26; ]
+    static
+    <init> {
+    }
+    [ @file = "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc"; @line = 28; @position = 16; @symbol_vardef = [_callback,28,16,25]; @symbol_type<0> = [Method,28,30,36]; ]
+    private
+    var _callback as Method;
+    [ @file = "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc"; @line = 29; @position = 16; @symbol_vardef = [_available,29,16,26]; @symbol_type<0> = [Boolean,29,30,37]; ]
+    private
+    var _available as Boolean = false;
+    [ @file = "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc"; @line = 32; @position = 16; @symbol_vardef = [_buf,32,16,20]; @symbol_type<0> = [Array,32,24,29]; ]
+    private
+    var _buf as Array;
+    [ @file = "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc"; @line = 35; @position = 15; @symbol_vardef = [rms,35,15,18]; @symbol_type<0> = [Float,35,26,31]; ]
+    public
+    var rms as Float = 0.0f;
+    [ @file = "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc"; @line = 36; @position = 15; @symbol_vardef = [vdv,36,15,18]; @symbol_type<0> = [Float,36,26,31]; ]
+    public
+    var vdv as Float = 0.0f;
+    [ @file = "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc"; @line = 37; @position = 15; @symbol_vardef = [peak,37,15,19]; @symbol_type<0> = [Float,37,26,31]; ]
+    public
+    var peak as Float = 0.0f;
+    [ @file = "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc"; @line = 38; @position = 15; @symbol_vardef = [dataAge,38,15,22]; @symbol_type<0> = [Number,38,26,32]; ]
+    public
+    var dataAge as Number = 99;
+    [ @file = "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc"; @line = 41; @position = 16; @symbol_vardef = [_lastFlushS,41,16,27]; @symbol_type<0> = [Number,41,31,37]; ]
+    private
+    var _lastFlushS as Number = 0;
+    [ @file = "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc"; @line = 45; @symbol_functiondef = [initialize,45,13,23]; @symbol_param<0> = [callback,45,24,32]; @symbol_param<0>_type<0> = [Method,45,36,42]; ]
+    function initialize(callback as Method) as Void {
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_45_44_48_4_start:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc" 46 8 ]
+        %tmp.1 = lgetv %callback;
+        symbol [ callback %tmp.1 46 20 28 ];
+        symbol [ _callback ? 46 8 17 ];
+        putv self :_callback %tmp.1;
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc" 47 8 ]
+        %tmp.2 = self;
+        symbol [ _setup %tmp.3 47 8 14 ];
+        %tmp.3 = getv function %tmp.2 :_setup;
+        invoke %tmp.2 %tmp.3();
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_45_44_48_4_stop:
+    }
+    [ @file = "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc"; @line = 50; @symbol_functiondef = [_setup,50,21,27]; ]
+    private
+    function _setup() as Void {
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_50_38_61_4_start:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc" 51 8 ]
+        try @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_51_8_60_8_beginTry @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_51_8_60_8_endTry @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_51_8_60_8_catch @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_51_8_60_8_finally;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_51_8_60_8_beginTry:
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_51_12_57_8_start:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc" 54 12 ]
+        symbol [ Sensor %tmp.1 54 12 18 ];
+        %tmp.1 = getm $.Toybox.Sensor;
+        symbol [ enableSensorEvents %tmp.2 54 19 37 ];
+        %tmp.2 = getv function %tmp.1 :enableSensorEvents;
+        %tmp.3 = self;
+        symbol [ method %tmp.4 54 38 44 ];
+        %tmp.4 = getv function %tmp.3 :method;
+        %tmp.6 = const :onSensorInfo;
+        symbol [ onSensorInfo %tmp.6 54 46 58 const ];
+        %tmp.7 = invoke %tmp.3 %tmp.4(%tmp.6);
+        invoke %tmp.1 %tmp.2(%tmp.7);
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc" 56 12 ]
+        symbol [ System %tmp.8 56 12 18 ];
+        %tmp.8 = getm $.Toybox.System;
+        symbol [ println %tmp.9 56 19 26 ];
+        %tmp.9 = getv function %tmp.8 :println;
+        %tmp.10 = "[GarminAccel] enableSensorEvents registriert";
+        invoke %tmp.8 %tmp.9(%tmp.10);
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_51_12_57_8_stop:
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_51_8_60_8_endTry:
+        jsr @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_51_8_60_8_finally;
+        goto @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_51_8_60_8_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_51_8_60_8_catch:
+        %tmp.11 = exception;
+        push %tmp.11;
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc" 57 10 ]
+        %tmp.12 = dup %tmp.11;
+        symbol [ Lang %tmp.13 57 30 34 ];
+        %tmp.13 = getm $.Toybox.Lang;
+        symbol [ Exception %tmp.14 57 35 44 ];
+        %tmp.14 = getv %tmp.13 :Exception;
+        %tmp.15 = isa %tmp.12 %tmp.14;
+        bf %tmp.15 @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_57_10_60_8_next;
+        [ "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_51_8_60_8_catch" "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_57_10_60_8_next" ]
+        %e.1 = local;
+        symbol [ e %e.1 57 17 18 ];
+        %tmp.16 = dup %tmp.11;
+        %tmp.17 = as %tmp.16 Lang.Exception;
+        lputv %e.1 %tmp.17;
+        symbol [ e %e.1 57 17 18 ];
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_57_46_60_8_start:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc" 58 12 ]
+        symbol [ System %tmp.18 58 12 18 ];
+        %tmp.18 = getm $.Toybox.System;
+        symbol [ println %tmp.19 58 19 26 ];
+        %tmp.19 = getv function %tmp.18 :println;
+        %tmp.20 = "[GarminAccel] Nicht verfügbar: ";
+        %tmp.21 = lgetv %e.1;
+        symbol [ e %tmp.21 58 63 64 ];
+        symbol [ getErrorMessage %tmp.22 58 65 80 ];
+        %tmp.22 = getv function %tmp.21 :getErrorMessage;
+        %tmp.23 = invoke %tmp.21 %tmp.22();
+        %tmp.24 = add %tmp.20 %tmp.23;
+        invoke %tmp.18 %tmp.19(%tmp.24);
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc" 59 12 ]
+        %tmp.25 = false;
+        symbol [ _available ? 59 12 22 ];
+        putv self :_available %tmp.25;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_57_46_60_8_stop:
+        jsr @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_51_8_60_8_finally;
+        pop;
+        goto @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_51_8_60_8_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_57_10_60_8_next:
+        try @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_51_8_60_8_catch @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_57_10_60_8_next @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_57_10_60_8_next @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_51_8_60_8_finally;
+        jsr @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_51_8_60_8_finally;
+        throw %tmp.11;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_51_8_60_8_finally:
+        jsrret;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_51_8_60_8_end:
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_50_38_61_4_stop:
+    }
+    [ @file = "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc"; @line = 65; @symbol_functiondef = [onSensorInfo,65,13,25]; @symbol_param<0> = [info,65,26,30]; @symbol_param<0>_type<0> = [Sensor,65,34,40]; @symbol_param<0>_type<1> = [Info,65,41,45]; ]
+    function onSensorInfo(info as Sensor.Info) as Void {
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_65_55_92_4_start:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc" 67 8 ]
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_67_8_73_8_if_stmt:
+        %tmp.1 = lgetv %info;
+        symbol [ info %tmp.1 67 12 16 ];
+        symbol [ accel %tmp.2 67 17 22 ];
+        %tmp.2 = getv %tmp.1 :accel;
+        %tmp.3 = null;
+        %tmp.4 = eq %tmp.2 %tmp.3;
+        bf %tmp.4 @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_67_8_73_8_if_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_67_8_73_8_if_true:
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_67_32_73_8_start:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc" 68 12 ]
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_68_12_71_12_if_stmt:
+        symbol [ _available %tmp.6 68 16 26 ];
+        %tmp.6 = getv ? :_available;
+        bf %tmp.6 @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_68_12_71_12_if_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_68_12_71_12_if_true:
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_68_28_71_12_start:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc" 69 16 ]
+        %tmp.7 = false;
+        symbol [ _available ? 69 16 26 ];
+        putv self :_available %tmp.7;
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc" 70 16 ]
+        symbol [ System %tmp.8 70 16 22 ];
+        %tmp.8 = getm $.Toybox.System;
+        symbol [ println %tmp.9 70 23 30 ];
+        %tmp.9 = getv function %tmp.8 :println;
+        %tmp.10 = "[GarminAccel] accel = null → nicht verfügbar";
+        invoke %tmp.8 %tmp.9(%tmp.10);
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_68_28_71_12_stop:
+        goto @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_68_12_71_12_if_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_68_12_71_12_if_end:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc" 72 12 ]
+        ret ?;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_67_32_73_8_stop:
+        goto @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_67_8_73_8_if_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_67_8_73_8_if_end:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc" 76 8 ]
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_76_8_79_8_if_stmt:
+        symbol [ _available %tmp.12 76 13 23 ];
+        %tmp.12 = getv ? :_available;
+        %tmp.13 = not %tmp.12;
+        bf %tmp.13 @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_76_8_79_8_if_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_76_8_79_8_if_true:
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_76_25_79_8_start:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc" 77 12 ]
+        %tmp.14 = true;
+        symbol [ _available ? 77 12 22 ];
+        putv self :_available %tmp.14;
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc" 78 12 ]
+        symbol [ System %tmp.15 78 12 18 ];
+        %tmp.15 = getm $.Toybox.System;
+        symbol [ println %tmp.16 78 19 26 ];
+        %tmp.16 = getv function %tmp.15 :println;
+        %tmp.17 = "[GarminAccel] accel verfügbar";
+        invoke %tmp.15 %tmp.16(%tmp.17);
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_76_25_79_8_stop:
+        goto @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_76_8_79_8_if_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_76_8_79_8_if_end:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc" 82 8 ]
+        [ "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_65_55_92_4_start" "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_65_55_92_4_stop" ]
+        %accel.1 = local;
+        symbol [ accel %accel.1 82 12 17 ];
+        %tmp.18 = lgetv %info;
+        symbol [ info %tmp.18 82 20 24 ];
+        symbol [ accel %tmp.19 82 25 30 ];
+        %tmp.19 = getv %tmp.18 :accel;
+        lputv %accel.1 %tmp.19;
+        symbol [ accel %accel.1 82 12 17 ];
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc" 83 8 ]
+        [ "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_65_55_92_4_start" "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_65_55_92_4_stop" ]
+        %z.2 = local;
+        symbol [ z %z.2 83 12 13 ];
+        %tmp.20 = lgetv %accel.1;
+        symbol [ accel %tmp.20 83 17 22 ];
+        %tmp.21 = 2;
+        %tmp.22 = agetv %tmp.20 %tmp.21;
+        %tmp.23 = as %tmp.22 Lang.Number;
+        symbol [ Lang %tmp.23 83 29 33 ];
+        symbol [ Number %tmp.23 83 34 40 ];
+        %tmp.24 = 1000.0f;
+        %tmp.25 = div %tmp.23 %tmp.24;
+        lputv %z.2 %tmp.25;
+        symbol [ z %z.2 83 12 13 ];
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc" 84 8 ]
+        symbol [ _buf %tmp.27 84 8 12 ];
+        %tmp.27 = getv ? :_buf;
+        symbol [ add %tmp.28 84 13 16 ];
+        %tmp.28 = getv function %tmp.27 :add;
+        %tmp.29 = lgetv %z.2;
+        symbol [ z %tmp.29 84 17 18 ];
+        invoke %tmp.27 %tmp.28(%tmp.29);
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc" 87 8 ]
+        [ "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_65_55_92_4_start" "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_65_55_92_4_stop" ]
+        %nowS.3 = local;
+        symbol [ nowS %nowS.3 87 12 16 ];
+        symbol [ System %tmp.30 87 19 25 ];
+        %tmp.30 = getm $.Toybox.System;
+        symbol [ getTimer %tmp.31 87 26 34 ];
+        %tmp.31 = getv function %tmp.30 :getTimer;
+        %tmp.32 = invoke %tmp.30 %tmp.31();
+        %tmp.33 = 1000;
+        %tmp.34 = div %tmp.32 %tmp.33;
+        lputv %nowS.3 %tmp.34;
+        symbol [ nowS %nowS.3 87 12 16 ];
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc" 88 8 ]
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_88_8_91_8_if_stmt:
+        %tmp.35 = lgetv %nowS.3;
+        symbol [ nowS %tmp.35 88 12 16 ];
+        symbol [ _lastFlushS %tmp.37 88 19 30 ];
+        %tmp.37 = getv ? :_lastFlushS;
+        %tmp.38 = sub %tmp.35 %tmp.37;
+        %tmp.39 = 1;
+        %tmp.40 = gte %tmp.38 %tmp.39;
+        bf %tmp.40 @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_88_8_91_8_if_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_88_8_91_8_if_true:
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_88_37_91_8_start:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc" 89 12 ]
+        %tmp.41 = lgetv %nowS.3;
+        symbol [ nowS %tmp.41 89 26 30 ];
+        symbol [ _lastFlushS ? 89 12 23 ];
+        putv self :_lastFlushS %tmp.41;
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc" 90 12 ]
+        %tmp.42 = self;
+        symbol [ _flushWindow %tmp.43 90 12 24 ];
+        %tmp.43 = getv function %tmp.42 :_flushWindow;
+        invoke %tmp.42 %tmp.43();
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_88_37_91_8_stop:
+        goto @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_88_8_91_8_if_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_88_8_91_8_if_end:
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_65_55_92_4_stop:
+    }
+    [ @file = "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc"; @line = 96; @symbol_functiondef = [_flushWindow,96,21,33]; ]
+    private
+    function _flushWindow() as Void {
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_96_44_128_4_start:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc" 97 8 ]
+        [ "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_96_44_128_4_start" "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_96_44_128_4_stop" ]
+        %n.1 = local;
+        symbol [ n %n.1 97 12 13 ];
+        symbol [ _buf %tmp.2 97 16 20 ];
+        %tmp.2 = getv ? :_buf;
+        symbol [ size %tmp.3 97 21 25 ];
+        %tmp.3 = getv function %tmp.2 :size;
+        %tmp.4 = invoke %tmp.2 %tmp.3();
+        lputv %n.1 %tmp.4;
+        symbol [ n %n.1 97 12 13 ];
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc" 98 8 ]
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_98_8_98_40_if_stmt:
+        %tmp.5 = lgetv %n.1;
+        symbol [ n %tmp.5 98 12 13 ];
+        %tmp.6 = 1;
+        %tmp.7 = lt %tmp.5 %tmp.6;
+        bf %tmp.7 @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_98_8_98_40_if_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_98_8_98_40_if_true:
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_98_19_98_40_start:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc" 98 21 ]
+        %tmp.8 = newa 0;
+        symbol [ _buf ? 98 21 25 ];
+        putv self :_buf %tmp.8;
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc" 98 32 ]
+        ret ?;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_98_19_98_40_stop:
+        goto @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_98_8_98_40_if_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_98_8_98_40_if_end:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc" 101 8 ]
+        [ "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_96_44_128_4_start" "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_96_44_128_4_stop" ]
+        %sumAz.2 = local;
+        symbol [ sumAz %sumAz.2 101 12 17 ];
+        %tmp.9 = 0.0f;
+        lputv %sumAz.2 %tmp.9;
+        symbol [ sumAz %sumAz.2 101 12 17 ];
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc" 102 8 ]
+        for @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_102_8_102_56_for_test @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_102_8_102_56_for_incr @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_102_8_102_56_for_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_102_8_102_56_for_init:
+        [ "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_102_8_102_56_for_begin" "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_102_8_102_56_for_end" ]
+        %i.3 = local;
+        symbol [ i %i.3 102 17 18 ];
+        %tmp.10 = 0;
+        lputv %i.3 %tmp.10;
+        symbol [ i %i.3 102 17 18 ];
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_102_8_102_56_for_test:
+        %tmp.11 = lgetv %i.3;
+        symbol [ i %tmp.11 102 24 25 ];
+        %tmp.12 = lgetv %n.1;
+        symbol [ n %tmp.12 102 28 29 ];
+        %tmp.13 = lt %tmp.11 %tmp.12;
+        bf %tmp.13 @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_102_8_102_56_for_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_102_8_102_56_for_begin:
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_102_36_102_56_start:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc" 102 38 ]
+        %tmp.14 = lgetv %sumAz.2;
+        symbol [ sumAz %tmp.14 102 38 43 ];
+        symbol [ _buf %tmp.16 102 47 51 ];
+        %tmp.16 = getv ? :_buf;
+        %tmp.17 = lgetv %i.3;
+        symbol [ i %tmp.17 102 52 53 ];
+        %tmp.18 = agetv %tmp.16 %tmp.17;
+        %tmp.19 = add %tmp.14 %tmp.18;
+        lputv %sumAz.2 %tmp.19;
+        symbol [ sumAz %sumAz.2 102 38 43 ];
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_102_36_102_56_stop:
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_102_8_102_56_for_incr:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc" 102 ]
+        %tmp.22 = lgetv %i.3;
+        symbol [ i %tmp.22 102 31 32 ];
+        %tmp.23 = add %tmp.22 1;
+        lputv %i.3 %tmp.23;
+        symbol [ i %i.3 102 31 32 ];
+        goto @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_102_8_102_56_for_test;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_102_8_102_56_for_end:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc" 103 8 ]
+        [ "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_96_44_128_4_start" "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_96_44_128_4_stop" ]
+        %mean.4 = local;
+        symbol [ mean %mean.4 103 12 16 ];
+        %tmp.24 = lgetv %sumAz.2;
+        symbol [ sumAz %tmp.24 103 19 24 ];
+        %tmp.25 = lgetv %n.1;
+        symbol [ n %tmp.25 103 27 28 ];
+        symbol [ toFloat %tmp.26 103 29 36 ];
+        %tmp.26 = getv function %tmp.25 :toFloat;
+        %tmp.27 = invoke %tmp.25 %tmp.26();
+        %tmp.28 = div %tmp.24 %tmp.27;
+        lputv %mean.4 %tmp.28;
+        symbol [ mean %mean.4 103 12 16 ];
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc" 106 8 ]
+        [ "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_96_44_128_4_start" "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_96_44_128_4_stop" ]
+        %sumAz2.5 = local;
+        symbol [ sumAz2 %sumAz2.5 106 12 18 ];
+        %tmp.29 = 0.0f;
+        lputv %sumAz2.5 %tmp.29;
+        symbol [ sumAz2 %sumAz2.5 106 12 18 ];
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc" 107 8 ]
+        [ "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_96_44_128_4_start" "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_96_44_128_4_stop" ]
+        %sumAz4.6 = local;
+        symbol [ sumAz4 %sumAz4.6 107 12 18 ];
+        %tmp.30 = 0.0f;
+        lputv %sumAz4.6 %tmp.30;
+        symbol [ sumAz4 %sumAz4.6 107 12 18 ];
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc" 108 8 ]
+        [ "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_96_44_128_4_start" "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_96_44_128_4_stop" ]
+        %pk.7 = local;
+        symbol [ pk %pk.7 108 12 14 ];
+        %tmp.31 = 0.0f;
+        lputv %pk.7 %tmp.31;
+        symbol [ pk %pk.7 108 12 14 ];
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc" 109 8 ]
+        for @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_109_8_116_8_for_test @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_109_8_116_8_for_incr @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_109_8_116_8_for_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_109_8_116_8_for_init:
+        [ "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_109_8_116_8_for_begin" "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_109_8_116_8_for_end" ]
+        %i.8 = local;
+        symbol [ i %i.8 109 17 18 ];
+        %tmp.32 = 0;
+        lputv %i.8 %tmp.32;
+        symbol [ i %i.8 109 17 18 ];
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_109_8_116_8_for_test:
+        %tmp.33 = lgetv %i.8;
+        symbol [ i %tmp.33 109 24 25 ];
+        %tmp.34 = lgetv %n.1;
+        symbol [ n %tmp.34 109 28 29 ];
+        %tmp.35 = lt %tmp.33 %tmp.34;
+        bf %tmp.35 @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_109_8_116_8_for_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_109_8_116_8_for_begin:
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_109_36_116_8_start:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc" 110 12 ]
+        [ "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_109_36_116_8_start" "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_109_36_116_8_stop" ]
+        %dyn.9 = local;
+        symbol [ dyn %dyn.9 110 16 19 ];
+        symbol [ _buf %tmp.37 110 23 27 ];
+        %tmp.37 = getv ? :_buf;
+        %tmp.38 = lgetv %i.8;
+        symbol [ i %tmp.38 110 28 29 ];
+        %tmp.39 = agetv %tmp.37 %tmp.38;
+        %tmp.40 = lgetv %mean.4;
+        symbol [ mean %tmp.40 110 33 37 ];
+        %tmp.41 = sub %tmp.39 %tmp.40;
+        lputv %dyn.9 %tmp.41;
+        symbol [ dyn %dyn.9 110 16 19 ];
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc" 111 12 ]
+        [ "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_109_36_116_8_start" "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_109_36_116_8_stop" ]
+        %dyn2.10 = local;
+        symbol [ dyn2 %dyn2.10 111 16 20 ];
+        %tmp.42 = lgetv %dyn.9;
+        symbol [ dyn %tmp.42 111 23 26 ];
+        %tmp.43 = lgetv %dyn.9;
+        symbol [ dyn %tmp.43 111 29 32 ];
+        %tmp.44 = mul %tmp.42 %tmp.43;
+        lputv %dyn2.10 %tmp.44;
+        symbol [ dyn2 %dyn2.10 111 16 20 ];
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc" 112 12 ]
+        %tmp.45 = lgetv %sumAz2.5;
+        symbol [ sumAz2 %tmp.45 112 12 18 ];
+        %tmp.46 = lgetv %dyn2.10;
+        symbol [ dyn2 %tmp.46 112 22 26 ];
+        %tmp.47 = add %tmp.45 %tmp.46;
+        lputv %sumAz2.5 %tmp.47;
+        symbol [ sumAz2 %sumAz2.5 112 12 18 ];
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc" 113 12 ]
+        %tmp.48 = lgetv %sumAz4.6;
+        symbol [ sumAz4 %tmp.48 113 12 18 ];
+        %tmp.49 = lgetv %dyn2.10;
+        symbol [ dyn2 %tmp.49 113 22 26 ];
+        %tmp.50 = lgetv %dyn2.10;
+        symbol [ dyn2 %tmp.50 113 29 33 ];
+        %tmp.51 = mul %tmp.49 %tmp.50;
+        %tmp.52 = add %tmp.48 %tmp.51;
+        lputv %sumAz4.6 %tmp.52;
+        symbol [ sumAz4 %sumAz4.6 113 12 18 ];
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc" 114 12 ]
+        [ "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_109_36_116_8_start" "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_109_36_116_8_stop" ]
+        %absDyn.11 = local;
+        symbol [ absDyn %absDyn.11 114 16 22 ];
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_114_25_114_47_begin:
+        %tmp.53 = lgetv %dyn.9;
+        symbol [ dyn %tmp.53 114 26 29 ];
+        %tmp.54 = 0.0f;
+        %tmp.55 = lt %tmp.53 %tmp.54;
+        bf %tmp.55 @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_114_25_114_47_else_false;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_114_25_114_47_true:
+        %tmp.56 = lgetv %dyn.9;
+        symbol [ dyn %tmp.56 114 41 44 ];
+        %tmp.57 = sub 0 %tmp.56;
+        push %tmp.57;
+        goto @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_114_25_114_47_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_114_25_114_47_else_false:
+        %tmp.58 = lgetv %dyn.9;
+        symbol [ dyn %tmp.58 114 47 50 ];
+        push %tmp.58;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_114_25_114_47_end:
+        %tmp.59 = phi [%tmp.55 @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_114_25_114_47_begin] [%tmp.57 @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_114_25_114_47_true] [%tmp.58 @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_114_25_114_47_else_false] [%tmp.59 @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_114_25_114_47_end];
+        lputv %absDyn.11 %tmp.59;
+        symbol [ absDyn %absDyn.11 114 16 22 ];
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc" 115 12 ]
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_115_12_115_44_if_stmt:
+        %tmp.60 = lgetv %absDyn.11;
+        symbol [ absDyn %tmp.60 115 16 22 ];
+        %tmp.61 = lgetv %pk.7;
+        symbol [ pk %tmp.61 115 25 27 ];
+        %tmp.62 = gt %tmp.60 %tmp.61;
+        bf %tmp.62 @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_115_12_115_44_if_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_115_12_115_44_if_true:
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_115_29_115_44_start:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc" 115 31 ]
+        %tmp.63 = lgetv %absDyn.11;
+        symbol [ absDyn %tmp.63 115 36 42 ];
+        lputv %pk.7 %tmp.63;
+        symbol [ pk %pk.7 115 31 33 ];
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_115_29_115_44_stop:
+        goto @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_115_12_115_44_if_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_115_12_115_44_if_end:
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_109_36_116_8_stop:
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_109_8_116_8_for_incr:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc" 109 ]
+        %tmp.66 = lgetv %i.8;
+        symbol [ i %tmp.66 109 31 32 ];
+        %tmp.67 = add %tmp.66 1;
+        lputv %i.8 %tmp.67;
+        symbol [ i %i.8 109 31 32 ];
+        goto @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_109_8_116_8_for_test;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_109_8_116_8_for_end:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc" 118 8 ]
+        [ "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_96_44_128_4_start" "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_96_44_128_4_stop" ]
+        %rmsVal.12 = local;
+        symbol [ rmsVal %rmsVal.12 118 12 18 ];
+        symbol [ Math %tmp.68 118 21 25 ];
+        %tmp.68 = getm $.Toybox.Math;
+        symbol [ sqrt %tmp.69 118 26 30 ];
+        %tmp.69 = getv function %tmp.68 :sqrt;
+        %tmp.70 = lgetv %sumAz2.5;
+        symbol [ sumAz2 %tmp.70 118 31 37 ];
+        %tmp.71 = lgetv %n.1;
+        symbol [ n %tmp.71 118 40 41 ];
+        symbol [ toFloat %tmp.72 118 42 49 ];
+        %tmp.72 = getv function %tmp.71 :toFloat;
+        %tmp.73 = invoke %tmp.71 %tmp.72();
+        %tmp.74 = div %tmp.70 %tmp.73;
+        %tmp.75 = invoke %tmp.68 %tmp.69(%tmp.74);
+        symbol [ toFloat %tmp.76 118 53 60 ];
+        %tmp.76 = getv function %tmp.75 :toFloat;
+        %tmp.77 = invoke %tmp.75 %tmp.76();
+        lputv %rmsVal.12 %tmp.77;
+        symbol [ rmsVal %rmsVal.12 118 12 18 ];
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc" 119 8 ]
+        [ "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_96_44_128_4_start" "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_96_44_128_4_stop" ]
+        %vdvVal.13 = local;
+        symbol [ vdvVal %vdvVal.13 119 12 18 ];
+        symbol [ Math %tmp.78 119 21 25 ];
+        %tmp.78 = getm $.Toybox.Math;
+        symbol [ pow %tmp.79 119 26 29 ];
+        %tmp.79 = getv function %tmp.78 :pow;
+        %tmp.80 = lgetv %sumAz4.6;
+        symbol [ sumAz4 %tmp.80 119 31 37 ];
+        %tmp.81 = lgetv %n.1;
+        symbol [ n %tmp.81 119 40 41 ];
+        symbol [ toFloat %tmp.82 119 42 49 ];
+        %tmp.82 = getv function %tmp.81 :toFloat;
+        %tmp.83 = invoke %tmp.81 %tmp.82();
+        %tmp.84 = div %tmp.80 %tmp.83;
+        symbol [ toDouble %tmp.85 119 53 61 ];
+        %tmp.85 = getv function %tmp.84 :toDouble;
+        %tmp.86 = invoke %tmp.84 %tmp.85();
+        %tmp.87 = 0.25d;
+        %tmp.88 = invoke %tmp.78 %tmp.79(%tmp.86, %tmp.87);
+        symbol [ toFloat %tmp.89 119 72 79 ];
+        %tmp.89 = getv function %tmp.88 :toFloat;
+        %tmp.90 = invoke %tmp.88 %tmp.89();
+        lputv %vdvVal.13 %tmp.90;
+        symbol [ vdvVal %vdvVal.13 119 12 18 ];
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc" 121 8 ]
+        %tmp.91 = lgetv %rmsVal.12;
+        symbol [ rmsVal %tmp.91 121 18 24 ];
+        symbol [ rms ? 121 8 11 ];
+        putv self :rms %tmp.91;
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc" 122 8 ]
+        %tmp.92 = lgetv %vdvVal.13;
+        symbol [ vdvVal %tmp.92 122 18 24 ];
+        symbol [ vdv ? 122 8 11 ];
+        putv self :vdv %tmp.92;
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc" 123 8 ]
+        %tmp.93 = lgetv %pk.7;
+        symbol [ pk %tmp.93 123 18 20 ];
+        symbol [ peak ? 123 8 12 ];
+        putv self :peak %tmp.93;
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc" 124 8 ]
+        %tmp.94 = 0;
+        symbol [ dataAge ? 124 8 15 ];
+        putv self :dataAge %tmp.94;
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc" 125 8 ]
+        %tmp.95 = newa 0;
+        symbol [ _buf ? 125 8 12 ];
+        putv self :_buf %tmp.95;
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc" 127 8 ]
+        symbol [ _callback %tmp.97 127 8 17 ];
+        %tmp.97 = getv ? :_callback;
+        symbol [ invoke %tmp.98 127 18 24 ];
+        %tmp.98 = getv function %tmp.97 :invoke;
+        %tmp.99 = lgetv %rmsVal.12;
+        symbol [ rmsVal %tmp.99 127 25 31 ];
+        %tmp.100 = lgetv %vdvVal.13;
+        symbol [ vdvVal %tmp.100 127 33 39 ];
+        %tmp.101 = lgetv %pk.7;
+        symbol [ pk %tmp.101 127 41 43 ];
+        invoke %tmp.97 %tmp.98(%tmp.99, %tmp.100, %tmp.101);
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_96_44_128_4_stop:
+    }
+    [ @file = "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc"; @line = 132; @symbol_functiondef = [available,132,13,22]; @symbol_return<0> = [Boolean,132,28,35]; ]
+    function available() as Boolean {
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_132_36_132_57_start:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc" 132 38 ]
+        symbol [ _available %tmp.2 132 45 55 ];
+        %tmp.2 = getv ? :_available;
+        ret %tmp.2;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_GarminAccelSensor_mc_132_36_132_57_stop:
+    }
+}
+[ @file = "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\GarminAccelSensor.mc"; @line = 1; ]
+<init> {
+}

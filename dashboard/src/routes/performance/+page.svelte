@@ -8,6 +8,7 @@
     buildPacingSegments, planPhysioPacing,
   } from '$lib/rollex/performanceModel'
   import { computeAirDensity } from '$lib/rollex/rollingResistance'
+  import { loadCentralRides, loadRideTrack, selectedRide as centralRide } from '$lib/rideSelection.js'
 
   // ── State ──────────────────────────────────────────────────────────────────
   let track       = null
@@ -20,10 +21,11 @@
   let error       = ''
 
   // Track source
-  let source      = 'upload'
+  let source      = 'supabase'
   let rides       = []
   let selectedId  = ''
   let loadingRides= false
+  let loadedCentralRideId = ''
 
   // Shared physics params
   let massKg      = 73
@@ -81,7 +83,16 @@
     script.src = 'https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js'
     script.onload = () => { Chart = window.Chart }
     document.head.appendChild(script)
+    try {
+      await loadCentralRides()
+    } catch (ex) {
+      error = 'Zentrale Fahrt konnte nicht geladen werden: ' + ex.message
+    }
   })
+
+  $: if (source === 'supabase' && $centralRide?.id && $centralRide.id !== loadedCentralRideId && !analyzing) {
+    loadCentralTrack()
+  }
 
   // ── Track loading ──────────────────────────────────────────────────────────
   function handleTrackFile(e) {
@@ -147,6 +158,21 @@
       track = trackFromSurfaceSamples(rows ?? [])
     } catch (ex) { error = 'Fehler: ' + ex.message }
     analyzing = false
+  }
+
+  async function loadCentralTrack() {
+    const ride = $centralRide
+    if (!ride) return
+    error = ''; track = null; results = null; analyzing = true
+    loadedCentralRideId = ride.id
+    try {
+      track = await loadRideTrack(ride, { includeIri: false })
+      if (track.points.length < 2) { track = null; error = 'Track enthält keine GPS-Punkte' }
+    } catch (ex) {
+      error = 'Fehler: ' + ex.message
+    } finally {
+      analyzing = false
+    }
   }
 
   // ── Simulation — alle 3 Szenarien gleichzeitig ────────────────────────────
@@ -344,8 +370,8 @@
     <section class="section">
       <div class="section-label">Strecke</div>
       <div class="toggle-row">
+        <button class:active={source === 'supabase'} on:click={() => source = 'supabase'}>Aktuelle Fahrt</button>
         <button class:active={source === 'upload'} on:click={() => source = 'upload'}>Upload</button>
-        <button class:active={source === 'supabase'} on:click={() => { source = 'supabase'; loadSupabaseRides() }}>Eigene Fahrten</button>
       </div>
 
       {#if source === 'upload'}
@@ -360,6 +386,22 @@
           </div>
         {/if}
       {:else}
+        {#if !$centralRide}
+          <div class="info-chip warn">Keine zentrale Fahrt ausgewählt</div>
+          <a class="btn-secondary link-btn" href="/">Zur Fahrten-Auswahl</a>
+        {:else}
+          <div class="central-ride-card">
+            <span>Aktuelle Fahrt</span>
+            <strong>{$centralRide.name ?? 'Fahrt'} · {$centralRide.started_at?.slice(0,10) ?? ''}</strong>
+            <a href="/">Fahrt wechseln</a>
+          </div>
+          {#if track}
+            <div class="info-chip ok">✓ {track.points.length} Punkte geladen</div>
+          {/if}
+        {/if}
+      {/if}
+
+      {#if false}
         {#if loadingRides}
           <div class="info-chip">Lade Fahrten…</div>
         {:else if rides.length === 0}
@@ -846,6 +888,25 @@
   }
   .btn-secondary:hover { border-color: #8b949e; }
   .btn-secondary:disabled { opacity: 0.5; }
+  .link-btn { display: inline-flex; justify-content: center; text-decoration: none; margin-top: 8px; }
+  .central-ride-card {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px 12px;
+    background: #0d1117;
+    border: 1px solid #2dd4bf55;
+    border-radius: 8px;
+  }
+  .central-ride-card span {
+    color: #8b949e;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .central-ride-card strong { color: #e6edf3; font-size: 13px; }
+  .central-ride-card a { color: #2dd4bf; font-size: 12px; text-decoration: none; }
+  .central-ride-card a:hover { text-decoration: underline; }
 
   .error-box {
     background: #ef444420; border: 1px solid #ef444460;

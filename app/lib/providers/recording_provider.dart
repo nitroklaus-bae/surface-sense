@@ -180,6 +180,7 @@ class RecordingProvider extends ChangeNotifier {
   int  get phoneSampleRate            => _phoneSampleRate;
   bool get relayMode                  => _relayMode;
   RelayState get relayState           => _relay.state;
+  int  get relayPublishCount          => _relay.publishCount;
 
   /// Vollständiges Bike-Koordinatensystem (vertikal / longitudinal / lateral).
   /// Nur verfügbar wenn Orientierungskalibrierung abgeschlossen.

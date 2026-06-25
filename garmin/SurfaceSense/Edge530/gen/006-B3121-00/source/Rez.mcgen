@@ -1,0 +1,24 @@
+import Toybox.Lang;
+using Toybox.WatchUi;
+using Toybox.WatchUi as Ui;
+using Toybox.Graphics;
+using Toybox.Graphics as Gfx;
+
+module Rez {
+    module Drawables {
+        (:initialized) var LauncherIcon as ResourceId;
+    } // Drawables
+
+    module Layouts {
+        function MainLayout(dc as Graphics.Dc) as Array<WatchUi.Drawable> {
+            return [] as Array<WatchUi.Drawable>;
+        }
+    } // Layouts
+
+    module Strings {
+        (:initialized) var Searching as ResourceId;
+        (:initialized) var Connected as ResourceId;
+        (:initialized) var NoData as ResourceId;
+        (:initialized) var AppName as ResourceId;
+    } // Strings
+} // Rez

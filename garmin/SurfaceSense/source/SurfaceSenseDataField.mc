@@ -108,7 +108,7 @@ class SurfaceSenseDataField extends WatchUi.DataField {
             { :mesgType => FitContributor.MESG_TYPE_RECORD, :units => "m/km" }
         );
 
-        // BLE-Sensor initialisieren
+        // BLE-Sensor initialisieren (registerProfile ist intern try-catch geschützt)
         _ble = new BleManager(method(:onSurfaceData));
 
         // Garmin-internen Sensor als Fallback initialisieren
@@ -176,6 +176,9 @@ class SurfaceSenseDataField extends WatchUi.DataField {
             _source  = SRC_BLE;
         }
         _wasBleConnected = nowConnected;
+
+        // Garmin-Sensor erst aktivieren wenn BLE nicht verfügbar (lazy)
+        if (!nowConnected) { _garmin.tryStart(); }
 
         // Quelle auf Intern setzen wenn BLE weg aber Garmin-Daten frisch
         if (!nowConnected && _garmin.dataAge < 3) {

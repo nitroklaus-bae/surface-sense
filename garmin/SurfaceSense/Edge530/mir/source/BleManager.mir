@@ -1,0 +1,1113 @@
+[ @file = "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc"; @line = 1; @symbol_importdef<0> = [Toybox,1,7,13]; @symbol_importdef<1> = [BluetoothLowEnergy,1,14,32]; ]
+import Toybox.BluetoothLowEnergy;
+[ @file = "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc"; @line = 2; @symbol_importdef<0> = [Toybox,2,7,13]; @symbol_importdef<1> = [Lang,2,14,18]; ]
+import Toybox.Lang;
+[ @file = "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc"; @line = 3; @symbol_importdef<0> = [Toybox,3,7,13]; @symbol_importdef<1> = [Math,3,14,18]; ]
+import Toybox.Math;
+[ @file = "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc"; @line = 4; @symbol_importdef<0> = [Toybox,4,7,13]; @symbol_importdef<1> = [System,4,14,20]; ]
+import Toybox.System;
+[ @file = "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc"; @line = 11; @position = 6; @symbol_constdef = [SURFACE_SVC_UUID,11,6,22]; ]
+const SURFACE_SVC_UUID;
+[ @file = "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc"; @line = 12; @position = 6; @symbol_constdef = [SURFACE_CHAR_UUID,12,6,23]; ]
+const SURFACE_CHAR_UUID;
+[ @file = "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc"; @line = 13; @position = 6; @symbol_constdef = [TEMP_CHAR_UUID,13,6,20]; ]
+const TEMP_CHAR_UUID;
+[ @file = "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc"; @line = 16; @position = 6; @symbol_constdef = [SENSOR_NAME,16,6,17]; ]
+const SENSOR_NAME = "SurfaceSensor";
+[ @file = "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc"; @line = 25; @symbol_classdef = [BleManager,25,6,16]; @symbol_extends<0> = [BluetoothLowEnergy,25,25,43]; @symbol_extends<1> = [BleDelegate,25,44,55]; ]
+class BleManager extends BluetoothLowEnergy.BleDelegate {
+    [ @file = "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc"; @line = 25; ]
+    <init> {
+    }
+    [ @file = "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc"; @line = 25; ]
+    static
+    <init> {
+    }
+    [ @file = "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc"; @line = 28; @position = 16; @symbol_vardef = [_callback,28,16,25]; @symbol_type<0> = [Method,28,29,35]; ]
+    private
+    var _callback as Method;
+    [ @file = "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc"; @line = 30; @position = 16; @symbol_vardef = [_device,30,16,23]; @symbol_type<0> = [BluetoothLowEnergy,30,30,48]; @symbol_type<1> = [Device,30,49,55]; ]
+    private
+    var _device as BluetoothLowEnergy.Device or Null = null;
+    [ @file = "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc"; @line = 31; @position = 16; @symbol_vardef = [_scanning,31,16,25]; @symbol_type<0> = [Boolean,31,30,37]; ]
+    private
+    var _scanning as Boolean = false;
+    [ @file = "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc"; @line = 32; @position = 16; @symbol_vardef = [_connected,32,16,26]; @symbol_type<0> = [Boolean,32,30,37]; ]
+    private
+    var _connected as Boolean = false;
+    [ @file = "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc"; @line = 35; @position = 15; @symbol_vardef = [rms,35,15,18]; @symbol_type<0> = [Float,35,24,29]; ]
+    public
+    var rms as Float = 0.0f;
+    [ @file = "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc"; @line = 36; @position = 15; @symbol_vardef = [vdv,36,15,18]; @symbol_type<0> = [Float,36,24,29]; ]
+    public
+    var vdv as Float = 0.0f;
+    [ @file = "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc"; @line = 37; @position = 15; @symbol_vardef = [peak,37,15,19]; @symbol_type<0> = [Float,37,24,29]; ]
+    public
+    var peak as Float = 0.0f;
+    [ @file = "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc"; @line = 38; @position = 15; @symbol_vardef = [crest,38,15,20]; @symbol_type<0> = [Float,38,24,29]; ]
+    public
+    var crest as Float = 0.0f;
+    [ @file = "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc"; @line = 39; @position = 15; @symbol_vardef = [iri,39,15,18]; @symbol_type<0> = [Float,39,24,29]; ]
+    public
+    var iri as Float = 0.0f;
+    [ @file = "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc"; @line = 40; @position = 15; @symbol_vardef = [tempC,40,15,20]; @symbol_type<0> = [Float,40,24,29]; ]
+    public
+    var tempC as Float = 25.0f;
+    [ @file = "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc"; @line = 41; @position = 15; @symbol_vardef = [connected,41,15,24]; @symbol_type<0> = [Boolean,41,28,35]; ]
+    public
+    var connected as Boolean = false;
+    [ @file = "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc"; @line = 45; @symbol_functiondef = [initialize,45,13,23]; @symbol_param<0> = [callback,45,24,32]; @symbol_param<0>_type<0> = [Method,45,36,42]; ]
+    function initialize(callback as Method) as Void {
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_45_44_58_4_start:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 46 8 ]
+        symbol [ BleDelegate %tmp.2 46 8 19 ];
+        %tmp.2 = getv ? :BleDelegate;
+        symbol [ initialize %tmp.3 46 20 30 ];
+        %tmp.3 = getv function %tmp.2 :initialize;
+        invoke %tmp.2 %tmp.3();
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 47 8 ]
+        %tmp.4 = lgetv %callback;
+        symbol [ callback %tmp.4 47 20 28 ];
+        symbol [ _callback ? 47 8 17 ];
+        putv self :_callback %tmp.4;
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 51 8 ]
+        %tmp.5 = self;
+        symbol [ _registerProfile %tmp.6 51 8 24 ];
+        %tmp.6 = getv function %tmp.5 :_registerProfile;
+        invoke %tmp.5 %tmp.6();
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 54 8 ]
+        symbol [ BluetoothLowEnergy %tmp.7 54 8 26 ];
+        %tmp.7 = getm $.Toybox.BluetoothLowEnergy;
+        symbol [ setDelegate %tmp.8 54 27 38 ];
+        %tmp.8 = getv function %tmp.7 :setDelegate;
+        %tmp.9 = self;
+        symbol [ self %tmp.9 54 39 43 ];
+        invoke %tmp.7 %tmp.8(%tmp.9);
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 57 8 ]
+        %tmp.10 = self;
+        symbol [ startScan %tmp.11 57 8 17 ];
+        %tmp.11 = getv function %tmp.10 :startScan;
+        invoke %tmp.10 %tmp.11();
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_45_44_58_4_stop:
+    }
+    [ @file = "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc"; @line = 60; @symbol_functiondef = [_registerProfile,60,21,37]; ]
+    private
+    function _registerProfile() as Void {
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_60_48_79_4_start:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 61 8 ]
+        try @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_61_8_78_8_beginTry @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_61_8_78_8_endTry @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_61_8_78_8_catch @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_61_8_78_8_finally;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_61_8_78_8_beginTry:
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_61_12_75_8_start:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 62 12 ]
+        symbol [ BluetoothLowEnergy %tmp.1 62 12 30 ];
+        %tmp.1 = getm $.Toybox.BluetoothLowEnergy;
+        symbol [ registerProfile %tmp.2 62 31 46 ];
+        %tmp.2 = getv function %tmp.1 :registerProfile;
+        %tmp.3 = newd 2;
+        %tmp.5 = const :uuid;
+        symbol [ uuid %tmp.5 63 17 21 const ];
+        symbol [ SURFACE_SVC_UUID %tmp.7 63 36 52 ];
+        %tmp.7 = getv ? :SURFACE_SVC_UUID;
+        %tmp.8 = dup %tmp.3;
+        %tmp.9 = aputv %tmp.8 %tmp.5 %tmp.7;
+        %tmp.11 = const :characteristics;
+        symbol [ characteristics %tmp.11 64 17 32 const ];
+        %tmp.12 = newa 2;
+        %tmp.13 = newd 2;
+        %tmp.15 = const :uuid;
+        symbol [ uuid %tmp.15 66 25 29 const ];
+        symbol [ SURFACE_CHAR_UUID %tmp.17 66 40 57 ];
+        %tmp.17 = getv ? :SURFACE_CHAR_UUID;
+        %tmp.18 = dup %tmp.13;
+        %tmp.19 = aputv %tmp.18 %tmp.15 %tmp.17;
+        %tmp.21 = const :descriptors;
+        symbol [ descriptors %tmp.21 67 25 36 const ];
+        %tmp.22 = newa 1;
+        symbol [ BluetoothLowEnergy %tmp.23 67 41 59 ];
+        %tmp.23 = getm $.Toybox.BluetoothLowEnergy;
+        symbol [ cccdUuid %tmp.24 67 60 68 ];
+        %tmp.24 = getv function %tmp.23 :cccdUuid;
+        %tmp.25 = invoke %tmp.23 %tmp.24();
+        %tmp.26 = dup %tmp.22;
+        %tmp.27 = aputv %tmp.26 0 %tmp.25;
+        %tmp.28 = dup %tmp.19;
+        %tmp.29 = aputv %tmp.28 %tmp.21 %tmp.27;
+        %tmp.30 = dup %tmp.12;
+        %tmp.31 = aputv %tmp.30 0 %tmp.29;
+        %tmp.32 = newd 2;
+        %tmp.34 = const :uuid;
+        symbol [ uuid %tmp.34 70 25 29 const ];
+        symbol [ TEMP_CHAR_UUID %tmp.36 70 40 54 ];
+        %tmp.36 = getv ? :TEMP_CHAR_UUID;
+        %tmp.37 = dup %tmp.32;
+        %tmp.38 = aputv %tmp.37 %tmp.34 %tmp.36;
+        %tmp.40 = const :descriptors;
+        symbol [ descriptors %tmp.40 71 25 36 const ];
+        %tmp.41 = newa 1;
+        symbol [ BluetoothLowEnergy %tmp.42 71 41 59 ];
+        %tmp.42 = getm $.Toybox.BluetoothLowEnergy;
+        symbol [ cccdUuid %tmp.43 71 60 68 ];
+        %tmp.43 = getv function %tmp.42 :cccdUuid;
+        %tmp.44 = invoke %tmp.42 %tmp.43();
+        %tmp.45 = dup %tmp.41;
+        %tmp.46 = aputv %tmp.45 0 %tmp.44;
+        %tmp.47 = dup %tmp.38;
+        %tmp.48 = aputv %tmp.47 %tmp.40 %tmp.46;
+        %tmp.49 = dup %tmp.31;
+        %tmp.50 = aputv %tmp.49 1 %tmp.48;
+        %tmp.51 = dup %tmp.9;
+        %tmp.52 = aputv %tmp.51 %tmp.11 %tmp.50;
+        invoke %tmp.1 %tmp.2(%tmp.52);
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_61_12_75_8_stop:
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_61_8_78_8_endTry:
+        jsr @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_61_8_78_8_finally;
+        goto @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_61_8_78_8_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_61_8_78_8_catch:
+        %tmp.53 = exception;
+        push %tmp.53;
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 75 10 ]
+        %tmp.54 = dup %tmp.53;
+        symbol [ Lang %tmp.55 75 30 34 ];
+        %tmp.55 = getm $.Toybox.Lang;
+        symbol [ Exception %tmp.56 75 35 44 ];
+        %tmp.56 = getv %tmp.55 :Exception;
+        %tmp.57 = isa %tmp.54 %tmp.56;
+        bf %tmp.57 @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_75_10_78_8_next;
+        [ "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_61_8_78_8_catch" "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_75_10_78_8_next" ]
+        %e.1 = local;
+        symbol [ e %e.1 75 17 18 ];
+        %tmp.58 = dup %tmp.53;
+        %tmp.59 = as %tmp.58 Lang.Exception;
+        lputv %e.1 %tmp.59;
+        symbol [ e %e.1 75 17 18 ];
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_75_46_78_8_start:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 77 12 ]
+        symbol [ System %tmp.60 77 12 18 ];
+        %tmp.60 = getm $.Toybox.System;
+        symbol [ println %tmp.61 77 19 26 ];
+        %tmp.61 = getv function %tmp.60 :println;
+        %tmp.62 = "[BleManager] registerProfile: ";
+        %tmp.63 = lgetv %e.1;
+        symbol [ e %tmp.63 77 62 63 ];
+        symbol [ getErrorMessage %tmp.64 77 64 79 ];
+        %tmp.64 = getv function %tmp.63 :getErrorMessage;
+        %tmp.65 = invoke %tmp.63 %tmp.64();
+        %tmp.66 = add %tmp.62 %tmp.65;
+        invoke %tmp.60 %tmp.61(%tmp.66);
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_75_46_78_8_stop:
+        jsr @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_61_8_78_8_finally;
+        pop;
+        goto @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_61_8_78_8_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_75_10_78_8_next:
+        try @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_61_8_78_8_catch @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_75_10_78_8_next @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_75_10_78_8_next @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_61_8_78_8_finally;
+        jsr @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_61_8_78_8_finally;
+        throw %tmp.53;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_61_8_78_8_finally:
+        jsrret;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_61_8_78_8_end:
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_60_48_79_4_stop:
+    }
+    [ @file = "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc"; @line = 83; @symbol_functiondef = [startScan,83,13,22]; ]
+    function startScan() as Void {
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_83_33_87_4_start:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 84 8 ]
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_84_8_84_47_if_stmt:
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_84_12_84_26_begin:
+        symbol [ _connected %tmp.2 84 12 22 ];
+        %tmp.2 = getv ? :_connected;
+        bt %tmp.2 @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_84_8_84_47_if_true;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_84_26_84_26_false:
+        symbol [ _scanning %tmp.4 84 26 35 ];
+        %tmp.4 = getv ? :_scanning;
+        push %tmp.4;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_84_26_84_26_end:
+        %tmp.5 = phi [%tmp.2 @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_84_12_84_26_begin] [%tmp.4 @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_84_26_84_26_false] [%tmp.5 @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_84_26_84_26_end];
+        bf %tmp.5 @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_84_8_84_47_if_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_84_8_84_47_if_true:
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_84_37_84_47_start:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 84 39 ]
+        ret ?;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_84_37_84_47_stop:
+        goto @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_84_8_84_47_if_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_84_8_84_47_if_end:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 85 8 ]
+        symbol [ BluetoothLowEnergy %tmp.6 85 8 26 ];
+        %tmp.6 = getm $.Toybox.BluetoothLowEnergy;
+        symbol [ setScanState %tmp.7 85 27 39 ];
+        %tmp.7 = getv function %tmp.6 :setScanState;
+        symbol [ BluetoothLowEnergy %tmp.8 85 40 58 ];
+        %tmp.8 = getm $.Toybox.BluetoothLowEnergy;
+        symbol [ SCAN_STATE_SCANNING %tmp.9 85 59 78 ];
+        %tmp.9 = getv %tmp.8 :SCAN_STATE_SCANNING;
+        invoke %tmp.6 %tmp.7(%tmp.9);
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 86 8 ]
+        %tmp.10 = true;
+        symbol [ _scanning ? 86 8 17 ];
+        putv self :_scanning %tmp.10;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_83_33_87_4_stop:
+    }
+    [ @file = "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc"; @line = 89; @symbol_functiondef = [stopScan,89,13,21]; ]
+    function stopScan() as Void {
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_89_32_93_4_start:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 90 8 ]
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_90_8_90_34_if_stmt:
+        symbol [ _scanning %tmp.2 90 13 22 ];
+        %tmp.2 = getv ? :_scanning;
+        %tmp.3 = not %tmp.2;
+        bf %tmp.3 @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_90_8_90_34_if_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_90_8_90_34_if_true:
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_90_24_90_34_start:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 90 26 ]
+        ret ?;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_90_24_90_34_stop:
+        goto @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_90_8_90_34_if_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_90_8_90_34_if_end:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 91 8 ]
+        symbol [ BluetoothLowEnergy %tmp.4 91 8 26 ];
+        %tmp.4 = getm $.Toybox.BluetoothLowEnergy;
+        symbol [ setScanState %tmp.5 91 27 39 ];
+        %tmp.5 = getv function %tmp.4 :setScanState;
+        symbol [ BluetoothLowEnergy %tmp.6 91 40 58 ];
+        %tmp.6 = getm $.Toybox.BluetoothLowEnergy;
+        symbol [ SCAN_STATE_OFF %tmp.7 91 59 73 ];
+        %tmp.7 = getv %tmp.6 :SCAN_STATE_OFF;
+        invoke %tmp.4 %tmp.5(%tmp.7);
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 92 8 ]
+        %tmp.8 = false;
+        symbol [ _scanning ? 92 8 17 ];
+        putv self :_scanning %tmp.8;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_89_32_93_4_stop:
+    }
+    [ @file = "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc"; @line = 99; @symbol_functiondef = [onScanResults,99,13,26]; @symbol_param<0> = [scanResults,99,27,38]; ]
+    function onScanResults(scanResults) as Void {
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_99_48_111_4_start:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 100 8 ]
+        [ "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_99_48_111_4_start" "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_99_48_111_4_stop" ]
+        %item.1 = local;
+        symbol [ item %item.1 100 12 16 ];
+        %tmp.1 = lgetv %scanResults;
+        symbol [ scanResults %tmp.1 100 19 30 ];
+        symbol [ next %tmp.2 100 31 35 ];
+        %tmp.2 = getv function %tmp.1 :next;
+        %tmp.3 = invoke %tmp.1 %tmp.2();
+        lputv %item.1 %tmp.3;
+        symbol [ item %item.1 100 12 16 ];
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 101 8 ]
+        while @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_101_8_110_8_while_test @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_101_8_110_8_while_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_101_8_110_8_while_test:
+        %tmp.4 = lgetv %item.1;
+        symbol [ item %tmp.4 101 15 19 ];
+        %tmp.5 = null;
+        %tmp.6 = ne %tmp.4 %tmp.5;
+        bf %tmp.6 @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_101_8_110_8_while_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_101_8_110_8_while_begin:
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_101_29_110_8_start:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 102 12 ]
+        [ "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_101_29_110_8_start" "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_101_29_110_8_stop" ]
+        %result.2 = local;
+        symbol [ result %result.2 102 16 22 ];
+        %tmp.7 = lgetv %item.1;
+        symbol [ item %tmp.7 102 25 29 ];
+        %tmp.8 = as %tmp.7 { (!Null) };
+        %tmp.9 = as %tmp.8 BluetoothLowEnergy.ScanResult;
+        symbol [ BluetoothLowEnergy %tmp.9 102 33 51 ];
+        symbol [ ScanResult %tmp.9 102 52 62 ];
+        lputv %result.2 %tmp.9;
+        symbol [ result %result.2 102 16 22 ];
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 103 12 ]
+        [ "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_101_29_110_8_start" "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_101_29_110_8_stop" ]
+        %name.3 = local;
+        symbol [ name %name.3 103 16 20 ];
+        %tmp.10 = lgetv %result.2;
+        symbol [ result %tmp.10 103 23 29 ];
+        symbol [ getDeviceName %tmp.11 103 30 43 ];
+        %tmp.11 = getv function %tmp.10 :getDeviceName;
+        %tmp.12 = invoke %tmp.10 %tmp.11();
+        lputv %name.3 %tmp.12;
+        symbol [ name %name.3 103 16 20 ];
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 104 12 ]
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_104_12_108_12_if_stmt:
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_104_16_104_55_begin:
+        %tmp.13 = lgetv %name.3;
+        symbol [ name %tmp.13 104 16 20 ];
+        %tmp.14 = null;
+        %tmp.15 = ne %tmp.13 %tmp.14;
+        bf %tmp.15 @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_104_12_108_12_if_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_104_32_104_55_true:
+        %tmp.16 = lgetv %name.3;
+        symbol [ name %tmp.16 104 32 36 ];
+        %tmp.17 = as %tmp.16 { (!Null) };
+        symbol [ equals %tmp.18 104 37 43 ];
+        %tmp.18 = getv function %tmp.17 :equals;
+        symbol [ SENSOR_NAME %tmp.20 104 44 55 ];
+        %tmp.20 = getv ? :SENSOR_NAME;
+        %tmp.21 = invoke %tmp.17 %tmp.18(%tmp.20);
+        push %tmp.21;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_104_32_104_55_end:
+        %tmp.22 = phi [%tmp.15 @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_104_16_104_55_begin] [%tmp.21 @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_104_32_104_55_true] [%tmp.22 @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_104_32_104_55_end];
+        bf %tmp.22 @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_104_12_108_12_if_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_104_12_108_12_if_true:
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_104_58_108_12_start:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 105 16 ]
+        symbol [ BluetoothLowEnergy %tmp.23 105 16 34 ];
+        %tmp.23 = getm $.Toybox.BluetoothLowEnergy;
+        symbol [ pairDevice %tmp.24 105 35 45 ];
+        %tmp.24 = getv function %tmp.23 :pairDevice;
+        %tmp.25 = lgetv %result.2;
+        symbol [ result %tmp.25 105 46 52 ];
+        invoke %tmp.23 %tmp.24(%tmp.25);
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 106 16 ]
+        %tmp.26 = self;
+        symbol [ stopScan %tmp.27 106 16 24 ];
+        %tmp.27 = getv function %tmp.26 :stopScan;
+        invoke %tmp.26 %tmp.27();
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 107 16 ]
+        ret ?;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_104_58_108_12_stop:
+        goto @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_104_12_108_12_if_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_104_12_108_12_if_end:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 109 12 ]
+        %tmp.28 = lgetv %scanResults;
+        symbol [ scanResults %tmp.28 109 19 30 ];
+        symbol [ next %tmp.29 109 31 35 ];
+        %tmp.29 = getv function %tmp.28 :next;
+        %tmp.30 = invoke %tmp.28 %tmp.29();
+        lputv %item.1 %tmp.30;
+        symbol [ item %item.1 109 12 16 ];
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_101_29_110_8_stop:
+        goto @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_101_8_110_8_while_test;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_101_8_110_8_while_end:
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_99_48_111_4_stop:
+    }
+    [ @file = "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc"; @line = 114; @symbol_functiondef = [onConnectedStateChanged,114,13,36]; @symbol_param<0> = [device,115,8,14]; @symbol_param<0>_type<0> = [BluetoothLowEnergy,115,18,36]; @symbol_param<0>_type<1> = [Device,115,37,43]; @symbol_param<1> = [state,116,8,13]; @symbol_param<1>_type<0> = [BluetoothLowEnergy,116,18,36]; @symbol_param<1>_type<1> = [ConnectionState,116,37,52]; ]
+    function onConnectedStateChanged(device as BluetoothLowEnergy.Device, state as BluetoothLowEnergy.ConnectionState) as Void {
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_117_14_130_4_start:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 118 8 ]
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_118_8_129_8_if_stmt:
+        %tmp.1 = lgetv %state;
+        symbol [ state %tmp.1 118 12 17 ];
+        symbol [ BluetoothLowEnergy %tmp.2 118 21 39 ];
+        %tmp.2 = getm $.Toybox.BluetoothLowEnergy;
+        symbol [ CONNECTION_STATE_CONNECTED %tmp.3 118 40 66 ];
+        %tmp.3 = getv %tmp.2 :CONNECTION_STATE_CONNECTED;
+        %tmp.4 = eq %tmp.1 %tmp.3;
+        bf %tmp.4 @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_118_8_129_8_if_else_false;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_118_8_129_8_if_true:
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_118_68_123_8_start:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 119 12 ]
+        %tmp.5 = lgetv %device;
+        symbol [ device %tmp.5 119 25 31 ];
+        symbol [ _device ? 119 12 19 ];
+        putv self :_device %tmp.5;
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 120 12 ]
+        %tmp.6 = true;
+        symbol [ _connected ? 120 12 22 ];
+        putv self :_connected %tmp.6;
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 121 12 ]
+        %tmp.7 = true;
+        symbol [ connected ? 121 12 21 ];
+        putv self :connected %tmp.7;
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 122 12 ]
+        %tmp.8 = self;
+        symbol [ _subscribeCharacteristics %tmp.9 122 12 37 ];
+        %tmp.9 = getv function %tmp.8 :_subscribeCharacteristics;
+        invoke %tmp.8 %tmp.9();
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_118_68_123_8_stop:
+        goto @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_118_8_129_8_if_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_118_8_129_8_if_else_false:
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_123_15_129_8_start:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 124 12 ]
+        %tmp.10 = null;
+        symbol [ _device ? 124 12 19 ];
+        putv self :_device %tmp.10;
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 125 12 ]
+        %tmp.11 = false;
+        symbol [ _connected ? 125 12 22 ];
+        putv self :_connected %tmp.11;
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 126 12 ]
+        %tmp.12 = false;
+        symbol [ connected ? 126 12 21 ];
+        putv self :connected %tmp.12;
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 128 12 ]
+        %tmp.13 = self;
+        symbol [ startScan %tmp.14 128 12 21 ];
+        %tmp.14 = getv function %tmp.13 :startScan;
+        invoke %tmp.13 %tmp.14();
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_123_15_129_8_stop:
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_118_8_129_8_if_end:
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_117_14_130_4_stop:
+    }
+    [ @file = "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc"; @line = 133; @symbol_functiondef = [onDescriptorWrite,133,13,30]; @symbol_param<0> = [descriptor,134,8,18]; @symbol_param<0>_type<0> = [BluetoothLowEnergy,134,22,40]; @symbol_param<0>_type<1> = [Descriptor,134,41,51]; @symbol_param<1> = [status,135,8,14]; @symbol_param<1>_type<0> = [BluetoothLowEnergy,135,22,40]; @symbol_param<1>_type<1> = [Status,135,41,47]; ]
+    function onDescriptorWrite(descriptor as BluetoothLowEnergy.Descriptor, status as BluetoothLowEnergy.Status) as Void {
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_136_14_141_4_start:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 138 8 ]
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_138_8_140_8_if_stmt:
+        %tmp.1 = lgetv %status;
+        symbol [ status %tmp.1 138 12 18 ];
+        symbol [ BluetoothLowEnergy %tmp.2 138 22 40 ];
+        %tmp.2 = getm $.Toybox.BluetoothLowEnergy;
+        symbol [ STATUS_SUCCESS %tmp.3 138 41 55 ];
+        %tmp.3 = getv %tmp.2 :STATUS_SUCCESS;
+        %tmp.4 = ne %tmp.1 %tmp.3;
+        bf %tmp.4 @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_138_8_140_8_if_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_138_8_140_8_if_true:
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_138_57_140_8_start:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 139 12 ]
+        symbol [ System %tmp.5 139 12 18 ];
+        %tmp.5 = getm $.Toybox.System;
+        symbol [ println %tmp.6 139 19 26 ];
+        %tmp.6 = getv function %tmp.5 :println;
+        %tmp.7 = "CCCD write failed: ";
+        %tmp.8 = lgetv %status;
+        symbol [ status %tmp.8 139 51 57 ];
+        %tmp.9 = add %tmp.7 %tmp.8;
+        invoke %tmp.5 %tmp.6(%tmp.9);
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_138_57_140_8_stop:
+        goto @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_138_8_140_8_if_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_138_8_140_8_if_end:
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_136_14_141_4_stop:
+    }
+    [ @file = "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc"; @line = 144; @symbol_functiondef = [onCharacteristicChanged,144,13,36]; @symbol_param<0> = [char,145,8,12]; @symbol_param<0>_type<0> = [BluetoothLowEnergy,145,17,35]; @symbol_param<0>_type<1> = [Characteristic,145,36,50]; @symbol_param<1> = [value,146,8,13]; @symbol_param<1>_type<0> = [Lang,146,17,21]; @symbol_param<1>_type<1> = [ByteArray,146,22,31]; ]
+    function onCharacteristicChanged(char as BluetoothLowEnergy.Characteristic, value as Lang.ByteArray) as Void {
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_147_14_172_4_start:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 148 8 ]
+        [ "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_147_14_172_4_start" "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_147_14_172_4_stop" ]
+        %uuid.1 = local;
+        symbol [ uuid %uuid.1 148 12 16 ];
+        %tmp.1 = lgetv %char;
+        symbol [ char %tmp.1 148 19 23 ];
+        symbol [ getUuid %tmp.2 148 24 31 ];
+        %tmp.2 = getv function %tmp.1 :getUuid;
+        %tmp.3 = invoke %tmp.1 %tmp.2();
+        lputv %uuid.1 %tmp.3;
+        symbol [ uuid %uuid.1 148 12 16 ];
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 153 8 ]
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_153_8_163_8_if_stmt:
+        %tmp.4 = lgetv %uuid.1;
+        symbol [ uuid %tmp.4 153 12 16 ];
+        symbol [ equals %tmp.5 153 17 23 ];
+        %tmp.5 = getv function %tmp.4 :equals;
+        symbol [ SURFACE_CHAR_UUID %tmp.7 153 24 41 ];
+        %tmp.7 = getv ? :SURFACE_CHAR_UUID;
+        %tmp.8 = invoke %tmp.4 %tmp.5(%tmp.7);
+        bf %tmp.8 @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_153_8_163_8_if_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_153_8_163_8_if_true:
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_153_44_163_8_start:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 154 12 ]
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_154_12_154_45_if_stmt:
+        %tmp.9 = lgetv %value;
+        symbol [ value %tmp.9 154 16 21 ];
+        symbol [ size %tmp.10 154 22 26 ];
+        %tmp.10 = getv function %tmp.9 :size;
+        %tmp.11 = invoke %tmp.9 %tmp.10();
+        %tmp.12 = 16;
+        %tmp.13 = lt %tmp.11 %tmp.12;
+        bf %tmp.13 @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_154_12_154_45_if_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_154_12_154_45_if_true:
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_154_35_154_45_start:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 154 37 ]
+        ret ?;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_154_35_154_45_stop:
+        goto @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_154_12_154_45_if_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_154_12_154_45_if_end:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 155 12 ]
+        %tmp.14 = self;
+        symbol [ _f32LE %tmp.15 155 20 26 ];
+        %tmp.15 = getv function %tmp.14 :_f32LE;
+        %tmp.16 = lgetv %value;
+        symbol [ value %tmp.16 155 27 32 ];
+        %tmp.17 = 4;
+        %tmp.18 = invoke %tmp.14 %tmp.15(%tmp.16, %tmp.17);
+        symbol [ rms ? 155 12 15 ];
+        putv self :rms %tmp.18;
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 156 12 ]
+        %tmp.19 = self;
+        symbol [ _f32LE %tmp.20 156 20 26 ];
+        %tmp.20 = getv function %tmp.19 :_f32LE;
+        %tmp.21 = lgetv %value;
+        symbol [ value %tmp.21 156 27 32 ];
+        %tmp.22 = 8;
+        %tmp.23 = invoke %tmp.19 %tmp.20(%tmp.21, %tmp.22);
+        symbol [ vdv ? 156 12 15 ];
+        putv self :vdv %tmp.23;
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 157 12 ]
+        %tmp.24 = self;
+        symbol [ _f32LE %tmp.25 157 20 26 ];
+        %tmp.25 = getv function %tmp.24 :_f32LE;
+        %tmp.26 = lgetv %value;
+        symbol [ value %tmp.26 157 27 32 ];
+        %tmp.27 = 12;
+        %tmp.28 = invoke %tmp.24 %tmp.25(%tmp.26, %tmp.27);
+        symbol [ peak ? 157 12 16 ];
+        putv self :peak %tmp.28;
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 158 12 ]
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_158_20_158_52_begin:
+        symbol [ rms %tmp.30 158 21 24 ];
+        %tmp.30 = getv ? :rms;
+        %tmp.31 = 0.001f;
+        %tmp.32 = gt %tmp.30 %tmp.31;
+        bf %tmp.32 @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_158_20_158_52_else_false;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_158_20_158_52_true:
+        symbol [ peak %tmp.34 158 38 42 ];
+        %tmp.34 = getv ? :peak;
+        symbol [ rms %tmp.36 158 45 48 ];
+        %tmp.36 = getv ? :rms;
+        %tmp.37 = div %tmp.34 %tmp.36;
+        push %tmp.37;
+        goto @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_158_20_158_52_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_158_20_158_52_else_false:
+        %tmp.38 = 0.0f;
+        push %tmp.38;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_158_20_158_52_end:
+        %tmp.39 = phi [%tmp.32 @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_158_20_158_52_begin] [%tmp.37 @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_158_20_158_52_true] [%tmp.38 @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_158_20_158_52_else_false] [%tmp.39 @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_158_20_158_52_end];
+        symbol [ crest ? 158 12 17 ];
+        putv self :crest %tmp.39;
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 160 12 ]
+        %tmp.40 = 2.21f;
+        symbol [ rms %tmp.42 160 28 31 ];
+        %tmp.42 = getv ? :rms;
+        %tmp.43 = mul %tmp.40 %tmp.42;
+        symbol [ iri ? 160 12 15 ];
+        putv self :iri %tmp.43;
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 161 12 ]
+        symbol [ _callback %tmp.45 161 12 21 ];
+        %tmp.45 = getv ? :_callback;
+        symbol [ invoke %tmp.46 161 22 28 ];
+        %tmp.46 = getv function %tmp.45 :invoke;
+        symbol [ rms %tmp.48 161 29 32 ];
+        %tmp.48 = getv ? :rms;
+        symbol [ vdv %tmp.50 161 34 37 ];
+        %tmp.50 = getv ? :vdv;
+        symbol [ peak %tmp.52 161 39 43 ];
+        %tmp.52 = getv ? :peak;
+        symbol [ crest %tmp.54 161 45 50 ];
+        %tmp.54 = getv ? :crest;
+        symbol [ iri %tmp.56 161 52 55 ];
+        %tmp.56 = getv ? :iri;
+        invoke %tmp.45 %tmp.46(%tmp.48, %tmp.50, %tmp.52, %tmp.54, %tmp.56);
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 162 12 ]
+        ret ?;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_153_44_163_8_stop:
+        goto @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_153_8_163_8_if_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_153_8_163_8_if_end:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 166 8 ]
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_166_8_171_8_if_stmt:
+        %tmp.57 = lgetv %uuid.1;
+        symbol [ uuid %tmp.57 166 12 16 ];
+        symbol [ equals %tmp.58 166 17 23 ];
+        %tmp.58 = getv function %tmp.57 :equals;
+        symbol [ TEMP_CHAR_UUID %tmp.60 166 24 38 ];
+        %tmp.60 = getv ? :TEMP_CHAR_UUID;
+        %tmp.61 = invoke %tmp.57 %tmp.58(%tmp.60);
+        bf %tmp.61 @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_166_8_171_8_if_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_166_8_171_8_if_true:
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_166_41_171_8_start:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 167 12 ]
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_167_12_167_44_if_stmt:
+        %tmp.62 = lgetv %value;
+        symbol [ value %tmp.62 167 16 21 ];
+        symbol [ size %tmp.63 167 22 26 ];
+        %tmp.63 = getv function %tmp.62 :size;
+        %tmp.64 = invoke %tmp.62 %tmp.63();
+        %tmp.65 = 4;
+        %tmp.66 = lt %tmp.64 %tmp.65;
+        bf %tmp.66 @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_167_12_167_44_if_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_167_12_167_44_if_true:
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_167_34_167_44_start:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 167 36 ]
+        ret ?;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_167_34_167_44_stop:
+        goto @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_167_12_167_44_if_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_167_12_167_44_if_end:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 168 12 ]
+        [ "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_166_41_171_8_start" "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_166_41_171_8_stop" ]
+        %t.2 = local;
+        symbol [ t %t.2 168 16 17 ];
+        %tmp.67 = self;
+        symbol [ _f32LE %tmp.68 168 20 26 ];
+        %tmp.68 = getv function %tmp.67 :_f32LE;
+        %tmp.69 = lgetv %value;
+        symbol [ value %tmp.69 168 27 32 ];
+        %tmp.70 = 0;
+        %tmp.71 = invoke %tmp.67 %tmp.68(%tmp.69, %tmp.70);
+        lputv %t.2 %tmp.71;
+        symbol [ t %t.2 168 16 17 ];
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 170 12 ]
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_170_12_170_54_if_stmt:
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_170_16_170_34_begin:
+        %tmp.72 = lgetv %t.2;
+        symbol [ t %tmp.72 170 16 17 ];
+        %tmp.73 = -40.0f;
+        %tmp.74 = gt %tmp.72 %tmp.73;
+        bf %tmp.74 @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_170_12_170_54_if_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_170_30_170_34_true:
+        %tmp.75 = lgetv %t.2;
+        symbol [ t %tmp.75 170 30 31 ];
+        %tmp.76 = 85.0f;
+        %tmp.77 = lt %tmp.75 %tmp.76;
+        push %tmp.77;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_170_30_170_34_end:
+        %tmp.78 = phi [%tmp.74 @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_170_16_170_34_begin] [%tmp.77 @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_170_30_170_34_true] [%tmp.78 @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_170_30_170_34_end];
+        bf %tmp.78 @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_170_12_170_54_if_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_170_12_170_54_if_true:
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_170_41_170_54_start:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 170 43 ]
+        %tmp.79 = lgetv %t.2;
+        symbol [ t %tmp.79 170 51 52 ];
+        symbol [ tempC ? 170 43 48 ];
+        putv self :tempC %tmp.79;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_170_41_170_54_stop:
+        goto @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_170_12_170_54_if_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_170_12_170_54_if_end:
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_166_41_171_8_stop:
+        goto @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_166_8_171_8_if_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_166_8_171_8_if_end:
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_147_14_172_4_stop:
+    }
+    [ @file = "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc"; @line = 177; @symbol_functiondef = [_subscribeCharacteristics,177,21,46]; ]
+    private
+    function _subscribeCharacteristics() as Void {
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_177_57_195_4_start:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 178 8 ]
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_178_8_178_39_if_stmt:
+        symbol [ _device %tmp.2 178 12 19 ];
+        %tmp.2 = getv ? :_device;
+        %tmp.3 = null;
+        %tmp.4 = eq %tmp.2 %tmp.3;
+        bf %tmp.4 @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_178_8_178_39_if_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_178_8_178_39_if_true:
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_178_29_178_39_start:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 178 31 ]
+        ret ?;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_178_29_178_39_stop:
+        goto @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_178_8_178_39_if_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_178_8_178_39_if_end:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 179 8 ]
+        [ "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_177_57_195_4_start" "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_177_57_195_4_stop" ]
+        %svc.1 = local;
+        symbol [ svc %svc.1 179 12 15 ];
+        symbol [ _device %tmp.6 179 18 25 ];
+        %tmp.6 = getv ? :_device;
+        symbol [ getService %tmp.7 179 26 36 ];
+        %tmp.7 = getv function %tmp.6 :getService;
+        symbol [ SURFACE_SVC_UUID %tmp.9 179 37 53 ];
+        %tmp.9 = getv ? :SURFACE_SVC_UUID;
+        %tmp.10 = invoke %tmp.6 %tmp.7(%tmp.9);
+        lputv %svc.1 %tmp.10;
+        symbol [ svc %svc.1 179 12 15 ];
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 180 8 ]
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_180_8_180_35_if_stmt:
+        %tmp.11 = lgetv %svc.1;
+        symbol [ svc %tmp.11 180 12 15 ];
+        %tmp.12 = null;
+        %tmp.13 = eq %tmp.11 %tmp.12;
+        bf %tmp.13 @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_180_8_180_35_if_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_180_8_180_35_if_true:
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_180_25_180_35_start:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 180 27 ]
+        ret ?;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_180_25_180_35_stop:
+        goto @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_180_8_180_35_if_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_180_8_180_35_if_end:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 183 8 ]
+        [ "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_177_57_195_4_start" "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_177_57_195_4_stop" ]
+        %surfCh.2 = local;
+        symbol [ surfCh %surfCh.2 183 12 18 ];
+        %tmp.14 = lgetv %svc.1;
+        symbol [ svc %tmp.14 183 21 24 ];
+        symbol [ getCharacteristic %tmp.15 183 25 42 ];
+        %tmp.15 = getv function %tmp.14 :getCharacteristic;
+        symbol [ SURFACE_CHAR_UUID %tmp.17 183 43 60 ];
+        %tmp.17 = getv ? :SURFACE_CHAR_UUID;
+        %tmp.18 = invoke %tmp.14 %tmp.15(%tmp.17);
+        lputv %surfCh.2 %tmp.18;
+        symbol [ surfCh %surfCh.2 183 12 18 ];
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 184 8 ]
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_184_8_187_8_if_stmt:
+        %tmp.19 = lgetv %surfCh.2;
+        symbol [ surfCh %tmp.19 184 12 18 ];
+        %tmp.20 = null;
+        %tmp.21 = ne %tmp.19 %tmp.20;
+        bf %tmp.21 @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_184_8_187_8_if_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_184_8_187_8_if_true:
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_184_28_187_8_start:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 185 12 ]
+        [ "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_184_28_187_8_start" "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_184_28_187_8_stop" ]
+        %desc.3 = local;
+        symbol [ desc %desc.3 185 16 20 ];
+        %tmp.22 = lgetv %surfCh.2;
+        symbol [ surfCh %tmp.22 185 23 29 ];
+        %tmp.23 = as %tmp.22 { (!Null) };
+        symbol [ getDescriptor %tmp.24 185 30 43 ];
+        %tmp.24 = getv function %tmp.23 :getDescriptor;
+        symbol [ BluetoothLowEnergy %tmp.25 185 44 62 ];
+        %tmp.25 = getm $.Toybox.BluetoothLowEnergy;
+        symbol [ cccdUuid %tmp.26 185 63 71 ];
+        %tmp.26 = getv function %tmp.25 :cccdUuid;
+        %tmp.27 = invoke %tmp.25 %tmp.26();
+        %tmp.28 = invoke %tmp.23 %tmp.24(%tmp.27);
+        lputv %desc.3 %tmp.28;
+        symbol [ desc %desc.3 185 16 20 ];
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 186 12 ]
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_186_12_186_66_if_stmt:
+        %tmp.29 = lgetv %desc.3;
+        symbol [ desc %tmp.29 186 16 20 ];
+        %tmp.30 = null;
+        %tmp.31 = ne %tmp.29 %tmp.30;
+        bf %tmp.31 @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_186_12_186_66_if_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_186_12_186_66_if_true:
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_186_30_186_66_start:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 186 32 ]
+        %tmp.32 = lgetv %desc.3;
+        symbol [ desc %tmp.32 186 32 36 ];
+        %tmp.33 = as %tmp.32 { (!Null) };
+        symbol [ requestWrite %tmp.34 186 37 49 ];
+        %tmp.34 = getv function %tmp.33 :requestWrite;
+        %tmp.35 = newba 2;
+        %tmp.36 = 0x01;
+        %tmp.37 = dup %tmp.35;
+        %tmp.38 = aputv %tmp.37 0 %tmp.36;
+        %tmp.39 = 0x00;
+        %tmp.40 = dup %tmp.38;
+        %tmp.41 = aputv %tmp.40 1 %tmp.39;
+        invoke %tmp.33 %tmp.34(%tmp.41);
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_186_30_186_66_stop:
+        goto @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_186_12_186_66_if_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_186_12_186_66_if_end:
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_184_28_187_8_stop:
+        goto @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_184_8_187_8_if_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_184_8_187_8_if_end:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 190 8 ]
+        [ "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_177_57_195_4_start" "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_177_57_195_4_stop" ]
+        %tempCh.4 = local;
+        symbol [ tempCh %tempCh.4 190 12 18 ];
+        %tmp.42 = lgetv %svc.1;
+        symbol [ svc %tmp.42 190 21 24 ];
+        symbol [ getCharacteristic %tmp.43 190 25 42 ];
+        %tmp.43 = getv function %tmp.42 :getCharacteristic;
+        symbol [ TEMP_CHAR_UUID %tmp.45 190 43 57 ];
+        %tmp.45 = getv ? :TEMP_CHAR_UUID;
+        %tmp.46 = invoke %tmp.42 %tmp.43(%tmp.45);
+        lputv %tempCh.4 %tmp.46;
+        symbol [ tempCh %tempCh.4 190 12 18 ];
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 191 8 ]
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_191_8_194_8_if_stmt:
+        %tmp.47 = lgetv %tempCh.4;
+        symbol [ tempCh %tmp.47 191 12 18 ];
+        %tmp.48 = null;
+        %tmp.49 = ne %tmp.47 %tmp.48;
+        bf %tmp.49 @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_191_8_194_8_if_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_191_8_194_8_if_true:
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_191_28_194_8_start:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 192 12 ]
+        [ "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_191_28_194_8_start" "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_191_28_194_8_stop" ]
+        %desc.5 = local;
+        symbol [ desc %desc.5 192 16 20 ];
+        %tmp.50 = lgetv %tempCh.4;
+        symbol [ tempCh %tmp.50 192 23 29 ];
+        %tmp.51 = as %tmp.50 { (!Null) };
+        symbol [ getDescriptor %tmp.52 192 30 43 ];
+        %tmp.52 = getv function %tmp.51 :getDescriptor;
+        symbol [ BluetoothLowEnergy %tmp.53 192 44 62 ];
+        %tmp.53 = getm $.Toybox.BluetoothLowEnergy;
+        symbol [ cccdUuid %tmp.54 192 63 71 ];
+        %tmp.54 = getv function %tmp.53 :cccdUuid;
+        %tmp.55 = invoke %tmp.53 %tmp.54();
+        %tmp.56 = invoke %tmp.51 %tmp.52(%tmp.55);
+        lputv %desc.5 %tmp.56;
+        symbol [ desc %desc.5 192 16 20 ];
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 193 12 ]
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_193_12_193_66_if_stmt:
+        %tmp.57 = lgetv %desc.5;
+        symbol [ desc %tmp.57 193 16 20 ];
+        %tmp.58 = null;
+        %tmp.59 = ne %tmp.57 %tmp.58;
+        bf %tmp.59 @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_193_12_193_66_if_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_193_12_193_66_if_true:
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_193_30_193_66_start:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 193 32 ]
+        %tmp.60 = lgetv %desc.5;
+        symbol [ desc %tmp.60 193 32 36 ];
+        %tmp.61 = as %tmp.60 { (!Null) };
+        symbol [ requestWrite %tmp.62 193 37 49 ];
+        %tmp.62 = getv function %tmp.61 :requestWrite;
+        %tmp.63 = newba 2;
+        %tmp.64 = 0x01;
+        %tmp.65 = dup %tmp.63;
+        %tmp.66 = aputv %tmp.65 0 %tmp.64;
+        %tmp.67 = 0x00;
+        %tmp.68 = dup %tmp.66;
+        %tmp.69 = aputv %tmp.68 1 %tmp.67;
+        invoke %tmp.61 %tmp.62(%tmp.69);
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_193_30_193_66_stop:
+        goto @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_193_12_193_66_if_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_193_12_193_66_if_end:
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_191_28_194_8_stop:
+        goto @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_191_8_194_8_if_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_191_8_194_8_if_end:
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_177_57_195_4_stop:
+    }
+    [ @file = "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc"; @line = 200; @symbol_functiondef = [_f32LE,200,21,27]; @symbol_param<0> = [data,200,28,32]; @symbol_param<0>_type<0> = [Lang,200,36,40]; @symbol_param<0>_type<1> = [ByteArray,200,41,50]; @symbol_param<1> = [off,200,52,55]; @symbol_param<1>_type<0> = [Number,200,59,65]; @symbol_return<0> = [Float,200,70,75]; ]
+    private
+    function _f32LE(data as Lang.ByteArray, off as Number) as Float {
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_200_76_223_4_start:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 203 8 ]
+        [ "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_200_76_223_4_start" "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_200_76_223_4_stop" ]
+        %b0.1 = local;
+        symbol [ b0 %b0.1 203 12 14 ];
+        %tmp.1 = lgetv %data;
+        symbol [ data %tmp.1 203 18 22 ];
+        %tmp.2 = lgetv %off;
+        symbol [ off %tmp.2 203 23 26 ];
+        %tmp.3 = agetv %tmp.1 %tmp.2;
+        %tmp.4 = 0xFF;
+        %tmp.5 = bitand %tmp.3 %tmp.4;
+        symbol [ toLong %tmp.6 203 40 46 ];
+        %tmp.6 = getv function %tmp.5 :toLong;
+        %tmp.7 = invoke %tmp.5 %tmp.6();
+        lputv %b0.1 %tmp.7;
+        symbol [ b0 %b0.1 203 12 14 ];
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 204 8 ]
+        [ "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_200_76_223_4_start" "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_200_76_223_4_stop" ]
+        %b1.2 = local;
+        symbol [ b1 %b1.2 204 12 14 ];
+        %tmp.8 = lgetv %data;
+        symbol [ data %tmp.8 204 18 22 ];
+        %tmp.9 = lgetv %off;
+        symbol [ off %tmp.9 204 23 26 ];
+        %tmp.10 = 1;
+        %tmp.11 = add %tmp.9 %tmp.10;
+        %tmp.12 = agetv %tmp.8 %tmp.11;
+        %tmp.13 = 0xFF;
+        %tmp.14 = bitand %tmp.12 %tmp.13;
+        symbol [ toLong %tmp.15 204 40 46 ];
+        %tmp.15 = getv function %tmp.14 :toLong;
+        %tmp.16 = invoke %tmp.14 %tmp.15();
+        lputv %b1.2 %tmp.16;
+        symbol [ b1 %b1.2 204 12 14 ];
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 205 8 ]
+        [ "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_200_76_223_4_start" "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_200_76_223_4_stop" ]
+        %b2.3 = local;
+        symbol [ b2 %b2.3 205 12 14 ];
+        %tmp.17 = lgetv %data;
+        symbol [ data %tmp.17 205 18 22 ];
+        %tmp.18 = lgetv %off;
+        symbol [ off %tmp.18 205 23 26 ];
+        %tmp.19 = 2;
+        %tmp.20 = add %tmp.18 %tmp.19;
+        %tmp.21 = agetv %tmp.17 %tmp.20;
+        %tmp.22 = 0xFF;
+        %tmp.23 = bitand %tmp.21 %tmp.22;
+        symbol [ toLong %tmp.24 205 40 46 ];
+        %tmp.24 = getv function %tmp.23 :toLong;
+        %tmp.25 = invoke %tmp.23 %tmp.24();
+        lputv %b2.3 %tmp.25;
+        symbol [ b2 %b2.3 205 12 14 ];
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 206 8 ]
+        [ "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_200_76_223_4_start" "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_200_76_223_4_stop" ]
+        %b3.4 = local;
+        symbol [ b3 %b3.4 206 12 14 ];
+        %tmp.26 = lgetv %data;
+        symbol [ data %tmp.26 206 18 22 ];
+        %tmp.27 = lgetv %off;
+        symbol [ off %tmp.27 206 23 26 ];
+        %tmp.28 = 3;
+        %tmp.29 = add %tmp.27 %tmp.28;
+        %tmp.30 = agetv %tmp.26 %tmp.29;
+        %tmp.31 = 0xFF;
+        %tmp.32 = bitand %tmp.30 %tmp.31;
+        symbol [ toLong %tmp.33 206 40 46 ];
+        %tmp.33 = getv function %tmp.32 :toLong;
+        %tmp.34 = invoke %tmp.32 %tmp.33();
+        lputv %b3.4 %tmp.34;
+        symbol [ b3 %b3.4 206 12 14 ];
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 207 8 ]
+        [ "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_200_76_223_4_start" "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_200_76_223_4_stop" ]
+        %bits.5 = local;
+        symbol [ bits %bits.5 207 12 16 ];
+        %tmp.35 = lgetv %b0.1;
+        symbol [ b0 %tmp.35 207 19 21 ];
+        %tmp.36 = lgetv %b1.2;
+        symbol [ b1 %tmp.36 207 25 27 ];
+        %tmp.37 = 8l;
+        %tmp.38 = shl %tmp.36 %tmp.37;
+        %tmp.39 = bitor %tmp.35 %tmp.38;
+        %tmp.40 = lgetv %b2.3;
+        symbol [ b2 %tmp.40 207 38 40 ];
+        %tmp.41 = 16l;
+        %tmp.42 = shl %tmp.40 %tmp.41;
+        %tmp.43 = bitor %tmp.39 %tmp.42;
+        %tmp.44 = lgetv %b3.4;
+        symbol [ b3 %tmp.44 207 52 54 ];
+        %tmp.45 = 24l;
+        %tmp.46 = shl %tmp.44 %tmp.45;
+        %tmp.47 = bitor %tmp.43 %tmp.46;
+        lputv %bits.5 %tmp.47;
+        symbol [ bits %bits.5 207 12 16 ];
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 210 8 ]
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_210_8_210_62_if_stmt:
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_210_12_210_34_begin:
+        %tmp.48 = lgetv %bits.5;
+        symbol [ bits %tmp.48 210 12 16 ];
+        %tmp.49 = 0l;
+        %tmp.50 = eq %tmp.48 %tmp.49;
+        bt %tmp.50 @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_210_8_210_62_if_true;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_210_26_210_34_false:
+        %tmp.51 = lgetv %bits.5;
+        symbol [ bits %tmp.51 210 26 30 ];
+        %tmp.52 = 0x80000000l;
+        %tmp.53 = eq %tmp.51 %tmp.52;
+        push %tmp.53;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_210_26_210_34_end:
+        %tmp.54 = phi [%tmp.50 @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_210_12_210_34_begin] [%tmp.53 @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_210_26_210_34_false] [%tmp.54 @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_210_26_210_34_end];
+        bf %tmp.54 @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_210_8_210_62_if_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_210_8_210_62_if_true:
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_210_47_210_62_start:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 210 49 ]
+        %tmp.55 = 0.0f;
+        ret %tmp.55;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_210_47_210_62_stop:
+        goto @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_210_8_210_62_if_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_210_8_210_62_if_end:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 213 8 ]
+        [ "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_200_76_223_4_start" "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_200_76_223_4_stop" ]
+        %rawExp.6 = local;
+        symbol [ rawExp %rawExp.6 213 12 18 ];
+        %tmp.56 = lgetv %bits.5;
+        symbol [ bits %tmp.56 213 22 26 ];
+        %tmp.57 = 23l;
+        %tmp.58 = shr %tmp.56 %tmp.57;
+        %tmp.59 = 0xFFl;
+        %tmp.60 = bitand %tmp.58 %tmp.59;
+        lputv %rawExp.6 %tmp.60;
+        symbol [ rawExp %rawExp.6 213 12 18 ];
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 214 8 ]
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_214_8_214_44_if_stmt:
+        %tmp.61 = lgetv %rawExp.6;
+        symbol [ rawExp %tmp.61 214 12 18 ];
+        %tmp.62 = 0xFFl;
+        %tmp.63 = eq %tmp.61 %tmp.62;
+        bf %tmp.63 @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_214_8_214_44_if_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_214_8_214_44_if_true:
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_214_29_214_44_start:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 214 31 ]
+        %tmp.64 = 0.0f;
+        ret %tmp.64;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_214_29_214_44_stop:
+        goto @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_214_8_214_44_if_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_214_8_214_44_if_end:
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 216 8 ]
+        [ "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_200_76_223_4_start" "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_200_76_223_4_stop" ]
+        %sign.7 = local;
+        symbol [ sign %sign.7 216 12 16 ];
+        %tmp.65 = lgetv %bits.5;
+        symbol [ bits %tmp.65 216 24 28 ];
+        %tmp.66 = 31l;
+        %tmp.67 = shr %tmp.65 %tmp.66;
+        %tmp.68 = 1l;
+        %tmp.69 = bitand %tmp.67 %tmp.68;
+        lputv %sign.7 %tmp.69;
+        symbol [ sign %sign.7 216 12 16 ];
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 217 8 ]
+        [ "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_200_76_223_4_start" "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_200_76_223_4_stop" ]
+        %exponent.8 = local;
+        symbol [ exponent %exponent.8 217 12 20 ];
+        %tmp.70 = lgetv %rawExp.6;
+        symbol [ rawExp %tmp.70 217 23 29 ];
+        symbol [ toNumber %tmp.71 217 30 38 ];
+        %tmp.71 = getv function %tmp.70 :toNumber;
+        %tmp.72 = invoke %tmp.70 %tmp.71();
+        %tmp.73 = 127;
+        %tmp.74 = sub %tmp.72 %tmp.73;
+        lputv %exponent.8 %tmp.74;
+        symbol [ exponent %exponent.8 217 12 20 ];
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 219 8 ]
+        [ "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_200_76_223_4_start" "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_200_76_223_4_stop" ]
+        %mantissa.9 = local;
+        symbol [ mantissa %mantissa.9 219 12 20 ];
+        %tmp.75 = lgetv %bits.5;
+        symbol [ bits %tmp.75 219 25 29 ];
+        %tmp.76 = 0x7FFFFFl;
+        %tmp.77 = bitand %tmp.75 %tmp.76;
+        %tmp.78 = 0x800000l;
+        %tmp.79 = bitor %tmp.77 %tmp.78;
+        symbol [ toFloat %tmp.80 219 56 63 ];
+        %tmp.80 = getv function %tmp.79 :toFloat;
+        %tmp.81 = invoke %tmp.79 %tmp.80();
+        lputv %mantissa.9 %tmp.81;
+        symbol [ mantissa %mantissa.9 219 12 20 ];
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 221 8 ]
+        [ "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_200_76_223_4_start" "C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_200_76_223_4_stop" ]
+        %result.10 = local;
+        symbol [ result %result.10 221 12 18 ];
+        %tmp.82 = lgetv %mantissa.9;
+        symbol [ mantissa %tmp.82 221 22 30 ];
+        symbol [ Math %tmp.83 221 33 37 ];
+        %tmp.83 = getm $.Toybox.Math;
+        symbol [ pow %tmp.84 221 38 41 ];
+        %tmp.84 = getv function %tmp.83 :pow;
+        %tmp.85 = 2.0d;
+        %tmp.86 = lgetv %exponent.8;
+        symbol [ exponent %tmp.86 221 49 57 ];
+        %tmp.87 = 23;
+        %tmp.88 = sub %tmp.86 %tmp.87;
+        symbol [ toDouble %tmp.89 221 64 72 ];
+        %tmp.89 = getv function %tmp.88 :toDouble;
+        %tmp.90 = invoke %tmp.88 %tmp.89();
+        %tmp.91 = invoke %tmp.83 %tmp.84(%tmp.85, %tmp.90);
+        %tmp.92 = mul %tmp.82 %tmp.91;
+        symbol [ toFloat %tmp.93 221 77 84 ];
+        %tmp.93 = getv function %tmp.92 :toFloat;
+        %tmp.94 = invoke %tmp.92 %tmp.93();
+        lputv %result.10 %tmp.94;
+        symbol [ result %result.10 221 12 18 ];
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 222 8 ]
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_222_15_222_40_begin:
+        %tmp.95 = lgetv %sign.7;
+        symbol [ sign %tmp.95 222 16 20 ];
+        %tmp.96 = 0l;
+        %tmp.97 = eq %tmp.95 %tmp.96;
+        bf %tmp.97 @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_222_15_222_40_else_false;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_222_15_222_40_true:
+        %tmp.98 = lgetv %result.10;
+        symbol [ result %tmp.98 222 30 36 ];
+        push %tmp.98;
+        goto @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_222_15_222_40_end;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_222_15_222_40_else_false:
+        %tmp.99 = lgetv %result.10;
+        symbol [ result %tmp.99 222 40 46 ];
+        %tmp.100 = sub 0 %tmp.99;
+        push %tmp.100;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_222_15_222_40_end:
+        %tmp.101 = phi [%tmp.97 @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_222_15_222_40_begin] [%tmp.98 @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_222_15_222_40_true] [%tmp.100 @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_222_15_222_40_else_false] [%tmp.101 @C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_222_15_222_40_end];
+        ret %tmp.101;
+C__Users_nikol_Claude_Projects_surface_sense_garmin_SurfaceSense_source_BleManager_mc_200_76_223_4_stop:
+    }
+}
+[ @file = "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc"; @line = 1; ]
+<init> {
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 11 6 ]
+    symbol [ BluetoothLowEnergy %tmp.102 11 26 44 ];
+    %tmp.102 = getm $.Toybox.BluetoothLowEnergy;
+    symbol [ stringToUuid %tmp.103 11 45 57 ];
+    %tmp.103 = getv function %tmp.102 :stringToUuid;
+    %tmp.104 = "19b10000-e8f2-537e-4f6c-d104768a1214";
+    %tmp.105 = invoke %tmp.102 %tmp.103(%tmp.104);
+    putv self :SURFACE_SVC_UUID %tmp.105;
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 12 6 ]
+    symbol [ BluetoothLowEnergy %tmp.106 12 26 44 ];
+    %tmp.106 = getm $.Toybox.BluetoothLowEnergy;
+    symbol [ stringToUuid %tmp.107 12 45 57 ];
+    %tmp.107 = getv function %tmp.106 :stringToUuid;
+    %tmp.108 = "19b10006-e8f2-537e-4f6c-d104768a1214";
+    %tmp.109 = invoke %tmp.106 %tmp.107(%tmp.108);
+    putv self :SURFACE_CHAR_UUID %tmp.109;
+[ "C:\Users\nikol\Claude\Projects\surface-sense\garmin\SurfaceSense\source\BleManager.mc" 13 6 ]
+    symbol [ BluetoothLowEnergy %tmp.110 13 26 44 ];
+    %tmp.110 = getm $.Toybox.BluetoothLowEnergy;
+    symbol [ stringToUuid %tmp.111 13 45 57 ];
+    %tmp.111 = getv function %tmp.110 :stringToUuid;
+    %tmp.112 = "19b10009-e8f2-537e-4f6c-d104768a1214";
+    %tmp.113 = invoke %tmp.110 %tmp.111(%tmp.112);
+    putv self :TEMP_CHAR_UUID %tmp.113;
+}

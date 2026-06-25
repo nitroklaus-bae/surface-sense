@@ -42,10 +42,12 @@ class RelayService {
 
   bool _initialized = false;
   bool _advertising = false;
+  int  _publishCount = 0;
 
   // ── Public State ──────────────────────────────────────────────────────────
-  bool get isAdvertising  => _advertising;
+  bool get isAdvertising   => _advertising;
   bool get garminConnected => _subscribers.isNotEmpty;
+  int  get publishCount    => _publishCount;
 
   final _stateController = StreamController<RelayState>.broadcast();
   Stream<RelayState> get stateStream => _stateController.stream;
@@ -105,6 +107,7 @@ class RelayService {
           _surfaceChar!,
           value: bytes,
         );
+        _publishCount++;
       } catch (e) {
         debugPrint('[RelayService] notify error: $e');
         toRemove.add(central);

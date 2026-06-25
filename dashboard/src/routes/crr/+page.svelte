@@ -1,20 +1,19 @@
 <script>
   import { onMount, tick } from 'svelte';
-  import { supabase } from '$lib/supabase.js';
-  import { parseFIT, parseGPX, trackFromSurfaceSamples } from '$lib/rollex/trackParser';
+  import { parseFIT, parseGPX } from '$lib/rollex/trackParser';
   import { analyzeSurfaces, SURFACE_PROPS } from '$lib/rollex/surfaceAnalyzer';
   import { optimizeTires, formatTime } from '$lib/rollex/tireOptimizer';
   import { stravaStreamsToTrack } from '$lib/rollex/stravaAdapter';
   import { fmtPressure, pressureUnitLabel } from '$lib/rollex/units';
   import { copySetupSummary, downloadSetupPng } from '$lib/rollex/exportSetup';
+  import { loadCentralRides, loadRideTrack, selectedRide as centralRide } from '$lib/rideSelection.js';
 
   // ── Source selection ───────────────────────────────────────────────
   let source = 'supabase'; // 'supabase' | 'upload' | 'intervals' | 'strava'
-
-  // ── Supabase source ────────────────────────────────────────────────
   let rides = [];
   let selectedRideId = '';
 
+  // ── Supabase source ────────────────────────────────────────────────
   // ── Upload source ──────────────────────────────────────────────────
   let uploadedTrack = null;
   let uploadName    = '';
@@ -120,17 +119,11 @@
       } catch {}
     }
 
-    // Load rides from Supabase
-    const { data, error: err } = await supabase
-      .from('ride_summary')
-      .select('id, name, started_at, distance_m, avg_iri, fit_path')
-      .not('fit_path', 'is', null)
-      .order('started_at', { ascending: false })
-      .limit(50);
-
-    if (err) { error = 'Fahrten konnten nicht geladen werden: ' + err.message; return; }
-    rides = data ?? [];
-    if (rides.length > 0 && !selectedRideId) selectedRideId = rides[0].id;
+    try {
+      await loadCentralRides();
+    } catch (e) {
+      error = 'Zentrale Fahrt konnte nicht geladen werden: ' + (e instanceof Error ? e.message : String(e));
+    }
 
     // Leaflet — browser only (no SSR)
     L = (await import('leaflet')).default;
@@ -326,7 +319,7 @@
 
   // ── Main analysis ──────────────────────────────────────────────────
   $: canAnalyze = !analyzing && (
-    (source === 'supabase'  && !!selectedRideId) ||
+    (source === 'supabase'  && !!$centralRide) ||
     (source === 'upload'    && !!uploadedTrack) ||
     (source === 'intervals' && !!selectedIntervalsId) ||
     (source === 'strava'    && !!stravaToken && !!selectedStravaId)
@@ -342,11 +335,13 @@
     try {
       // ── Supabase ──────────────────────────────────────────────────
       if (source === 'supabase') {
-        const ride = rides.find(r => r.id === selectedRideId);
-        if (!ride) throw new Error('Fahrt nicht gefunden.');
+        const ride = $centralRide;
+        if (!ride) throw new Error('Bitte auf der Fahrten-Seite zuerst eine zentrale Fahrt auswählen.');
+        progress = ride.fit_path ? 'FIT-Datei wird geladen...' : 'GPS-Track aus SurfaceSense-Samples rekonstruieren...';
+        track = await loadRideTrack(ride, { includeIri: true });
 
         // 1. Versuch: FIT-Datei aus Storage laden und parsen
-        if (ride.fit_path) {
+        if (!track && ride.fit_path) {
           progress = 'FIT-Datei wird geladen…';
           try {
             const { data: blob, error: dlErr } = await supabase.storage
@@ -555,6 +550,19 @@
 
     <!-- SurfaceSense Supabase -->
     {#if source === 'supabase'}
+      {#if $centralRide}
+        <div class="central-ride-card">
+          <span>Aktuelle Fahrt</span>
+          <strong>{fmtDate($centralRide.started_at)} · {$centralRide.name ?? 'Fahrt'} · {formatKm($centralRide.distance_m ?? 0)}</strong>
+          <a href="/">Fahrt wechseln</a>
+        </div>
+      {:else}
+        <p class="hint">Keine zentrale Fahrt ausgewählt. Bitte zuerst auf der Fahrten-Seite eine Fahrt wählen.</p>
+        <a class="btn-secondary link-btn" href="/">Zur Fahrten-Auswahl</a>
+      {/if}
+    {/if}
+
+    {#if false && source === 'supabase'}
       <select class="ride-select" bind:value={selectedRideId}>
         {#each rides as r}
           <option value={r.id}>{fmtDate(r.started_at)} · {r.name ?? 'Fahrt'} · {formatKm(r.distance_m ?? 0)}</option>
@@ -977,6 +985,26 @@
   }
   .btn-secondary:hover:not(:disabled) { border-color: #8b949e; }
   .btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; }
+  .link-btn { display: inline-flex; text-decoration: none; margin-top: 8px; }
+
+  .central-ride-card {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px 12px;
+    background: #0d1117;
+    border: 1px solid #2dd4bf55;
+    border-radius: 8px;
+  }
+  .central-ride-card span {
+    color: #8b949e;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .central-ride-card strong { color: #e6edf3; font-size: 13px; }
+  .central-ride-card a { color: #2dd4bf; font-size: 12px; text-decoration: none; }
+  .central-ride-card a:hover { text-decoration: underline; }
 
   .btn-strava {
     display: flex;
