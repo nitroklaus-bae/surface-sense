@@ -11,9 +11,11 @@ import 'screens/analysis_screen.dart';
 import 'screens/map_screen.dart';
 import 'screens/history_screen.dart';
 import 'screens/auth_screen.dart';
+import 'services/foreground_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  ForegroundService.init();          // Notification-Kanal registrieren BEVOR startService()
   await _requestPermissions();
   FlutterBluePlus.setLogLevel(LogLevel.warning);
 
