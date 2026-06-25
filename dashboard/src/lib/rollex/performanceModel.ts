@@ -10,11 +10,20 @@
 // which can collapse when the linear term goes negative).
 // ══════════════════════════════════════════════════════════════════════════════
 
-import type { TrackSegment } from './types'
+import type {
+  PacingIntensity,
+  PacingPlan,
+  PacingPlanPoint,
+  PacingPoint,
+  SurfaceCategory,
+  SurfaceSegment,
+  TrackSegment,
+} from './types'
 
 const G              = 9.81
 const DRIVETRAIN_EFF = 0.975      // crank → wheel power
 const MAX_SPEED_MS   = 70 / 3.6  // cap at 70 km/h (riders brake on descents)
+const ZONE_BOUNDS    = [0.55, 0.75, 0.90, 1.05, 1.20]
 
 // ── Core solver ───────────────────────────────────────────────────────────────
 
@@ -321,4 +330,263 @@ export function detectClimbs(pts: SimPoint[], minGainM = 50, minGradePct = 3): C
   }
 
   return climbs.sort((a, b) => b.gainM - a.gainM).slice(0, 6)
+}
+
+function average(arr: number[]): number | undefined {
+  if (arr.length === 0) return undefined
+  return arr.reduce((a, b) => a + b, 0) / arr.length
+}
+
+export function estimateCdA(track: TrackSegment): number {
+  const pts = track.points.filter(p => p.power !== undefined && (p.speed ?? 0) > 2)
+  if (pts.length < 20) return 0.32
+
+  const samples = pts.map(p => {
+    const v = p.speed!
+    return (p.power! * DRIVETRAIN_EFF) / (0.5 * 1.225 * v ** 3)
+  }).filter(x => x > 0.1 && x < 2.0)
+
+  if (samples.length === 0) return 0.32
+  samples.sort((a, b) => a - b)
+  return samples[Math.floor(samples.length / 2)]
+}
+
+export function buildPacingData(track: TrackSegment, sampleEveryM = 500): PacingPoint[] {
+  const points: PacingPoint[] = []
+  const pts = track.points
+  let nextSampleDist = 0
+
+  for (let i = 1; i < pts.length; i++) {
+    const dist = pts[i].distance ?? 0
+    if (dist < nextSampleDist && i !== pts.length - 1) continue
+    nextSampleDist += sampleEveryM
+
+    const prevPts = pts.slice(Math.max(0, i - 5), i + 1)
+    const avgPower = average(prevPts.map(p => p.power).filter((p): p is number => typeof p === 'number'))
+
+    points.push({
+      distanceKm: dist / 1000,
+      powerW: avgPower ?? 0,
+      speedKmh: (pts[i].speed ?? 0) * 3.6,
+      elevationM: pts[i].elevation,
+    })
+  }
+
+  return points
+}
+
+export function computeOptimalPacing(
+  track: TrackSegment,
+  targetAvgPowerW: number,
+  crrEff: number,
+  totalMassKg: number,
+  cdA: number,
+  rhoAir = 1.225,
+): PacingPoint[] {
+  const pts = track.points
+  const pacing: PacingPoint[] = []
+
+  for (let i = 1; i < pts.length; i++) {
+    const dist = pts[i].distance ?? 0
+    if (dist % 500 > 100 && i !== pts.length - 1) continue
+
+    const segDist = haversineM(pts[i - 1].lat, pts[i - 1].lon, pts[i].lat, pts[i].lon)
+    const grade = segDist > 0 ? (pts[i].elevation - pts[i - 1].elevation) / segDist : 0
+    const gradeBonus = -grade * 200
+    const optPower = Math.max(50, Math.min(targetAvgPowerW * 1.8, targetAvgPowerW + gradeBonus))
+    const optSpeed = speedForPower(optPower, grade, crrEff, totalMassKg, cdA, rhoAir)
+
+    pacing.push({
+      distanceKm: dist / 1000,
+      powerW: pts[i].power ?? 0,
+      speedKmh: (pts[i].speed ?? 0) * 3.6,
+      elevationM: pts[i].elevation,
+      optimalPowerW: Math.round(optPower),
+      optimalSpeedKmh: Math.round(optSpeed * 36) / 10,
+    })
+  }
+
+  return pacing
+}
+
+export function powerZone(pctFtp: number): number {
+  let zone = 1
+  for (const bound of ZONE_BOUNDS) {
+    if (pctFtp >= bound) zone++
+    else break
+  }
+  return zone
+}
+
+interface PacingSeg {
+  distM: number
+  cumDistM: number
+  elevM: number
+  grade: number
+  crr: number
+}
+
+export function buildPacingSegments(
+  track: TrackSegment,
+  surfaces: SurfaceSegment[] | null,
+  crrForSurface: (category: SurfaceCategory, iri: number) => number,
+): PacingSeg[] {
+  const pts = track.points
+  const n = pts.length
+  if (n < 2) return []
+
+  const dist = pts.map(p => p.distance ?? 0)
+  const ele = pts.map(p => p.elevation)
+  const smoothEle = ele.map((_, i) => {
+    let sum = ele[i], count = 1
+    for (let j = i - 1; j >= 0 && dist[i] - dist[j] <= 50; j--) { sum += ele[j]; count++ }
+    for (let j = i + 1; j < n && dist[j] - dist[i] <= 50; j++) { sum += ele[j]; count++ }
+    return sum / count
+  })
+
+  const catAt = new Array<SurfaceCategory>(n).fill('unknown')
+  const iriAt = new Array<number>(n).fill(3)
+  if (surfaces) {
+    for (const seg of surfaces) {
+      for (let i = seg.startIdx; i <= seg.endIdx && i < n; i++) {
+        catAt[i] = seg.surface.category
+        iriAt[i] = seg.measuredIri ?? seg.surface.iri
+      }
+    }
+  }
+
+  const segs: PacingSeg[] = []
+  for (let i = 1; i < n; i++) {
+    const d = dist[i] - dist[i - 1]
+    if (d <= 0) continue
+    const grade = Math.max(-0.25, Math.min(0.25, (smoothEle[i] - smoothEle[i - 1]) / d))
+    segs.push({ distM: d, cumDistM: dist[i], elevM: pts[i].elevation, grade, crr: crrForSurface(catAt[i], iriAt[i]) })
+  }
+  return segs
+}
+
+function intensityFactor(intensity: PacingIntensity, estHours: number): number {
+  switch (intensity) {
+    case 'race': return 0.88
+    case 'long': return 0.80
+    case 'endurance': return 0.68
+    default: return Math.max(0.62, Math.min(0.95, 0.95 - 0.11 * Math.log2(Math.max(1, estHours))))
+  }
+}
+
+export interface PlanOpts {
+  ftpW: number
+  wPrimeJ: number
+  intensity: PacingIntensity
+  massKg: number
+  cdA: number
+  rhoAir?: number
+  maxChartPoints?: number
+}
+
+export function planPhysioPacing(segs: PacingSeg[], opts: PlanOpts): PacingPlan | null {
+  if (segs.length === 0) return null
+  const { ftpW: ftp, wPrimeJ: wPrime, intensity, massKg, cdA } = opts
+  const rhoAir = opts.rhoAir ?? 1.225
+  const totalDist = segs.reduce((sum, seg) => sum + seg.distM, 0)
+  const crrAvg = segs.reduce((sum, seg) => sum + seg.crr * seg.distM, 0) / Math.max(1, totalDist)
+  const vFlat = speedForPower(0.8 * ftp, 0, crrAvg, massKg, cdA, rhoAir)
+  const estHours = totalDist / Math.max(2, vFlat) / 3600
+  const targetIF = intensityFactor(intensity, estHours)
+  const targetNp = targetIF * ftp
+  const pMax = ftp * 1.5
+
+  const mod = segs.map(seg => {
+    const value = 1 + 0.10 * (seg.grade * 100) + 0.45 * (seg.crr / crrAvg - 1)
+    return Math.max(0, Math.min(1.6, value))
+  })
+
+  const speeds = new Array<number>(segs.length)
+  const powers = new Array<number>(segs.length)
+  const times = new Array<number>(segs.length)
+  let plan: PacingPlan | null = null
+
+  for (let attempt = 0; attempt < 7; attempt++) {
+    const amplitude = Math.pow(0.8, attempt)
+    let scale = 1
+
+    for (let it = 0; it < 4; it++) {
+      for (let i = 0; i < segs.length; i++) {
+        const p = Math.max(0, Math.min(pMax, targetNp * (1 + amplitude * (mod[i] - 1)) * scale))
+        powers[i] = p
+        speeds[i] = Math.min(MAX_SPEED_MS, speedForPower(p, segs[i].grade, segs[i].crr, massKg, cdA, rhoAir))
+        times[i] = segs[i].distM / Math.max(0.5, speeds[i])
+      }
+      const totalTime = times.reduce((sum, t) => sum + t, 0)
+      const np = Math.pow(times.reduce((sum, t, i) => sum + Math.pow(powers[i], 4) * t, 0) / Math.max(1, totalTime), 0.25)
+      scale *= targetNp / Math.max(1, np)
+    }
+
+    let wBal = wPrime
+    let minWBal = wPrime
+    const wBalAt = new Array<number>(segs.length)
+    for (let i = 0; i < segs.length; i++) {
+      const dt = times[i]
+      if (powers[i] > ftp) {
+        wBal -= (powers[i] - ftp) * dt
+      } else {
+        const tau = 546 * Math.exp(-0.01 * (ftp - powers[i])) + 316
+        wBal += (wPrime - wBal) * (1 - Math.exp(-dt / tau))
+      }
+      if (wBal > wPrime) wBal = wPrime
+      wBalAt[i] = wBal
+      if (wBal < minWBal) minWBal = wBal
+    }
+
+    const feasible = minWBal >= 0
+    if (feasible || attempt === 6) {
+      const totalTime = times.reduce((sum, t) => sum + t, 0)
+      const zoneSeconds = [0, 0, 0, 0, 0, 0]
+      const allPoints: PacingPlanPoint[] = segs.map((seg, i) => {
+        const pct = powers[i] / ftp
+        const zone = powerZone(pct)
+        zoneSeconds[zone - 1] += times[i]
+        return {
+          distanceKm: seg.cumDistM / 1000,
+          elevationM: seg.elevM,
+          gradePct: Math.round(seg.grade * 100),
+          powerW: Math.round(powers[i]),
+          pctFtp: Math.round(pct * 100),
+          speedKmh: Math.round(speeds[i] * 36) / 10,
+          wBalKj: Math.round((wBalAt[i] / 1000) * 10) / 10,
+          zone,
+        }
+      })
+      const maxPts = opts.maxChartPoints ?? 300
+      const stepN = Math.max(1, Math.floor(allPoints.length / maxPts))
+      const points = allPoints.filter((_, i) => i % stepN === 0 || i === allPoints.length - 1)
+      const avgPowerW = powers.reduce((sum, p, i) => sum + p * times[i], 0) / Math.max(1, totalTime)
+      plan = {
+        points,
+        ftpW: ftp,
+        wPrimeKj: Math.round(wPrime / 100) / 10,
+        targetIF: Math.round(targetIF * 100) / 100,
+        targetNpW: Math.round(targetNp),
+        estimatedTimeSec: totalTime,
+        avgPowerW: Math.round(avgPowerW),
+        minWBalKj: Math.round((minWBal / 1000) * 10) / 10,
+        feasible,
+        zoneSeconds: zoneSeconds.map(s => Math.round(s)),
+      }
+      break
+    }
+  }
+
+  return plan
+}
+
+export function normalizedPower(powers: number[]): number {
+  if (powers.length < 30) return average(powers) ?? 0
+  const rolling: number[] = []
+  for (let i = 29; i < powers.length; i++) {
+    const slice = powers.slice(i - 29, i + 1)
+    const avg = average(slice) ?? 0
+    rolling.push(avg ** 4)
+  }
+  return (average(rolling) ?? 0) ** 0.25
 }

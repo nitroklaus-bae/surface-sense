@@ -5,6 +5,8 @@
   import { analyzeSurfaces, SURFACE_PROPS } from '$lib/rollex/surfaceAnalyzer';
   import { optimizeTires, formatTime } from '$lib/rollex/tireOptimizer';
   import { stravaStreamsToTrack } from '$lib/rollex/stravaAdapter';
+  import { fmtPressure, pressureUnitLabel } from '$lib/rollex/units';
+  import { copySetupSummary, downloadSetupPng } from '$lib/rollex/exportSetup';
 
   // ── Source selection ───────────────────────────────────────────────
   let source = 'supabase'; // 'supabase' | 'upload' | 'intervals' | 'strava'
@@ -48,6 +50,8 @@
 
   // ── Tab navigation ─────────────────────────────────────────────────
   let activeTab = 'analyse'; // 'analyse' | 'karte'
+  let pressureUnits = 'bar';
+  let exportNotice = '';
 
   // ── Rider profile (localStorage) ──────────────────────────────────
   let profile = {
@@ -461,6 +465,24 @@
 
   function formatKm(m) { return m >= 1000 ? (m/1000).toFixed(1) + ' km' : Math.round(m) + ' m'; }
   function fmtDate(s)  { return s ? new Date(s).toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit', year:'2-digit' }) : ''; }
+  function pressureLabel(bar) { return `${fmtPressure(bar, pressureUnits)} ${pressureUnitLabel(pressureUnits)}`; }
+  function setupMeta() {
+    return {
+      fileName: results?.rideInfo?.name ?? null,
+      distanceM: results?.track?.totalDistance ?? 0,
+      elevGainM: results?.track?.totalElevGain ?? 0,
+      units: pressureUnits,
+    };
+  }
+  async function copySetup(setup) {
+    exportNotice = await copySetupSummary(setup, setupMeta()) ? 'Setup kopiert.' : 'Kopieren nicht möglich.';
+    setTimeout(() => { exportNotice = ''; }, 2500);
+  }
+  function downloadSetup(setup) {
+    downloadSetupPng(setup, setupMeta());
+    exportNotice = 'PNG wird erstellt.';
+    setTimeout(() => { exportNotice = ''; }, 2500);
+  }
   function fmtDuration(sec) {
     const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60);
     return h > 0 ? `${h}h ${m}min` : `${m} min`;
@@ -701,6 +723,16 @@
       {:else}
         <section class="card">
           <h3>Reifen-Empfehlungen</h3>
+          <div class="toolbar-row">
+            <label>
+              Druck
+              <select bind:value={pressureUnits}>
+                <option value="bar">bar</option>
+                <option value="psi">psi</option>
+              </select>
+            </label>
+            {#if exportNotice}<span class="export-notice">{exportNotice}</span>{/if}
+          </div>
           <div class="tire-list">
             {#each results.tireSetups as setup, i}
               <div class="tire-card" class:best={i === 0}>
@@ -717,11 +749,11 @@
                 <div class="tire-specs">
                   <div class="spec-block">
                     <span class="spec-label">Vorne</span>
-                    <span class="spec-val">{setup.frontWidthMm}mm · {setup.pressureFrontBar.toFixed(2)} bar</span>
+                    <span class="spec-val">{setup.frontWidthMm}mm · {pressureLabel(setup.pressureFrontBar)}</span>
                   </div>
                   <div class="spec-block">
                     <span class="spec-label">Hinten</span>
-                    <span class="spec-val">{setup.rearWidthMm}mm · {setup.pressureRearBar.toFixed(2)} bar</span>
+                    <span class="spec-val">{setup.rearWidthMm}mm · {pressureLabel(setup.pressureRearBar)}</span>
                   </div>
                   <div class="spec-block">
                     <span class="spec-label">Crr eff.</span>
@@ -756,6 +788,10 @@
                   {#if setup.timeSavingVsWorstSec > 0}
                     <span class="time-saving">+{formatTime(setup.timeSavingVsWorstSec)} vs. Schlechtester</span>
                   {/if}
+                </div>
+                <div class="setup-actions">
+                  <button type="button" on:click={() => copySetup(setup)}>Setup kopieren</button>
+                  <button type="button" on:click={() => downloadSetup(setup)}>PNG exportieren</button>
                 </div>
               </div>
             {/each}
@@ -1246,6 +1282,24 @@
 
   /* Tire cards */
   .tire-list { display: flex; flex-direction: column; gap: 12px; }
+  .toolbar-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin: -2px 0 12px;
+    font-size: 12px;
+    color: #8b949e;
+  }
+  .toolbar-row label { display: flex; align-items: center; gap: 8px; }
+  .toolbar-row select {
+    background: #0d1117;
+    color: #e6edf3;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 4px 8px;
+  }
+  .export-notice { color: #2dd4bf; }
 
   .tire-card {
     background: #0d1117;
@@ -1316,4 +1370,19 @@
     margin-top: 4px;
   }
   .time-saving { margin-left: auto; color: #2dd4bf; font-weight: 600; }
+  .setup-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .setup-actions button {
+    background: #1c2333;
+    color: #e6edf3;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .setup-actions button:hover { border-color: #2dd4bf; color: #2dd4bf; }
 </style>

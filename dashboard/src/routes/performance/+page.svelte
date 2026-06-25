@@ -4,7 +4,8 @@
   import { parseGPX, parseFIT, trackFromSurfaceSamples } from '$lib/rollex/trackParser'
   import {
     buildGrades, simulate, constantPower, strategyPower, fitInterpolatedPower,
-    formatDuration, downsample, detectClimbs,
+    formatDuration, downsample, detectClimbs, estimateCdA, normalizedPower,
+    buildPacingSegments, planPhysioPacing,
   } from '$lib/rollex/performanceModel'
   import { computeAirDensity } from '$lib/rollex/rollingResistance'
 
@@ -32,6 +33,7 @@
   let cdaPreset   = 'drops'
   let cdaCustom   = 0.32
   let tempC       = 20
+  let useEstimatedCda = false
 
   const CRR_MAP = {
     road25 : { label: 'Rennrad 25 mm', crr: 0.003  },
@@ -49,7 +51,8 @@
   }
 
   $: crrEff    = crrPreset === 'custom' ? crrCustom : (CRR_MAP[crrPreset]?.crr ?? 0.004)
-  $: cdaEff    = cdaPreset === 'custom' ? cdaCustom : (CDA_MAP[cdaPreset]?.cda ?? 0.32)
+  $: estimatedCda = track?.hasPowerData ? estimateCdA(track) : null
+  $: cdaEff    = useEstimatedCda && estimatedCda ? estimatedCda : (cdaPreset === 'custom' ? cdaCustom : (CDA_MAP[cdaPreset]?.cda ?? 0.32))
   $: totalMass = massKg + bikeMassKg
 
   // Szenario 1 — Konstante Wattvorgabe
@@ -61,6 +64,10 @@
   // Szenario 3 — Pacing-Strategie
   let stratWatts  = 220
   let stratType   = 'mountain'
+
+  let ftpW = 260
+  let wPrimeKj = 18
+  let pacingIntensity = 'auto'
 
   $: canRun = !analyzing && !!track
 
@@ -159,8 +166,9 @@
 
       // Szenario 2: FIT-Datei (optional)
       let s2 = null
+      let p2 = null
       if (powerFit) {
-        const p2 = fitInterpolatedPower(powerFit, track, fitScalePct / 100)
+        p2 = fitInterpolatedPower(powerFit, track, fitScalePct / 100)
         s2 = simulate(track, p2, params)
       }
 
@@ -168,7 +176,29 @@
       const p3 = strategyPower(grades, stratWatts, stratType)
       const s3 = simulate(track, p3, params)
 
-      results = { s1, s2, s3 }
+      const physioSegments = buildPacingSegments(track, null, () => crrEff)
+      const physioPlan = planPhysioPacing(physioSegments, {
+        ftpW,
+        wPrimeJ: wPrimeKj * 1000,
+        intensity: pacingIntensity,
+        massKg: totalMass,
+        cdA: cdaEff,
+        rhoAir,
+      })
+
+      results = {
+        s1,
+        s2,
+        s3,
+        physioPlan,
+        metrics: {
+          cda: cdaEff,
+          estimatedCda,
+          np1: normalizedPower(p1),
+          np2: p2 ? normalizedPower(p2) : null,
+          np3: normalizedPower(p3),
+        },
+      }
     } catch (ex) {
       error = ex.message
     }
@@ -375,6 +405,12 @@
           <input type="number" bind:value={cdaCustom} min="0.15" max="0.8" step="0.01" class="num-in" />
         </div>
       {/if}
+      {#if estimatedCda}
+        <label class="check-row">
+          <input type="checkbox" bind:checked={useEstimatedCda} />
+          <span>CdA aus Track schätzen ({estimatedCda.toFixed(3)})</span>
+        </label>
+      {/if}
 
       <div class="param-row">
         <label>Bereifung / Crr</label>
@@ -464,6 +500,28 @@
           1. Hälfte 94 %, 2. Hälfte 106 % der Zielleistung.
         {/if}
       </div>
+    </section>
+
+    <section class="section scenario-section">
+      <div class="section-label">Physiologischer Pacingplan</div>
+      <div class="param-row">
+        <label>FTP<span class="unit">W</span></label>
+        <input type="number" bind:value={ftpW} min="100" max="500" step="5" class="num-in" />
+      </div>
+      <div class="param-row">
+        <label>W′<span class="unit">kJ</span></label>
+        <input type="number" bind:value={wPrimeKj} min="5" max="50" step="1" class="num-in" />
+      </div>
+      <div class="param-row">
+        <label>Intensität</label>
+        <select bind:value={pacingIntensity} class="sel-sm">
+          <option value="auto">Auto</option>
+          <option value="endurance">Endurance</option>
+          <option value="long">Lang</option>
+          <option value="race">Race</option>
+        </select>
+      </div>
+      <div class="param-row sm"><span class="dim">CP/W′-Modell mit W′bal und Leistungszonen</span></div>
     </section>
 
     <button class="btn-run" on:click={run} disabled={!canRun}>
@@ -562,6 +620,41 @@
           </tbody>
         </table>
       </div>
+
+      <div class="compare-card">
+        <div class="compare-title">POC-Performance-Metriken</div>
+        <div class="metric-grid">
+          <div><span class="muted">CdA genutzt</span><b>{results.metrics.cda.toFixed(3)}</b></div>
+          <div><span class="muted">NP S1</span><b>{results.metrics.np1.toFixed(0)} W</b></div>
+          {#if results.metrics.np2}
+            <div><span class="muted">NP S2</span><b>{results.metrics.np2.toFixed(0)} W</b></div>
+          {/if}
+          <div><span class="muted">NP S3</span><b>{results.metrics.np3.toFixed(0)} W</b></div>
+        </div>
+      </div>
+
+      {#if results.physioPlan}
+        <div class="compare-card">
+          <div class="compare-title">Physiologischer Pacingplan</div>
+          <div class="metric-grid">
+            <div><span class="muted">Ziel-IF</span><b>{results.physioPlan.targetIF.toFixed(2)}</b></div>
+            <div><span class="muted">Ziel-NP</span><b>{results.physioPlan.targetNpW} W</b></div>
+            <div><span class="muted">Zeit</span><b>{formatDuration(results.physioPlan.estimatedTimeSec)}</b></div>
+            <div><span class="muted">Min W′bal</span><b>{results.physioPlan.minWBalKj.toFixed(1)} kJ</b></div>
+          </div>
+          <div class="zone-row">
+            {#each results.physioPlan.zoneSeconds as seconds, i}
+              <div class="zone-pill">
+                <span>Z{i + 1}</span>
+                <b>{formatDuration(seconds)}</b>
+              </div>
+            {/each}
+          </div>
+          {#if !results.physioPlan.feasible}
+            <div class="info-chip warn">Plan schöpft W′ aus; Intensität/FTP prüfen.</div>
+          {/if}
+        </div>
+      {/if}
 
       <!-- Speed chart -->
       <div class="chart-wrap">
@@ -803,6 +896,44 @@
   .muted { color: #8b949e; }
   .climb-gain { color: #f59e0b; font-weight: 600; }
   .mono { font-variant-numeric: tabular-nums; }
+
+  .check-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #8b949e;
+    font-size: 12px;
+    margin-top: 8px;
+  }
+  .check-row input { width: auto; }
+  .metric-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 10px;
+  }
+  .metric-grid > div {
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 10px;
+  }
+  .metric-grid span { display: block; font-size: 11px; margin-bottom: 4px; }
+  .metric-grid b { color: #e6edf3; font-size: 18px; }
+  .zone-row {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .zone-pill {
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 8px;
+    background: #0d1117;
+    text-align: center;
+  }
+  .zone-pill span { display: block; color: #8b949e; font-size: 11px; }
+  .zone-pill b { color: #e6edf3; font-size: 12px; }
 
   .chart-wrap {
     background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 14px 16px;
