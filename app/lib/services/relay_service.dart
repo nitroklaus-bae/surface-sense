@@ -26,6 +26,8 @@ class RelayService {
       UUID.fromString('19b10000-e8f2-537e-4f6c-d104768a1214');
   static final UUID _surfaceCharUuid =
       UUID.fromString('19b10006-e8f2-537e-4f6c-d104768a1214');
+  static final UUID _tempCharUuid =
+      UUID.fromString('19b10009-e8f2-537e-4f6c-d104768a1214');
   static final UUID _cccdUuid =
       UUID.fromString('00002902-0000-1000-8000-00805f9b34fb');
 
@@ -34,6 +36,7 @@ class RelayService {
   final _mgr = PeripheralManager();
 
   GATTCharacteristic? _surfaceChar;
+  GATTCharacteristic? _tempChar;
   StreamSubscription<GATTCharacteristicNotifyStateChangedEventArgs>? _notifySub;
   StreamSubscription<BluetoothLowEnergyStateChangedEventArgs>? _stateSub;
 
@@ -43,16 +46,19 @@ class RelayService {
   bool _initialized = false;
   bool _advertising = false;
   int  _publishCount = 0;
+  String? _lastError;
 
   // ── Public State ──────────────────────────────────────────────────────────
   bool get isAdvertising   => _advertising;
   bool get garminConnected => _subscribers.isNotEmpty;
   int  get publishCount    => _publishCount;
+  String? get lastError    => _lastError;
 
   final _stateController = StreamController<RelayState>.broadcast();
   Stream<RelayState> get stateStream => _stateController.stream;
 
   RelayState get state {
+    if (_lastError != null) return RelayState.error;
     if (!_advertising) return RelayState.off;
     if (_subscribers.isNotEmpty) return RelayState.garminConnected;
     return RelayState.advertising;
@@ -62,6 +68,8 @@ class RelayService {
 
   Future<void> start() async {
     if (_advertising) return;
+    _lastError = null;
+    _emit();
     try {
       await _ensureInitialized();
       await _mgr.startAdvertising(Advertisement(
@@ -71,7 +79,11 @@ class RelayService {
       _advertising = true;
       _emit();
     } catch (e) {
+      _advertising = false;
+      _subscribers.clear();
+      _lastError = 'Advertising fehlgeschlagen: $e';
       debugPrint('[RelayService] start error: $e');
+      _emit();
     }
   }
 
@@ -82,6 +94,7 @@ class RelayService {
     } catch (_) {}
     _advertising = false;
     _subscribers.clear();
+    _lastError = null;
     _emit();
   }
 
@@ -143,12 +156,19 @@ class RelayService {
         ),
       ],
     );
+    _tempChar = GATTCharacteristic.mutable(
+      uuid: _tempCharUuid,
+      properties: [
+        GATTCharacteristicProperty.read,
+      ],
+      permissions: [GATTCharacteristicPermission.read],
+    );
 
     final service = GATTService(
       uuid: _serviceUuid,
       isPrimary: true,
       includedServices: [],
-      characteristics: [_surfaceChar!],
+      characteristics: [_surfaceChar!, _tempChar!],
     );
 
     // Ggf. alten Service entfernen (z.B. nach App-Neustart)
@@ -174,6 +194,7 @@ class RelayService {
       if (ev.state != BluetoothLowEnergyState.poweredOn) {
         _advertising = false;
         _subscribers.clear();
+        _lastError = 'Bluetooth ist nicht eingeschaltet';
         _emit();
       }
     });
@@ -195,4 +216,5 @@ enum RelayState {
   off,             // Relay inaktiv
   advertising,     // Advertist, Garmin noch nicht verbunden
   garminConnected, // Garmin verbunden, Daten werden weitergeleitet
+  error,           // Advertising/BT-Fehler
 }

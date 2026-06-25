@@ -4,6 +4,7 @@ import 'dart:io';
 import 'dart:math' show sqrt;
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:share_plus/share_plus.dart';
 import '../models/gps_sample.dart';
 import '../models/orientation_calibration.dart';
@@ -145,6 +146,7 @@ class RecordingProvider extends ChangeNotifier {
   // Relay-Modus: Phone leitet 1-Hz-Surface-Daten per BLE-Peripheral an Garmin weiter
   bool _relayMode = false;
   final RelayService _relay = RelayService.instance;
+  StreamSubscription? _relayStateSub;
 
   // Stream-CSV Surface: IOSink bleibt während der Aufnahme offen → kein Datenverlust
   IOSink? _csvSink;
@@ -181,6 +183,7 @@ class RecordingProvider extends ChangeNotifier {
   bool get relayMode                  => _relayMode;
   RelayState get relayState           => _relay.state;
   int  get relayPublishCount          => _relay.publishCount;
+  String? get relayLastError          => _relay.lastError;
 
   /// Vollständiges Bike-Koordinatensystem (vertikal / longitudinal / lateral).
   /// Nur verfügbar wenn Orientierungskalibrierung abgeschlossen.
@@ -250,12 +253,21 @@ class RecordingProvider extends ChangeNotifier {
   ///      Phone arbeitet normal als alleiniger Client des Sensors.
   Future<void> setRelayMode(bool value) async {
     if (_relayMode == value) return;
-    _relayMode = value;
     if (value) {
+      final advertisePermission = await Permission.bluetoothAdvertise.request();
+      if (!advertisePermission.isGranted) {
+        _lastError = 'Bluetooth-Advertise-Berechtigung fehlt';
+        notifyListeners();
+        return;
+      }
+      _relayMode = true;
       await _relay.start();
       // Relay-State-Änderungen (Garmin verbunden/getrennt) ans UI weiterleiten
-      _relay.stateStream.listen((_) => notifyListeners());
+      _relayStateSub ??= _relay.stateStream.listen((_) => notifyListeners());
     } else {
+      _relayMode = false;
+      await _relayStateSub?.cancel();
+      _relayStateSub = null;
       await _relay.stop();
     }
     notifyListeners();
@@ -787,6 +799,7 @@ class RecordingProvider extends ChangeNotifier {
     _orientCalSub?.cancel();
     _tempSub?.cancel();
     _gpsSub?.cancel();
+    _relayStateSub?.cancel();
     _ble.dispose();
     _gps.dispose();
     super.dispose();

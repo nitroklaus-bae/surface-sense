@@ -1,5 +1,6 @@
 <script>
   import { onMount, tick } from 'svelte';
+  import { get } from 'svelte/store';
   import { parseFIT, parseGPX } from '$lib/rollex/trackParser';
   import { analyzeSurfaces, SURFACE_PROPS } from '$lib/rollex/surfaceAnalyzer';
   import { optimizeTires, formatTime } from '$lib/rollex/tireOptimizer';
@@ -7,9 +8,12 @@
   import { fmtPressure, pressureUnitLabel } from '$lib/rollex/units';
   import { copySetupSummary, downloadSetupPng } from '$lib/rollex/exportSetup';
   import { loadCentralRides, loadRideTrack, selectedRide as centralRide } from '$lib/rideSelection.js';
+  import CrrSurface3DChart from '$lib/rollex/CrrSurface3DChart.svelte';
+  import { crrSession, makeCrrProfileKey, makeCrrWeightsKey } from '$lib/rollex/crrSession.js';
 
   // ── Source selection ───────────────────────────────────────────────
-  let source = 'supabase'; // 'supabase' | 'upload' | 'intervals' | 'strava'
+  const restoredSession = get(crrSession);
+  let source = restoredSession.source ?? 'supabase'; // 'supabase' | 'upload' | 'intervals' | 'strava'
   let rides = [];
   let selectedRideId = '';
 
@@ -39,7 +43,8 @@
   let analyzing = false;
   let progress  = '';
   let error     = '';
-  let results   = null; // { surfaces, tireSetups, track, rideInfo }
+  let results   = restoredSession.results ?? null; // { surfaces, tireSetups, track, rideInfo }
+  let sessionRideId = restoredSession.lastRideId ?? '';
 
   // ── Surface map (Leaflet) ──────────────────────────────────────────
   let L = null;
@@ -48,7 +53,7 @@
   let mapColorMode = 'surface'; // 'surface' | 'iri'
 
   // ── Tab navigation ─────────────────────────────────────────────────
-  let activeTab = 'analyse'; // 'analyse' | 'karte'
+  let activeTab = restoredSession.activeTab ?? 'analyse'; // 'analyse' | 'karte' | 'modelle'
   let pressureUnits = 'bar';
   let exportNotice = '';
 
@@ -64,6 +69,36 @@
     crrModel:       'physical',
   };
   let weights = { speed: 0.6, puncture: 0.25, handling: 0.15 };
+
+  $: if (
+    source === 'supabase' &&
+    results &&
+    sessionRideId &&
+    $centralRide?.id &&
+    $centralRide.id !== sessionRideId &&
+    !analyzing
+  ) {
+    results = null;
+    activeTab = 'analyse';
+    sessionRideId = $centralRide.id;
+  }
+
+  $: crrSession.update((state) => (
+    state.source === source &&
+    state.activeTab === activeTab &&
+    state.results === results &&
+    state.lastRideId === sessionRideId
+      ? state
+      : {
+          ...state,
+          source,
+          activeTab,
+          results,
+          lastRideId: sessionRideId,
+          lastProfileKey: makeCrrProfileKey(profile),
+          lastWeightsKey: makeCrrWeightsKey(weights),
+        }
+  ));
 
   // ── onMount ────────────────────────────────────────────────────────
   onMount(async () => {
@@ -422,9 +457,12 @@
       saveProfile();
       const tireSetups = optimizeTires(profile, surfaces, track.totalDistance, 5, track, weights);
 
+      sessionRideId = source === 'supabase'
+        ? ($centralRide?.id ?? '')
+        : `${source}:${rideInfo.name}:${track.points.length}:${Math.round(track.totalDistance ?? 0)}`;
       results   = { surfaces, tireSetups, track, rideInfo };
       progress  = '';
-      activeTab = 'karte'; // direkt zur Karte wechseln nach erfolgreicher Analyse
+      activeTab = tireSetups.length > 0 ? 'modelle' : 'analyse';
     } catch (e) {
       error    = e instanceof Error ? e.message : String(e);
       progress = '';
@@ -678,6 +716,7 @@
       <!-- ── Tab bar ─────────────────────────────────────────────── -->
       <div class="tabs">
         <button class:active={activeTab === 'analyse'} on:click={() => activeTab = 'analyse'}>Analyse</button>
+        <button class:active={activeTab === 'modelle'} on:click={() => activeTab = 'modelle'}>3D Modelle</button>
         <button class:active={activeTab === 'karte'}   on:click={() => activeTab = 'karte'}>Karte</button>
       </div>
 
@@ -810,6 +849,22 @@
       {/if} <!-- end analyse tab -->
 
       <!-- ── Karte tab ───────────────────────────────────────────── -->
+      {#if activeTab === 'modelle'}
+        <div class="panel-scroll">
+          {#if results.tireSetups.length > 0}
+            <CrrSurface3DChart
+              setups={results.tireSetups}
+              totalWeightKg={profile.riderWeightKg + profile.bikeWeightKg}
+              tempCelsius={profile.ambientTempCelsius}
+            />
+          {:else}
+            <section class="card">
+              <p class="hint">Keine Reifen-Setups vorhanden. Bitte Breitenbereich pruefen und erneut analysieren.</p>
+            </section>
+          {/if}
+        </div>
+      {/if}
+
       {#if activeTab === 'karte'}
         <div class="map-wrapper">
           <div bind:this={surfaceMapEl} class="map-full"></div>

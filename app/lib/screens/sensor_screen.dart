@@ -911,6 +911,9 @@ class _RelayRow extends StatelessWidget {
       case RelayState.advertising:
         statusColor = Colors.amberAccent;
         statusText  = 'Warte auf Garmin…';
+      case RelayState.error:
+        statusColor = Colors.redAccent;
+        statusText  = prov.relayLastError ?? 'Relay-Fehler';
       case RelayState.off:
         statusColor = Colors.grey;
         statusText  = count > 0 ? 'Inaktiv · $count Pakete gesendet' : 'Inaktiv';
@@ -966,7 +969,7 @@ class _RelayRow extends StatelessWidget {
           ),
           Switch(
             value: on,
-            onChanged: prov.isRecording ? null : (v) => prov.setRelayMode(v),
+            onChanged: (v) => prov.setRelayMode(v),
             activeColor: Colors.blueAccent,
           ),
         ],

@@ -3,6 +3,7 @@ import { fetchRides, supabase } from '$lib/supabase.js';
 import { parseFIT, trackFromSurfaceSamples } from '$lib/rollex/trackParser';
 
 const STORAGE_KEY = 'surface_sense_selected_ride_id';
+const trackCache = new Map();
 
 function storedRideId() {
   if (typeof localStorage === 'undefined') return '';
@@ -70,6 +71,9 @@ export function setSelectedRide(rideOrId) {
 }
 
 export function removeRideFromSelection(rideId) {
+  for (const key of trackCache.keys()) {
+    if (key.startsWith(`${rideId}:`)) trackCache.delete(key);
+  }
   rideSelection.update((state) => {
     const rides = state.rides.filter((ride) => ride.id !== rideId);
     const selectedRideId = state.selectedRideId === rideId ? (rides[0]?.id ?? '') : state.selectedRideId;
@@ -79,11 +83,17 @@ export function removeRideFromSelection(rideId) {
 }
 
 export async function loadRideTrack(ride, { includeIri = true } = {}) {
-  if (!ride) throw new Error('Keine zentrale Fahrt ausgewählt.');
+  if (!ride) throw new Error('Keine zentrale Fahrt ausgewaehlt.');
+  const cacheKey = `${ride.id}:${ride.fit_path ?? 'samples'}:${includeIri ? 'iri' : 'base'}`;
+  if (trackCache.has(cacheKey)) return trackCache.get(cacheKey);
 
   if (ride.fit_path) {
     const { data: blob, error } = await supabase.storage.from('ride-files').download(ride.fit_path);
-    if (!error && blob) return parseFIT(await blob.arrayBuffer());
+    if (!error && blob) {
+      const track = parseFIT(await blob.arrayBuffer());
+      trackCache.set(cacheKey, track);
+      return track;
+    }
   }
 
   const fields = includeIri
@@ -96,5 +106,7 @@ export async function loadRideTrack(ride, { includeIri = true } = {}) {
     .order('ts_ms');
 
   if (error) throw new Error('Surface-Samples: ' + error.message);
-  return trackFromSurfaceSamples(data ?? []);
+  const track = trackFromSurfaceSamples(data ?? []);
+  trackCache.set(cacheKey, track);
+  return track;
 }
