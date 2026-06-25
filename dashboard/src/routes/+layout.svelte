@@ -53,6 +53,7 @@
         {/if}
         <a class="nav-link" href="/">Fahrten</a>
         <a class="nav-link" href="/crr/">Reifen & CRR</a>
+        <a class="nav-link" href="/performance/">Performance</a>
         <span class="nav-email">{user.email}</span>
         <button class="btn-logout" on:click={handleSignOut}>Abmelden</button>
       </div>
