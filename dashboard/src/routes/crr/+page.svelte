@@ -1,7 +1,7 @@
 <script>
-  import { onMount } from 'svelte';
+  import { onMount, tick } from 'svelte';
   import { supabase } from '$lib/supabase.js';
-  import { parseFIT, parseGPX } from '$lib/rollex/trackParser';
+  import { parseFIT, parseGPX, trackFromSurfaceSamples } from '$lib/rollex/trackParser';
   import { analyzeSurfaces, SURFACE_PROPS } from '$lib/rollex/surfaceAnalyzer';
   import { optimizeTires, formatTime } from '$lib/rollex/tireOptimizer';
   import { stravaStreamsToTrack } from '$lib/rollex/stravaAdapter';
@@ -39,6 +39,15 @@
   let progress  = '';
   let error     = '';
   let results   = null; // { surfaces, tireSetups, track, rideInfo }
+
+  // ── Surface map (Leaflet) ──────────────────────────────────────────
+  let L = null;
+  let surfaceMapEl = null;
+  let surfaceMap   = null;
+  let mapColorMode = 'surface'; // 'surface' | 'iri'
+
+  // ── Tab navigation ─────────────────────────────────────────────────
+  let activeTab = 'analyse'; // 'analyse' | 'karte'
 
   // ── Rider profile (localStorage) ──────────────────────────────────
   let profile = {
@@ -118,7 +127,88 @@
     if (err) { error = 'Fahrten konnten nicht geladen werden: ' + err.message; return; }
     rides = data ?? [];
     if (rides.length > 0 && !selectedRideId) selectedRideId = rides[0].id;
+
+    // Leaflet — browser only (no SSR)
+    L = (await import('leaflet')).default;
+    await import('leaflet/dist/leaflet.css');
   });
+
+  // IRI → Heatmap-Farbe (grün → gelb → orange → rot)
+  function iriHeatColor(iri) {
+    if (iri == null || iri <= 0) return '#9ca3af';
+    if (iri < 2)  return '#22c55e';
+    if (iri < 4)  return '#84cc16';
+    if (iri < 6)  return '#f59e0b';
+    if (iri < 9)  return '#ef4444';
+    return '#991b1b';
+  }
+
+  // ── Surface map ────────────────────────────────────────────────────
+  async function drawSurfaceMap(track, surfaces, colorMode = mapColorMode) {
+    await tick(); // wait for map div to appear in DOM
+    if (!L || !surfaceMapEl) return;
+
+    if (surfaceMap) { surfaceMap.remove(); surfaceMap = null; }
+
+    surfaceMap = L.map(surfaceMapEl, { zoomControl: true });
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      maxZoom: 19,
+    }).addTo(surfaceMap);
+
+    const pts = track.points;
+    for (const seg of surfaces) {
+      const latlngs = pts
+        .slice(seg.startIdx, seg.endIdx + 1)
+        .filter(p => p.lat && p.lon)
+        .map(p => [p.lat, p.lon]);
+      if (latlngs.length < 2) continue;
+
+      const iriEst  = seg.surface.iri ?? SURFACE_PROPS[seg.surface.category]?.iri ?? null;
+      const iriVal  = seg.measuredIri ?? iriEst;
+      const color   = colorMode === 'iri' ? iriHeatColor(iriVal) : seg.surface.color;
+      const label   = SURFACE_PROPS[seg.surface.category]?.label ?? seg.surface.category;
+      const conf    = seg.osmConfidence != null ? (seg.osmConfidence * 100).toFixed(0) + '%' : '–';
+      const iriDisp = seg.measuredIri != null
+        ? `<b style="color:${iriHeatColor(seg.measuredIri)}">${seg.measuredIri.toFixed(1)}</b> m/km (gemessen)`
+        : iriEst != null ? `${iriEst.toFixed(1)} m/km (geschätzt)` : '–';
+
+      L.polyline(latlngs, { color, weight: 6, opacity: 0.88 })
+        .bindPopup(
+          `<div style="min-width:160px;font-family:sans-serif;font-size:13px">
+            <b style="color:${color}">${label}</b><br/>
+            <table style="border-collapse:collapse;margin-top:6px;width:100%">
+              <tr><td style="color:#888;padding:2px 6px 2px 0">Strecke</td><td>${formatKm(seg.distanceMeters)}</td></tr>
+              <tr><td style="color:#888;padding:2px 6px 2px 0">IRI</td><td>${iriDisp}</td></tr>
+              <tr><td style="color:#888;padding:2px 6px 2px 0">OSM-Konfidenz</td><td>${conf}</td></tr>
+            </table>
+          </div>`,
+          { maxWidth: 260 }
+        )
+        .bindTooltip(`<b>${label}</b> · ${formatKm(seg.distanceMeters)}`, { sticky: true })
+        .addTo(surfaceMap);
+    }
+
+    // Start / End markers
+    const validPts = pts.filter(p => p.lat && p.lon);
+    if (validPts.length >= 2) {
+      const mkIcon = (txt, bg) => L.divIcon({
+        html: `<div style="background:${bg};color:#fff;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;border:2px solid #fff;box-shadow:0 1px 4px #0006">${txt}</div>`,
+        iconSize: [24, 24], iconAnchor: [12, 12], className: ''
+      });
+      const first = validPts[0], last = validPts[validPts.length - 1];
+      L.marker([first.lat, first.lon], { icon: mkIcon('S', '#22c55e') }).bindTooltip('Start').addTo(surfaceMap);
+      L.marker([last.lat,  last.lon],  { icon: mkIcon('Z', '#ef4444') }).bindTooltip('Ziel').addTo(surfaceMap);
+    }
+
+    const allPts = validPts.map(p => [p.lat, p.lon]);
+    if (allPts.length) surfaceMap.fitBounds(L.latLngBounds(allPts), { padding: [20, 20] });
+    surfaceMap.invalidateSize();
+    requestAnimationFrame(() => surfaceMap?.invalidateSize());
+  }
+
+  // Redraw whenever results arrive, map tab becomes active, or color mode toggles
+  $: if (results && L && activeTab === 'karte') drawSurfaceMap(results.track, results.surfaces, mapColorMode);
 
   function saveProfile() {
     try {
@@ -246,7 +336,18 @@
           .from('ride-files').download(ride.fit_path);
         if (dlErr) throw new Error('FIT-Download: ' + dlErr.message);
         progress = 'GPS-Track wird eingelesen…';
-        track    = parseFIT(await blob.arrayBuffer());
+        try {
+          track = parseFIT(await blob.arrayBuffer());
+        } catch (fitErr) {
+          progress = 'FIT ungueltig - Track wird aus SurfaceSense-Samples rekonstruiert...';
+          const { data: sampleRows, error: sampleErr } = await supabase
+            .from('surface_samples')
+            .select('ts_ms,lat,lon,speed_kmh,iri_m_km')
+            .eq('ride_id', ride.id)
+            .order('ts_ms');
+          if (sampleErr) throw new Error('Surface-Samples: ' + sampleErr.message);
+          track = trackFromSurfaceSamples(sampleRows ?? []);
+        }
         rideInfo = { name: ride.name ?? 'Fahrt', startedAt: ride.started_at, avgIri: ride.avg_iri, source };
 
       // ── Upload ────────────────────────────────────────────────────
@@ -304,6 +405,7 @@
 
       results   = { surfaces, tireSetups, track, rideInfo };
       progress  = '';
+      activeTab = 'karte'; // direkt zur Karte wechseln nach erfolgreicher Analyse
     } catch (e) {
       error    = e instanceof Error ? e.message : String(e);
       progress = '';
@@ -523,44 +625,53 @@
     {/if}
 
     {#if results}
-      <!-- Surface breakdown -->
-      <section class="card">
-        <div class="card-header">
-          <h3>
-            Oberflächenverteilung — {results.rideInfo.name}
-            {#if results.rideInfo.startedAt} ({fmtDate(results.rideInfo.startedAt)}){/if}
-          </h3>
-          <span class="source-badge src-{results.rideInfo.source}">{SOURCE_LABELS[results.rideInfo.source]}</span>
-        </div>
-        <div class="surface-bar">
-          {#each buildSurfaceBreakdown(results.surfaces) as seg}
-            <div
-              class="surface-segment"
-              style="width:{seg.pct}%; background:{surfaceColor(seg.cat)}"
-              title="{surfaceLabel(seg.cat)}: {formatKm(seg.m)} ({seg.pct}%)"
-            ></div>
-          {/each}
-        </div>
-        <div class="surface-legend">
-          {#each buildSurfaceBreakdown(results.surfaces) as seg}
-            <span class="legend-item">
-              <span class="dot" style="background:{surfaceColor(seg.cat)}"></span>
-              {surfaceLabel(seg.cat)} {seg.pct}%
-            </span>
-          {/each}
-        </div>
-        <div class="meta-row">
-          <span>Strecke: {formatKm(results.track.totalDistance)}</span>
-          {#if results.rideInfo.avgIri}
-            {@const q = iriQuality(results.rideInfo.avgIri)}
-            <span>Ø IRI: <b style="color:{q.color}">{results.rideInfo.avgIri.toFixed(1)} m/km</b> — {q.label}</span>
-          {/if}
-          {#if results.track.hasPowerData}
-            <span>⚡ Power-Daten vorhanden</span>
-          {/if}
-          <span>{results.surfaces.filter(s => s.measuredIri !== undefined).length} Segmente mit Sensor-IRI</span>
-        </div>
-      </section>
+      <!-- ── Tab bar ─────────────────────────────────────────────── -->
+      <div class="tabs">
+        <button class:active={activeTab === 'analyse'} on:click={() => activeTab = 'analyse'}>Analyse</button>
+        <button class:active={activeTab === 'karte'}   on:click={() => activeTab = 'karte'}>Karte</button>
+      </div>
+
+      <!-- ── Analyse tab ─────────────────────────────────────────── -->
+      {#if activeTab === 'analyse'}
+        <div class="panel-scroll">
+          <!-- Surface breakdown -->
+          <section class="card">
+            <div class="card-header">
+              <h3>
+                Oberflächenverteilung — {results.rideInfo.name}
+                {#if results.rideInfo.startedAt} ({fmtDate(results.rideInfo.startedAt)}){/if}
+              </h3>
+              <span class="source-badge src-{results.rideInfo.source}">{SOURCE_LABELS[results.rideInfo.source]}</span>
+            </div>
+            <div class="surface-bar">
+              {#each buildSurfaceBreakdown(results.surfaces) as seg}
+                <div
+                  class="surface-segment"
+                  style="width:{seg.pct}%; background:{surfaceColor(seg.cat)}"
+                  title="{surfaceLabel(seg.cat)}: {formatKm(seg.m)} ({seg.pct}%)"
+                ></div>
+              {/each}
+            </div>
+            <div class="surface-legend">
+              {#each buildSurfaceBreakdown(results.surfaces) as seg}
+                <span class="legend-item">
+                  <span class="dot" style="background:{surfaceColor(seg.cat)}"></span>
+                  {surfaceLabel(seg.cat)} {seg.pct}%
+                </span>
+              {/each}
+            </div>
+            <div class="meta-row">
+              <span>Strecke: {formatKm(results.track.totalDistance)}</span>
+              {#if results.rideInfo.avgIri}
+                {@const q = iriQuality(results.rideInfo.avgIri)}
+                <span>Ø IRI: <b style="color:{q.color}">{results.rideInfo.avgIri.toFixed(1)} m/km</b> — {q.label}</span>
+              {/if}
+              {#if results.track.hasPowerData}
+                <span>⚡ Power-Daten vorhanden</span>
+              {/if}
+              <span>{results.surfaces.filter(s => s.measuredIri !== undefined).length} Segmente mit Sensor-IRI</span>
+            </div>
+          </section>
 
       <!-- Tire recommendations -->
       {#if results.tireSetups.length === 0}
@@ -630,6 +741,63 @@
             {/each}
           </div>
         </section>
+      {/if}
+        </div> <!-- end .panel-scroll -->
+      {/if} <!-- end analyse tab -->
+
+      <!-- ── Karte tab ───────────────────────────────────────────── -->
+      {#if activeTab === 'karte'}
+        <div class="map-wrapper">
+          <div bind:this={surfaceMapEl} class="map-full"></div>
+
+          <!-- Color mode toggle -->
+          <div class="map-controls">
+            <button
+              class="map-toggle"
+              class:active={mapColorMode === 'surface'}
+              on:click={() => mapColorMode = 'surface'}
+            >Oberfläche</button>
+            <button
+              class="map-toggle"
+              class:active={mapColorMode === 'iri'}
+              on:click={() => mapColorMode = 'iri'}
+            >IRI-Heatmap</button>
+          </div>
+
+          <!-- Legend overlay -->
+          <div class="map-legend">
+            {#if mapColorMode === 'surface'}
+              {#each buildSurfaceBreakdown(results.surfaces) as seg}
+                <div class="legend-row">
+                  <span class="legend-dot" style="background:{surfaceColor(seg.cat)}"></span>
+                  <span class="legend-lbl">{surfaceLabel(seg.cat)}</span>
+                  <span class="legend-pct">{seg.pct}%</span>
+                </div>
+              {/each}
+            {:else}
+              {#each [['< 2','#22c55e','Sehr glatt'],['2–4','#84cc16','Gut'],['4–6','#f59e0b','Mäßig'],['6–9','#ef4444','Rau'],['≥ 9','#991b1b','Sehr rau']] as [range, col, lbl]}
+                <div class="legend-row">
+                  <span class="legend-dot" style="background:{col}"></span>
+                  <span class="legend-lbl">{lbl}</span>
+                  <span class="legend-pct" style="color:#8b949e">{range} m/km</span>
+                </div>
+              {/each}
+            {/if}
+          </div>
+
+          <!-- Track stats bar -->
+          <div class="map-stats">
+            <span>📏 {formatKm(results.track.totalDistance)}</span>
+            <span>🔢 {results.surfaces.length} Segmente</span>
+            {#if results.surfaces.filter(s => s.measuredIri != null).length > 0}
+              <span>📡 {results.surfaces.filter(s => s.measuredIri != null).length} mit Sensor-IRI</span>
+            {/if}
+            {#if results.rideInfo.avgIri}
+              {@const q = iriQuality(results.rideInfo.avgIri)}
+              <span>Ø IRI <b style="color:{q.color}">{results.rideInfo.avgIri.toFixed(1)}</b> m/km</span>
+            {/if}
+          </div>
+        </div>
       {/if}
     {/if}
   </div>
@@ -836,13 +1004,133 @@
     margin-top: 4px;
   }
 
+  /* Leaflet z-index fix */
+  :global(.leaflet-pane),
+  :global(.leaflet-top),
+  :global(.leaflet-bottom) { z-index: 400; }
+  .map-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 14px;
+    padding: 10px 16px;
+    border-top: 1px solid #30363d;
+  }
+
   /* ── Right panel ── */
   .panel-right {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 0;
+  }
+
+  /* scrollable wrapper inside Analyse tab */
+  .panel-scroll {
+    flex: 1;
     overflow-y: auto;
     padding: 20px;
     display: flex;
     flex-direction: column;
     gap: 16px;
+  }
+
+  /* Tab bar */
+  .tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid #30363d;
+    background: #161b22;
+    flex-shrink: 0;
+  }
+  .tabs button {
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: #8b949e;
+    padding: 10px 20px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+    margin-bottom: -1px;
+  }
+  .tabs button:hover { color: #e6edf3; }
+  .tabs button.active { color: #e6edf3; border-bottom-color: #2dd4bf; }
+
+  /* Map fills remaining panel height */
+  /* ── Map wrapper ── */
+  .map-wrapper {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .map-full { flex: 1; min-height: 0; }
+
+  .map-controls {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 1000;
+    display: flex;
+    background: #161b22ee;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .map-toggle {
+    background: none;
+    border: none;
+    color: #8b949e;
+    font-size: 12px;
+    padding: 5px 10px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .map-toggle.active { background: #2dd4bf22; color: #2dd4bf; }
+  .map-toggle:not(.active):hover { color: #e6edf3; }
+
+  .map-legend {
+    position: absolute;
+    bottom: 36px;
+    left: 10px;
+    z-index: 1000;
+    background: #161b22ee;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    padding: 8px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-height: 260px;
+    overflow-y: auto;
+  }
+  .legend-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    white-space: nowrap;
+  }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .legend-lbl { color: #e6edf3; flex: 1; }
+  .legend-pct { color: #2dd4bf; font-variant-numeric: tabular-nums; }
+
+  .map-stats {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: #161b22ee;
+    border-top: 1px solid #30363d;
+    padding: 5px 12px;
+    display: flex;
+    gap: 16px;
+    font-size: 12px;
+    color: #8b949e;
   }
 
   .empty-state {
@@ -852,6 +1140,7 @@
     justify-content: center;
     gap: 12px;
     height: 100%;
+    padding: 20px;
     color: #8b949e;
     text-align: center;
     max-width: 460px;
