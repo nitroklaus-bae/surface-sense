@@ -50,15 +50,18 @@ const SRC_INTERN = 1;  // Garmin-interner Beschleunigungssensor
 class SurfaceSenseDataField extends WatchUi.DataField {
 
     // ── FIT-Felder ────────────────────────────────────────────────────────────
-    private var _fitRms   as FitContributor.Field;
-    private var _fitVdv   as FitContributor.Field;
-    private var _fitPeak  as FitContributor.Field;
-    private var _fitCrest as FitContributor.Field;
-    private var _fitIri   as FitContributor.Field;
+    private var _fitRms   as FitContributor.Field?;
+    private var _fitVdv   as FitContributor.Field?;
+    private var _fitPeak  as FitContributor.Field?;
+    private var _fitCrest as FitContributor.Field?;
+    private var _fitIri   as FitContributor.Field?;
 
     // ── Sensoren ──────────────────────────────────────────────────────────────
-    private var _ble    as BleManager;
-    private var _garmin as GarminAccelSensor;
+    private var _ble    as BleManager?;
+    private var _garmin as GarminAccelSensor?;
+
+    // ── Crash-Diagnose ────────────────────────────────────────────────────────
+    private var _initError as String? = null;
 
     // ── Anzeige-State ─────────────────────────────────────────────────────────
     private var _rms            as Float   = 0.0f;
@@ -80,41 +83,39 @@ class SurfaceSenseDataField extends WatchUi.DataField {
 
     function initialize() {
         DataField.initialize();
-
-        // FIT Developer Fields anlegen
-        _fitRms = createField(
-            "vibration_rms", 0,
-            FitContributor.DATA_TYPE_FLOAT,
-            { :mesgType => FitContributor.MESG_TYPE_RECORD, :units => "g" }
-        );
-        _fitVdv = createField(
-            "vibration_vdv", 1,
-            FitContributor.DATA_TYPE_FLOAT,
-            { :mesgType => FitContributor.MESG_TYPE_RECORD, :units => "g*s^0.25" }
-        );
-        _fitPeak = createField(
-            "vibration_peak", 2,
-            FitContributor.DATA_TYPE_FLOAT,
-            { :mesgType => FitContributor.MESG_TYPE_RECORD, :units => "g" }
-        );
-        _fitCrest = createField(
-            "crest_factor", 3,
-            FitContributor.DATA_TYPE_FLOAT,
-            { :mesgType => FitContributor.MESG_TYPE_RECORD, :units => "" }
-        );
-        _fitIri = createField(
-            "iri", 4,
-            FitContributor.DATA_TYPE_FLOAT,
-            { :mesgType => FitContributor.MESG_TYPE_RECORD, :units => "m/km" }
-        );
-
-        // BLE-Sensor initialisieren (registerProfile ist intern try-catch geschützt)
-        _ble = new BleManager(method(:onSurfaceData));
-
-        // Garmin-internen Sensor als Fallback initialisieren
-        _garmin = new GarminAccelSensor(method(:onGarminData));
-
-        _lastUploadS = Time.now().value();
+        try {
+            _fitRms = createField(
+                "vibration_rms", 0,
+                FitContributor.DATA_TYPE_FLOAT,
+                { :mesgType => FitContributor.MESG_TYPE_RECORD, :units => "g" }
+            );
+            _fitVdv = createField(
+                "vibration_vdv", 1,
+                FitContributor.DATA_TYPE_FLOAT,
+                { :mesgType => FitContributor.MESG_TYPE_RECORD, :units => "g*s^0.25" }
+            );
+            _fitPeak = createField(
+                "vibration_peak", 2,
+                FitContributor.DATA_TYPE_FLOAT,
+                { :mesgType => FitContributor.MESG_TYPE_RECORD, :units => "g" }
+            );
+            _fitCrest = createField(
+                "crest_factor", 3,
+                FitContributor.DATA_TYPE_FLOAT,
+                { :mesgType => FitContributor.MESG_TYPE_RECORD, :units => "" }
+            );
+            _fitIri = createField(
+                "iri", 4,
+                FitContributor.DATA_TYPE_FLOAT,
+                { :mesgType => FitContributor.MESG_TYPE_RECORD, :units => "m/km" }
+            );
+            _ble    = new BleManager(method(:onSurfaceData));
+            _garmin = new GarminAccelSensor(method(:onGarminData));
+            _lastUploadS = Time.now().value();
+        } catch (e instanceof Lang.Exception) {
+            _initError = e.getErrorMessage();
+            System.println("[SurfaceSense] INIT ERROR: " + _initError);
+        }
     }
 
     // ── BLE-Callback (1-Hz-Paket vom XIAO-Sensor) ────────────────────────────
@@ -132,11 +133,11 @@ class SurfaceSenseDataField extends WatchUi.DataField {
         _dataAge = 0;
         _source  = SRC_BLE;
 
-        _fitRms.setData(rms);
-        _fitVdv.setData(vdv);
-        _fitPeak.setData(peak);
-        _fitCrest.setData(crest);
-        _fitIri.setData(iri);
+        if (_fitRms   != null) { (_fitRms   as FitContributor.Field).setData(rms);   }
+        if (_fitVdv   != null) { (_fitVdv   as FitContributor.Field).setData(vdv);   }
+        if (_fitPeak  != null) { (_fitPeak  as FitContributor.Field).setData(peak);  }
+        if (_fitCrest != null) { (_fitCrest as FitContributor.Field).setData(crest); }
+        if (_fitIri   != null) { (_fitIri   as FitContributor.Field).setData(iri);   }
     }
 
     // ── Garmin-Intern-Callback (1-Hz-Fenster vom onboard-Sensor) ─────────────
@@ -149,7 +150,7 @@ class SurfaceSenseDataField extends WatchUi.DataField {
         vdv  as Float,
         peak as Float
     ) as Void {
-        if (_ble.connected) { return; }  // BLE hat Vorrang
+        if (_ble != null && (_ble as BleManager).connected) { return; }  // BLE hat Vorrang
 
         _rms     = rms;
         _vdv     = vdv;
@@ -157,10 +158,10 @@ class SurfaceSenseDataField extends WatchUi.DataField {
         _source  = SRC_INTERN;
 
         var crest = (rms > 0.001f) ? (peak / rms) : 0.0f;
-        _fitRms.setData(rms);
-        _fitVdv.setData(vdv);
-        _fitPeak.setData(peak);
-        _fitCrest.setData(crest);
+        if (_fitRms   != null) { (_fitRms   as FitContributor.Field).setData(rms);   }
+        if (_fitVdv   != null) { (_fitVdv   as FitContributor.Field).setData(vdv);   }
+        if (_fitPeak  != null) { (_fitPeak  as FitContributor.Field).setData(peak);  }
+        if (_fitCrest != null) { (_fitCrest as FitContributor.Field).setData(crest); }
         // _iri und _fitIri werden in compute() mit GPS-Geschwindigkeit gesetzt
     }
 
@@ -169,8 +170,10 @@ class SurfaceSenseDataField extends WatchUi.DataField {
     function compute(info as Activity.Info) as Lang.Object or Null {
         if (_dataAge < 99) { _dataAge++; }
 
+        if (_initError != null) { return _rms; }
+
         // Reconnect-Erkennung: _dataAge zurücksetzen bei BLE-Wiederverbindung
-        var nowConnected = _ble.connected;
+        var nowConnected = (_ble != null) && (_ble as BleManager).connected;
         if (nowConnected && !_wasBleConnected) {
             _dataAge = 0;
             _source  = SRC_BLE;
@@ -178,10 +181,10 @@ class SurfaceSenseDataField extends WatchUi.DataField {
         _wasBleConnected = nowConnected;
 
         // Garmin-Sensor erst aktivieren wenn BLE nicht verfügbar (lazy)
-        if (!nowConnected) { _garmin.tryStart(); }
+        if (!nowConnected && _garmin != null) { (_garmin as GarminAccelSensor).tryStart(); }
 
         // Quelle auf Intern setzen wenn BLE weg aber Garmin-Daten frisch
-        if (!nowConnected && _garmin.dataAge < 3) {
+        if (!nowConnected && _garmin != null && (_garmin as GarminAccelSensor).dataAge < 3) {
             _source = SRC_INTERN;
         }
 
@@ -195,7 +198,7 @@ class SurfaceSenseDataField extends WatchUi.DataField {
                 var vClamped    = (speedKmh < 5.0f) ? 5.0f : speedKmh;
                 var speedFactor = Math.sqrt(20.0f / vClamped).toFloat();
                 _iri = 2.21f * _rms * speedFactor;
-                _fitIri.setData(_iri);
+                if (_fitIri != null) { (_fitIri as FitContributor.Field).setData(_iri); }
             }
         }
 
@@ -292,8 +295,16 @@ class SurfaceSenseDataField extends WatchUi.DataField {
         dc.setColor(fg, bg);
         dc.clear();
 
-        var bleOk    = _ble.connected;
-        var internOk = _garmin.available() && _dataAge < 5;
+        // ── Init-Fehler anzeigen ──────────────────────────────────────────────
+        if (_initError != null) {
+            _drawCentered(dc, w, h / 3,     Graphics.FONT_XTINY, "ERR INIT",  Graphics.COLOR_RED);
+            _drawCentered(dc, w, h / 2,     Graphics.FONT_XTINY, _initError as String, Graphics.COLOR_YELLOW);
+            _drawCentered(dc, w, h * 2 / 3, Graphics.FONT_XTINY, "rebuild+reinstall", fg);
+            return;
+        }
+
+        var bleOk    = (_ble != null) && (_ble as BleManager).connected;
+        var internOk = (_garmin != null) && (_garmin as GarminAccelSensor).available() && _dataAge < 5;
 
         // ── Kein Signal ───────────────────────────────────────────────────────
         if (!bleOk && !internOk) {
