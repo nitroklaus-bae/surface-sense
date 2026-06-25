@@ -45,6 +45,9 @@
   let surfaceMapEl = null;
   let surfaceMap   = null;
 
+  // ── Tab navigation ─────────────────────────────────────────────────
+  let activeTab = 'analyse'; // 'analyse' | 'karte'
+
   // ── Rider profile (localStorage) ──────────────────────────────────
   let profile = {
     riderWeightKg:     75,
@@ -166,8 +169,8 @@
     requestAnimationFrame(() => surfaceMap?.invalidateSize());
   }
 
-  // Redraw whenever results arrive
-  $: if (results && L) drawSurfaceMap(results.track, results.surfaces);
+  // Redraw whenever results arrive or map tab becomes active
+  $: if (results && L && activeTab === 'karte') drawSurfaceMap(results.track, results.surfaces);
 
   function saveProfile() {
     try {
@@ -583,59 +586,53 @@
     {/if}
 
     {#if results}
-      <!-- Surface breakdown -->
-      <section class="card">
-        <div class="card-header">
-          <h3>
-            Oberflächenverteilung — {results.rideInfo.name}
-            {#if results.rideInfo.startedAt} ({fmtDate(results.rideInfo.startedAt)}){/if}
-          </h3>
-          <span class="source-badge src-{results.rideInfo.source}">{SOURCE_LABELS[results.rideInfo.source]}</span>
-        </div>
-        <div class="surface-bar">
-          {#each buildSurfaceBreakdown(results.surfaces) as seg}
-            <div
-              class="surface-segment"
-              style="width:{seg.pct}%; background:{surfaceColor(seg.cat)}"
-              title="{surfaceLabel(seg.cat)}: {formatKm(seg.m)} ({seg.pct}%)"
-            ></div>
-          {/each}
-        </div>
-        <div class="surface-legend">
-          {#each buildSurfaceBreakdown(results.surfaces) as seg}
-            <span class="legend-item">
-              <span class="dot" style="background:{surfaceColor(seg.cat)}"></span>
-              {surfaceLabel(seg.cat)} {seg.pct}%
-            </span>
-          {/each}
-        </div>
-        <div class="meta-row">
-          <span>Strecke: {formatKm(results.track.totalDistance)}</span>
-          {#if results.rideInfo.avgIri}
-            {@const q = iriQuality(results.rideInfo.avgIri)}
-            <span>Ø IRI: <b style="color:{q.color}">{results.rideInfo.avgIri.toFixed(1)} m/km</b> — {q.label}</span>
-          {/if}
-          {#if results.track.hasPowerData}
-            <span>⚡ Power-Daten vorhanden</span>
-          {/if}
-          <span>{results.surfaces.filter(s => s.measuredIri !== undefined).length} Segmente mit Sensor-IRI</span>
-        </div>
-      </section>
+      <!-- ── Tab bar ─────────────────────────────────────────────── -->
+      <div class="tabs">
+        <button class:active={activeTab === 'analyse'} on:click={() => activeTab = 'analyse'}>Analyse</button>
+        <button class:active={activeTab === 'karte'}   on:click={() => activeTab = 'karte'}>Karte</button>
+      </div>
 
-      <!-- Surface map -->
-      {#key results}
-        <section class="card card-map">
-          <div bind:this={surfaceMapEl} class="surface-map" style="height:500px;width:100%;"></div>
-          <div class="map-legend">
-            {#each buildSurfaceBreakdown(results.surfaces) as seg}
-              <span class="legend-item">
-                <span class="dot" style="background:{surfaceColor(seg.cat)}"></span>
-                {surfaceLabel(seg.cat)} {seg.pct}%
-              </span>
-            {/each}
-          </div>
-        </section>
-      {/key}
+      <!-- ── Analyse tab ─────────────────────────────────────────── -->
+      {#if activeTab === 'analyse'}
+        <div class="panel-scroll">
+          <!-- Surface breakdown -->
+          <section class="card">
+            <div class="card-header">
+              <h3>
+                Oberflächenverteilung — {results.rideInfo.name}
+                {#if results.rideInfo.startedAt} ({fmtDate(results.rideInfo.startedAt)}){/if}
+              </h3>
+              <span class="source-badge src-{results.rideInfo.source}">{SOURCE_LABELS[results.rideInfo.source]}</span>
+            </div>
+            <div class="surface-bar">
+              {#each buildSurfaceBreakdown(results.surfaces) as seg}
+                <div
+                  class="surface-segment"
+                  style="width:{seg.pct}%; background:{surfaceColor(seg.cat)}"
+                  title="{surfaceLabel(seg.cat)}: {formatKm(seg.m)} ({seg.pct}%)"
+                ></div>
+              {/each}
+            </div>
+            <div class="surface-legend">
+              {#each buildSurfaceBreakdown(results.surfaces) as seg}
+                <span class="legend-item">
+                  <span class="dot" style="background:{surfaceColor(seg.cat)}"></span>
+                  {surfaceLabel(seg.cat)} {seg.pct}%
+                </span>
+              {/each}
+            </div>
+            <div class="meta-row">
+              <span>Strecke: {formatKm(results.track.totalDistance)}</span>
+              {#if results.rideInfo.avgIri}
+                {@const q = iriQuality(results.rideInfo.avgIri)}
+                <span>Ø IRI: <b style="color:{q.color}">{results.rideInfo.avgIri.toFixed(1)} m/km</b> — {q.label}</span>
+              {/if}
+              {#if results.track.hasPowerData}
+                <span>⚡ Power-Daten vorhanden</span>
+              {/if}
+              <span>{results.surfaces.filter(s => s.measuredIri !== undefined).length} Segmente mit Sensor-IRI</span>
+            </div>
+          </section>
 
       <!-- Tire recommendations -->
       {#if results.tireSetups.length === 0}
@@ -705,6 +702,13 @@
             {/each}
           </div>
         </section>
+      {/if}
+        </div> <!-- end .panel-scroll -->
+      {/if} <!-- end analyse tab -->
+
+      <!-- ── Karte tab ───────────────────────────────────────────── -->
+      {#if activeTab === 'karte'}
+        <div bind:this={surfaceMapEl} class="map-full"></div>
       {/if}
     {/if}
   </div>
@@ -911,10 +915,7 @@
     margin-top: 4px;
   }
 
-  /* ── Surface map ── */
-  .card-map { padding: 0; overflow: hidden; }
-  .surface-map { height: 500px; width: 100%; }
-  /* Leaflet z-index fix inside overflow:hidden card */
+  /* Leaflet z-index fix */
   :global(.leaflet-pane),
   :global(.leaflet-top),
   :global(.leaflet-bottom) { z-index: 400; }
@@ -928,12 +929,47 @@
 
   /* ── Right panel ── */
   .panel-right {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 0;
+  }
+
+  /* scrollable wrapper inside Analyse tab */
+  .panel-scroll {
+    flex: 1;
     overflow-y: auto;
     padding: 20px;
     display: flex;
     flex-direction: column;
     gap: 16px;
   }
+
+  /* Tab bar */
+  .tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid #30363d;
+    background: #161b22;
+    flex-shrink: 0;
+  }
+  .tabs button {
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: #8b949e;
+    padding: 10px 20px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+    margin-bottom: -1px;
+  }
+  .tabs button:hover { color: #e6edf3; }
+  .tabs button.active { color: #e6edf3; border-bottom-color: #2dd4bf; }
+
+  /* Map fills remaining panel height */
+  .map-full { flex: 1; min-height: 0; }
 
   .empty-state {
     display: flex;
@@ -942,6 +978,7 @@
     justify-content: center;
     gap: 12px;
     height: 100%;
+    padding: 20px;
     color: #8b949e;
     text-align: center;
     max-width: 460px;
