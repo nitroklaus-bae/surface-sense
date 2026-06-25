@@ -25,7 +25,7 @@ class RelayService {
   static final UUID _serviceUuid =
       UUID.fromString('19b10000-e8f2-537e-4f6c-d104768a1214');
   static final UUID _surfaceCharUuid =
-      UUID.fromString('19b10000-e8f2-537e-4f6c-d104768a1006');
+      UUID.fromString('19b10006-e8f2-537e-4f6c-d104768a1214');
   static final UUID _cccdUuid =
       UUID.fromString('00002902-0000-1000-8000-00805f9b34fb');
 
