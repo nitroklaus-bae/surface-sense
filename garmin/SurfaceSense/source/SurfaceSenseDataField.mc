@@ -9,18 +9,18 @@ import Toybox.Communications;
 import Toybox.Time;
 
 //
-// SurfaceSenseDataField  v3.0
+// SurfaceSenseDataField  v4.0
 //
 // Connect IQ Data Field für Garmin Edge-Radcomputer.
 //
-// Funktion:
-//   - Verbindet sich per BLE mit dem XIAO nRF52840-Sensor ("SurfaceSensor")
-//     (oder dem Phone im Relay-Modus — gleiche UUIDs)
-//   - Empfängt 1-Hz Surface-Pakete (RMS, VDV, Peak in g)
-//   - Berechnet IRI (International Roughness Index) aus RMS + Fahrgeschwindigkeit
-//   - Schreibt Vibrationsdaten als Developer Fields in die FIT-Datei
-//   - Zeigt RMS / VDV / IRI live auf dem Display
-//   - Sendet GPS + IRI alle 60 s per HTTPS an Supabase (Community-Layer)
+// Datenquellen (priorisiert):
+//   1. BLE-Sensor "SurfaceSensor" (XIAO nRF52840) — hohe Qualität, 1666 Hz
+//   2. Garmin-interner Beschleunigungssensor (Fallback) — ~40 Hz
+//
+// Anzeige:
+//   BLE verbunden  → Label "BLE" (blau)
+//   Intern aktiv   → Label "INT" (orange)
+//   Kein Signal    → "Suche..." Bildschirm
 //
 // FIT Developer Fields:
 //   0  vibration_rms   [g]          – mittlere Vibrationsintensität
@@ -43,6 +43,10 @@ const UPLOAD_INTERVAL_S = 60;
 // Maximale Puffergröße (bei Überschreitung wird sofort gesendet)
 const BUFFER_MAX = 60;
 
+// Datenquellen-Konstanten
+const SRC_BLE    = 0;  // Externer BLE-Sensor
+const SRC_INTERN = 1;  // Garmin-interner Beschleunigungssensor
+
 class SurfaceSenseDataField extends WatchUi.DataField {
 
     // ── FIT-Felder ────────────────────────────────────────────────────────────
@@ -52,23 +56,25 @@ class SurfaceSenseDataField extends WatchUi.DataField {
     private var _fitCrest as FitContributor.Field;
     private var _fitIri   as FitContributor.Field;
 
-    // ── BLE-Manager ───────────────────────────────────────────────────────────
-    private var _ble as BleManager;
+    // ── Sensoren ──────────────────────────────────────────────────────────────
+    private var _ble    as BleManager;
+    private var _garmin as GarminAccelSensor;
 
     // ── Anzeige-State ─────────────────────────────────────────────────────────
-    private var _rms     as Float  = 0.0f;
-    private var _vdv     as Float  = 0.0f;
-    private var _iri     as Float  = 0.0f;
-    private var _dataAge as Number = 99;   // Sekunden seit letztem Paket
+    private var _rms            as Float   = 0.0f;
+    private var _vdv            as Float   = 0.0f;
+    private var _iri            as Float   = 0.0f;
+    private var _dataAge        as Number  = 99;
+    private var _source         as Number  = SRC_BLE;   // aktive Datenquelle
+    private var _wasBleConnected as Boolean = false;
 
     // ── Supabase Upload ───────────────────────────────────────────────────────
-    // Puffer: Array von Dictionaries {lat, lon, iri, speed_kmh}
     private var _iriBuffer    as Array        = [];
-    private var _uploadToSend as Array or Null = null;  // Referenz für Fehler-Restore
-    private var _lastUploadS  as Number        = 0;  // Time.now().value() beim letzten Upload
+    private var _uploadToSend as Array or Null = null;
+    private var _lastUploadS  as Number        = 0;
     private var _uploading    as Boolean       = false;
-    private var _uploadOk     as Number        = 0;  // erfolgreiche Uploads (für Debug)
-    private var _uploadErr    as Number        = 0;  // fehlgeschlagene Uploads
+    private var _uploadOk     as Number        = 0;
+    private var _uploadErr    as Number        = 0;
 
     // ── Initialisierung ───────────────────────────────────────────────────────
 
@@ -102,13 +108,16 @@ class SurfaceSenseDataField extends WatchUi.DataField {
             { :mesgType => FitContributor.MESG_TYPE_RECORD, :units => "m/km" }
         );
 
-        // BLE initialisieren und Scan starten
+        // BLE-Sensor initialisieren
         _ble = new BleManager(method(:onSurfaceData));
+
+        // Garmin-internen Sensor als Fallback initialisieren
+        _garmin = new GarminAccelSensor(method(:onGarminData));
 
         _lastUploadS = Time.now().value();
     }
 
-    // ── BLE-Callback (aufgerufen wenn neues 1-Hz-Paket eintrifft) ────────────
+    // ── BLE-Callback (1-Hz-Paket vom XIAO-Sensor) ────────────────────────────
 
     function onSurfaceData(
         rms   as Float,
@@ -117,12 +126,12 @@ class SurfaceSenseDataField extends WatchUi.DataField {
         crest as Float,
         iri   as Float
     ) as Void {
-        _rms   = rms;
-        _vdv   = vdv;
-        _iri   = iri;
+        _rms     = rms;
+        _vdv     = vdv;
+        _iri     = iri;
         _dataAge = 0;
+        _source  = SRC_BLE;
 
-        // Sofort in FIT schreiben (nicht auf compute() warten)
         _fitRms.setData(rms);
         _fitVdv.setData(vdv);
         _fitPeak.setData(peak);
@@ -130,28 +139,57 @@ class SurfaceSenseDataField extends WatchUi.DataField {
         _fitIri.setData(iri);
     }
 
+    // ── Garmin-Intern-Callback (1-Hz-Fenster vom onboard-Sensor) ─────────────
+    //
+    // Wird nur dann übernommen, wenn kein BLE-Sensor aktiv ist.
+    // IRI wird in compute() mit der aktuellen GPS-Geschwindigkeit berechnet.
+
+    function onGarminData(
+        rms  as Float,
+        vdv  as Float,
+        peak as Float
+    ) as Void {
+        if (_ble.connected) { return; }  // BLE hat Vorrang
+
+        _rms     = rms;
+        _vdv     = vdv;
+        _dataAge = 0;
+        _source  = SRC_INTERN;
+
+        var crest = (rms > 0.001f) ? (peak / rms) : 0.0f;
+        _fitRms.setData(rms);
+        _fitVdv.setData(vdv);
+        _fitPeak.setData(peak);
+        _fitCrest.setData(crest);
+        // _iri und _fitIri werden in compute() mit GPS-Geschwindigkeit gesetzt
+    }
+
     // ── compute(): vom Gerät jede Sekunde aufgerufen ──────────────────────────
 
     function compute(info as Activity.Info) as Lang.Object or Null {
         if (_dataAge < 99) { _dataAge++; }
 
-        // Reconnect erkennen: _dataAge zurücksetzen wenn Sensor gerade wieder verbunden.
-        // Ohne dies würde das Display 1-3 s gelb bleiben bis das erste Surface-Paket eintrifft.
+        // Reconnect-Erkennung: _dataAge zurücksetzen bei BLE-Wiederverbindung
         var nowConnected = _ble.connected;
         if (nowConnected && !_wasBleConnected) {
             _dataAge = 0;
+            _source  = SRC_BLE;
         }
         _wasBleConnected = nowConnected;
 
-        // Aktuelle GPS-Geschwindigkeit
+        // Quelle auf Intern setzen wenn BLE weg aber Garmin-Daten frisch
+        if (!nowConnected && _garmin.dataAge < 3) {
+            _source = SRC_INTERN;
+        }
+
+        // Aktuelle GPS-Geschwindigkeit → IRI nachberechnen
         var speedKmh = 0.0f;
         if (info has :currentSpeed && info.currentSpeed != null) {
             var speedMs = info.currentSpeed as Float;
             speedKmh = speedMs * 3.6f;
 
-            // IRI mit aktueller GPS-Geschwindigkeit nachberechnen
-            if (speedKmh > 2.0f) {
-                var vClamped = (speedKmh < 5.0f) ? 5.0f : speedKmh;
+            if (speedKmh > 2.0f && _rms > 0.0f) {
+                var vClamped    = (speedKmh < 5.0f) ? 5.0f : speedKmh;
                 var speedFactor = Math.sqrt(20.0f / vClamped).toFloat();
                 _iri = 2.21f * _rms * speedFactor;
                 _fitIri.setData(_iri);
@@ -159,9 +197,10 @@ class SurfaceSenseDataField extends WatchUi.DataField {
         }
 
         // ── GPS + IRI in Puffer schreiben ─────────────────────────────────────
-        // Nur wenn: Sensor verbunden, IRI > 0, GPS verfügbar, Fahrt läuft (> 3 km/h)
+        // Bedingung: frische Daten vorhanden (BLE oder Intern), IRI > 0, Fahrt läuft
+        var dataFresh = (_dataAge < 3);
         if (
-            _ble.connected
+            dataFresh
             && _iri > 0.0f
             && speedKmh >= 3.0f
             && info has :currentLocation
@@ -177,8 +216,8 @@ class SurfaceSenseDataField extends WatchUi.DataField {
         }
 
         // ── Upload-Check ──────────────────────────────────────────────────────
-        var nowS = Time.now().value();
-        var bufferFull = (_iriBuffer.size() >= BUFFER_MAX);
+        var nowS        = Time.now().value();
+        var bufferFull  = (_iriBuffer.size() >= BUFFER_MAX);
         var timeReached = (nowS - _lastUploadS >= UPLOAD_INTERVAL_S);
 
         if (!_uploading && _iriBuffer.size() > 0 && (bufferFull || timeReached)) {
@@ -193,13 +232,11 @@ class SurfaceSenseDataField extends WatchUi.DataField {
     private function _uploadBuffer() as Void {
         if (_uploading || _iriBuffer.size() == 0) { return; }
 
-        _uploading = true;
-        _lastUploadS = Time.now().value();
-
-        // Puffer leeren und in _uploadToSend merken (wird bei Fehler zurückgelegt)
+        _uploading    = true;
+        _lastUploadS  = Time.now().value();
         _uploadToSend = _iriBuffer;
-        var toSend = _iriBuffer;
-        _iriBuffer = [];
+        var toSend    = _iriBuffer;
+        _iriBuffer    = [];
 
         Communications.makeWebRequest(
             SUPABASE_RPC_URL,
@@ -224,13 +261,10 @@ class SurfaceSenseDataField extends WatchUi.DataField {
         } else {
             _uploadErr++;
             System.println("[SurfaceSense] Upload failed: HTTP " + responseCode);
-            // Datenpunkte nicht verlieren — zurück in den Puffer schieben.
-            // _toSend wurde in _uploadBuffer lokal gespeichert und hier wieder
-            // verfügbar gemacht, damit bei transientem Netzwerkfehler kein Verlust entsteht.
             if (_uploadToSend != null) {
                 var restored = _uploadToSend as Array;
                 restored.addAll(_iriBuffer);
-                _iriBuffer = restored;
+                _iriBuffer    = restored;
                 _uploadToSend = null;
             }
         }
@@ -255,21 +289,28 @@ class SurfaceSenseDataField extends WatchUi.DataField {
         dc.setColor(fg, bg);
         dc.clear();
 
-        // ── Kein Sensor verbunden ─────────────────────────────────────────────
-        if (!_ble.connected) {
+        var bleOk    = _ble.connected;
+        var internOk = _garmin.available() && _dataAge < 5;
+
+        // ── Kein Signal ───────────────────────────────────────────────────────
+        if (!bleOk && !internOk) {
             _drawCentered(dc, w, h / 3,     Graphics.FONT_XTINY, "Surface",  fg);
             _drawCentered(dc, w, h / 2,     Graphics.FONT_XTINY, "Sense",    fg);
-            _drawCentered(dc, w, h * 2 / 3, Graphics.FONT_XTINY, "Suche...", Graphics.COLOR_LT_GRAY);
+            _drawCentered(dc, w, h * 2 / 3, Graphics.FONT_XTINY,
+                _garmin.available() ? "INT start..." : "Suche...",
+                Graphics.COLOR_LT_GRAY);
             return;
         }
 
-        // ── Daten veraltet (> 3 s kein Paket) ────────────────────────────────
+        // ── 3-Zeilen-Datenlayout ──────────────────────────────────────────────
+        // Quell-Farbe: Blau für BLE, Orange für Intern
+        var srcColor = (_source == SRC_BLE)
+            ? Graphics.COLOR_BLUE
+            : Graphics.COLOR_ORANGE;
+
+        // Daten veraltet (> 3 s kein Paket)?
         var valueColor = (_dataAge > 3) ? Graphics.COLOR_YELLOW : fg;
 
-        // ── 3-Zeilen-Layout ───────────────────────────────────────────────────
-        // Zeile 1: RMS [mg]
-        // Zeile 2: VDV [g·s^0.25]
-        // Zeile 3: IRI [m/km] (Farbe je nach Qualitätsstufe)
         var rowH      = h / 3;
         var labelX    = 4;
         var valueX    = w - 4;
@@ -282,7 +323,6 @@ class SurfaceSenseDataField extends WatchUi.DataField {
         dc.drawLine(0, rowH * 2, w, rowH * 2);
 
         // Upload-Indikator: kleiner Punkt oben rechts
-        // Grün = letzter Upload OK, Rot = Fehler, Grau = noch kein Upload
         var dotColor = Graphics.COLOR_LT_GRAY;
         if (_uploadOk > 0 && _uploadErr == 0) {
             dotColor = Graphics.COLOR_GREEN;
@@ -292,8 +332,14 @@ class SurfaceSenseDataField extends WatchUi.DataField {
         dc.setColor(dotColor, bg);
         dc.fillCircle(w - 6, 6, 4);
 
+        // Quellen-Badge: "BLE" oder "INT" oben links (Quelle-Farbe)
+        dc.setColor(srcColor, bg);
+        dc.drawText(labelX, 6, Graphics.FONT_XTINY,
+            (_source == SRC_BLE) ? "BLE" : "INT",
+            Graphics.TEXT_JUSTIFY_LEFT | Graphics.TEXT_JUSTIFY_VCENTER);
+
         // Zeile 1 – RMS [mg]
-        dc.setColor(Graphics.COLOR_BLUE, bg);
+        dc.setColor(srcColor, bg);
         dc.drawText(labelX, rowH * 0 + rowH / 2, labelFont,
             "RMS mg", Graphics.TEXT_JUSTIFY_LEFT | Graphics.TEXT_JUSTIFY_VCENTER);
         dc.setColor(valueColor, bg);
@@ -302,7 +348,7 @@ class SurfaceSenseDataField extends WatchUi.DataField {
             Graphics.TEXT_JUSTIFY_RIGHT | Graphics.TEXT_JUSTIFY_VCENTER);
 
         // Zeile 2 – VDV [g·s^0.25]
-        dc.setColor(Graphics.COLOR_BLUE, bg);
+        dc.setColor(srcColor, bg);
         dc.drawText(labelX, rowH * 1 + rowH / 2, labelFont,
             "VDV", Graphics.TEXT_JUSTIFY_LEFT | Graphics.TEXT_JUSTIFY_VCENTER);
         dc.setColor(valueColor, bg);
@@ -311,7 +357,7 @@ class SurfaceSenseDataField extends WatchUi.DataField {
             Graphics.TEXT_JUSTIFY_RIGHT | Graphics.TEXT_JUSTIFY_VCENTER);
 
         // Zeile 3 – IRI [m/km]
-        dc.setColor(Graphics.COLOR_BLUE, bg);
+        dc.setColor(srcColor, bg);
         dc.drawText(labelX, rowH * 2 + rowH / 2, labelFont,
             "IRI m/km", Graphics.TEXT_JUSTIFY_LEFT | Graphics.TEXT_JUSTIFY_VCENTER);
         var iriColor;
