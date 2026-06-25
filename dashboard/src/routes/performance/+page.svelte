@@ -1,12 +1,12 @@
 <script>
   import { onMount, tick } from 'svelte'
   import { supabase } from '$lib/supabase.js'
-  import { parseGPX, parseFIT, trackFromSurfaceSamples } from '$lib/rollex/trackParser.js'
+  import { parseGPX, parseFIT, trackFromSurfaceSamples } from '$lib/rollex/trackParser'
   import {
     buildGrades, simulate, constantPower, strategyPower, fitInterpolatedPower,
     formatDuration, downsample, detectClimbs,
-  } from '$lib/rollex/performanceModel.js'
-  import { computeAirDensity } from '$lib/rollex/rollingResistance.js'
+  } from '$lib/rollex/performanceModel'
+  import { computeAirDensity } from '$lib/rollex/rollingResistance'
 
   // ── State ──────────────────────────────────────────────────────────────────
   let track       = null

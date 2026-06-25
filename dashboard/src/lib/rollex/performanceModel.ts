@@ -10,7 +10,7 @@
 // which can collapse when the linear term goes negative).
 // ══════════════════════════════════════════════════════════════════════════════
 
-import type { TrackSegment, TrackPoint } from './types'
+import type { TrackSegment } from './types'
 
 const G              = 9.81
 const DRIVETRAIN_EFF = 0.975      // crank → wheel power
