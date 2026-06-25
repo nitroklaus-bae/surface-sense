@@ -111,6 +111,8 @@ class RecordingProvider extends ChangeNotifier {
   int _sessionEnd   = 0;
 
   String? _lastSavedPath;
+  String? _lastSurfaceCsvPath;
+  String? _lastFitPath;
   String? _lastError;
 
   bool               _isCalibrating  = false;
@@ -410,9 +412,12 @@ class RecordingProvider extends ChangeNotifier {
     _firstSurfaceMillis    = null;
     _gpsSamples.clear();
     _surfaceSamples.clear();
-    _lastSavedPath = null;
-    _lastError     = null;
-    _sessionStart  = DateTime.now().millisecondsSinceEpoch;
+    _lastSavedPath      = null;
+    _lastSurfaceCsvPath = null;
+    _lastFitPath        = null;
+    _lastRawCsvPath     = null;
+    _lastError          = null;
+    _sessionStart       = DateTime.now().millisecondsSinceEpoch;
 
     if (_testMode) {
       // ── Test-Modus: Handy-IMU ───────────────────────────────────────────
@@ -496,19 +501,21 @@ class RecordingProvider extends ChangeNotifier {
 
       await supa.uploadSurfaceSamples(rideId, _surfaceSamples, _gpsSamples);
 
-      // FIT-Datei automatisch generieren (falls noch nicht vorhanden) und hochladen
-      if (_lastSavedPath == null) {
-        await exportFit();  // generiert FIT und setzt _lastSavedPath
-      }
-      if (_lastSavedPath != null) {
-        final fitFile = File(_lastSavedPath!);
+      // FIT-Datei automatisch generieren (falls noch nicht vorhanden) und hochladen.
+      // Wichtig: Nie _lastSavedPath verwenden, weil dieser auch auf CSV/Raw-CSV zeigen kann.
+      final fitPath = await _ensureFitFileForUpload();
+      if (fitPath != null) {
+        final fitFile = File(fitPath);
         if (await fitFile.exists()) {
           await supa.uploadFitFile(rideId, fitFile);
         }
       }
       // Surface-CSV hochladen falls vorhanden
-      if (_csvFile != null && await _csvFile!.exists()) {
-        await supa.uploadCsvFile(rideId, _csvFile!);
+      if (_lastSurfaceCsvPath != null) {
+        final csvFile = File(_lastSurfaceCsvPath!);
+        if (await csvFile.exists()) {
+          await supa.uploadCsvFile(rideId, csvFile);
+        }
       }
       // Rohdaten-CSV hochladen falls vorhanden
       if (_lastRawCsvPath != null) {
@@ -625,7 +632,8 @@ class RecordingProvider extends ChangeNotifier {
       try {
         await _csvSink!.flush();
         await _csvSink!.close();
-        _lastSavedPath = _csvFile?.path;
+        _lastSurfaceCsvPath = _csvFile?.path;
+        _lastSavedPath = _lastSurfaceCsvPath;
         notifyListeners();
       } catch (e) {
         _lastError = 'CSV-Abschluss fehlgeschlagen: $e';
@@ -654,13 +662,15 @@ class RecordingProvider extends ChangeNotifier {
 
   Future<String?> exportCsv() async {
     // CSV wurde bereits beim Stop gespeichert; gibt gespeicherten Pfad zurück
-    if (_lastSavedPath != null) return _lastSavedPath;
+    if (_lastSurfaceCsvPath != null) return _lastSurfaceCsvPath;
     // Fallback: neu schreiben wenn kein Pfad vorhanden
     if (_surfaceSamples.isEmpty) return null;
     await _openCsvSink();
-    for (final s in _surfaceSamples) _csvSink?.writeln(s.toCsvRow(_sessionStart));
+    for (final s in _surfaceSamples) {
+      _csvSink?.writeln(s.toCsvRow(_sessionStart));
+    }
     await _closeCsvSink();
-    return _lastSavedPath;
+    return _lastSurfaceCsvPath;
   }
 
   Future<String?> exportRawCsv() async {
@@ -671,9 +681,12 @@ class RecordingProvider extends ChangeNotifier {
       final file = File('${dir.path}/surface_raw_${kFsG[_fsIndex]}g_$ts.csv');
       final sink = file.openWrite();
       sink.writeln(SensorSample.csvHeader());
-      for (final s in _sampleQueue) sink.writeln(s.toCsvRow(_sessionStart));
+      for (final s in _sampleQueue) {
+        sink.writeln(s.toCsvRow(_sessionStart));
+      }
       await sink.flush();
       await sink.close();
+      _lastRawCsvPath = file.path;
       _lastSavedPath = file.path;
       notifyListeners();
       return file.path;
@@ -684,7 +697,43 @@ class RecordingProvider extends ChangeNotifier {
     }
   }
 
-  /// FIT-Export im Hintergrund-Isolate (verhindert UI-Freeze bei großen Sessions).
+  // Supabase darf nur echte FIT-Dateien ueber den FIT-Pfad hochladen.
+  Future<String?> _ensureFitFileForUpload() async {
+    if (_lastFitPath != null) {
+      final existing = File(_lastFitPath!);
+      if (await existing.exists()) return _lastFitPath;
+      _lastFitPath = null;
+    }
+
+    if (_gpsSamples.isEmpty) return null;
+
+    try {
+      final dir  = await getApplicationDocumentsDirectory();
+      final ts   = _isoTimestamp();
+      final path = '${dir.path}/surface_${kFsG[_fsIndex]}g_${_mountPoint}_$ts.fit';
+
+      await compute(
+        _fitIsolateEntry,
+        _FitIsolateParams(
+          path:           path,
+          gpsSamples:     List.from(_gpsSamples),
+          surfaceSamples: List.from(_surfaceSamples),
+          sessionStart:   _sessionStart > 0 ? _sessionStart : DateTime.now().millisecondsSinceEpoch,
+          sessionEnd:     _sessionEnd   > 0 ? _sessionEnd   : DateTime.now().millisecondsSinceEpoch,
+        ),
+      );
+
+      _lastFitPath = path;
+      return path;
+    } catch (e) {
+      _lastError = 'FIT-Erzeugung fuer Upload fehlgeschlagen: $e';
+      notifyListeners();
+      return null;
+    }
+  }
+
+  /// FIT-Export im Hintergrund-Isolate (verhindert UI-Freeze bei grossen Sessions).
+  // Manueller FIT-Export fuer Teilen/Download.
   Future<String?> exportFit() async {
     if (_surfaceSamples.isEmpty && _gpsSamples.isEmpty) return null;
     try {
@@ -702,6 +751,7 @@ class RecordingProvider extends ChangeNotifier {
           sessionEnd:     _sessionEnd   > 0 ? _sessionEnd   : DateTime.now().millisecondsSinceEpoch,
         ),
       );
+      _lastFitPath = path;
       _lastSavedPath = path;
       notifyListeners();
       return path;
