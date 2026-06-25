@@ -163,6 +163,7 @@
     const allPts = pts.filter(p => p.lat && p.lon).map(p => [p.lat, p.lon]);
     if (allPts.length) surfaceMap.fitBounds(L.latLngBounds(allPts), { padding: [20, 20] });
     surfaceMap.invalidateSize();
+    requestAnimationFrame(() => surfaceMap?.invalidateSize());
   }
 
   // Redraw whenever results arrive
@@ -624,7 +625,7 @@
       <!-- Surface map -->
       {#key results}
         <section class="card card-map">
-          <div bind:this={surfaceMapEl} class="surface-map"></div>
+          <div bind:this={surfaceMapEl} class="surface-map" style="height:500px;width:100%;"></div>
           <div class="map-legend">
             {#each buildSurfaceBreakdown(results.surfaces) as seg}
               <span class="legend-item">
