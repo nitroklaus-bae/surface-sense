@@ -153,11 +153,7 @@
   }
 
   main {
-      height: calc(100vh - 52px);
-    overflow: hidden;
-  }
-</style>
-eight: calc(100vh - 52px);
+    height: calc(100vh - 52px);
     overflow: hidden;
   }
 </style>
