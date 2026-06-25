@@ -157,6 +157,13 @@
     }).addTo(surfaceMap);
 
     const pts = track.points;
+
+    // Basis-Polyline: gesamter Track als durchgehender grauer Pfad
+    const allTrackPts = pts.filter(p => p.lat && p.lon).map(p => [p.lat, p.lon]);
+    if (allTrackPts.length >= 2) {
+      L.polyline(allTrackPts, { color: '#6b7280', weight: 4, opacity: 0.5 }).addTo(surfaceMap);
+    }
+
     for (const seg of surfaces) {
       const latlngs = pts
         .slice(seg.startIdx, seg.endIdx + 1)
