@@ -203,8 +203,10 @@
 
     const allPts = validPts.map(p => [p.lat, p.lon]);
     if (allPts.length) surfaceMap.fitBounds(L.latLngBounds(allPts), { padding: [20, 20] });
+    // Multiple invalidateSize calls to handle layout not yet settled after tab switch
     surfaceMap.invalidateSize();
     requestAnimationFrame(() => surfaceMap?.invalidateSize());
+    setTimeout(() => surfaceMap?.invalidateSize(), 150);
   }
 
   // Redraw whenever results arrive, map tab becomes active, or color mode toggles
@@ -1022,6 +1024,9 @@
     flex-direction: column;
     overflow: hidden;
     padding: 0;
+    /* must be explicit so child map-wrapper can use flex:1 */
+    min-height: 0;
+    height: 100%;
   }
 
   /* scrollable wrapper inside Analyse tab */
@@ -1061,13 +1066,15 @@
   /* ── Map wrapper ── */
   .map-wrapper {
     position: relative;
-    display: flex;
-    flex-direction: column;
     flex: 1;
     min-height: 0;
     overflow: hidden;
   }
-  .map-full { flex: 1; min-height: 0; }
+  /* position:absolute so Leaflet reads concrete pixel dimensions from the wrapper */
+  .map-full {
+    position: absolute;
+    inset: 0;
+  }
 
   .map-controls {
     position: absolute;
