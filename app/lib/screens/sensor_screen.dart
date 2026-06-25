@@ -300,16 +300,15 @@ class _SensorScreenState extends State<SensorScreen> {
                 const SizedBox(height: 8),
                 _OrientCalibrationRow(prov: prov),
                 const SizedBox(height: 8),
-                // Garmin-Relay
-                _RelayRow(prov: prov),
-                const SizedBox(height: 8),
                 // Temperaturanzeige (nur wenn Firmware v6 → tempChar vorhanden)
                 if (!prov.imuTemperatureC.isNaN)
                   _TempRow(tempC: prov.imuTemperatureC),
                 if (!prov.imuTemperatureC.isNaN)
                   const SizedBox(height: 8),
-              ] else
-                const SizedBox(height: 8),
+              ],
+              // Garmin-Relay (BLE- und Test-Modus)
+              _RelayRow(prov: prov),
+              const SizedBox(height: 8),
               // Start / Stop
               Row(
                 children: [
