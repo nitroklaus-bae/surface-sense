@@ -912,7 +912,7 @@
 
   /* ── Surface map ── */
   .card-map { padding: 0; overflow: hidden; }
-  .surface-map { height: 320px; width: 100%; }
+  .surface-map { height: clamp(320px, calc(100vh - 320px), 700px); width: 100%; }
   /* Leaflet z-index fix inside overflow:hidden card */
   :global(.leaflet-pane),
   :global(.leaflet-top),

@@ -18,7 +18,6 @@
   let L = null;
   let markers = [];
   let mapEl;
-  let showChart = false;
 
   // ── Stats ─────────────────────────────────────────────────────────────────
   $: totalDist  = rides.reduce((s, r) => s + (r.distance_m ?? 0), 0);
@@ -64,8 +63,6 @@
       maxZoom: 19,
     }).addTo(map);
 
-    // Leaflet braucht invalidateSize() nachdem das DOM seine finale Größe hat
-    requestAnimationFrame(() => map?.invalidateSize());
   }
 
   async function selectRide(ride) {
@@ -366,52 +363,41 @@
 
         {:else}
           <!-- ── Normalmodus ──────────────────────────────────────────────── -->
-          <div class="detail-row">
-            <div class="detail-header">
-              <h2>{selectedRide.name}</h2>
-              <div class="detail-meta">
-                {#if isAdminUser && selectedRide.user_email}
-                  <span style="color:#2dd4bf">{selectedRide.user_email}</span> ·
-                {/if}
-                {fmtDate(selectedRide.started_at)} ·
-                {fmtDuration(selectedRide.duration_s)} ·
-                {fmtDistance(selectedRide.distance_m)}
-              </div>
+          <div class="detail-header">
+            <h2>{selectedRide.name}</h2>
+            <div class="detail-meta">
+              {#if isAdminUser && selectedRide.user_email}
+                <span style="color:#2dd4bf">{selectedRide.user_email}</span> ·
+              {/if}
+              {fmtDate(selectedRide.started_at)} ·
+              {fmtDuration(selectedRide.duration_s)} ·
+              {fmtDistance(selectedRide.distance_m)}
             </div>
-            <div class="detail-metrics">
-              <div class="metric">
-                <span class="metric-val">{selectedRide.avg_rms_g != null ? (selectedRide.avg_rms_g * 1000).toFixed(1) : '—'}</span>
-                <span class="metric-lbl">Ø RMS [mg]</span>
-              </div>
-              <div class="metric">
-                <span class="metric-val">{selectedRide.avg_vdv_g != null ? selectedRide.avg_vdv_g.toFixed(3) : '—'}</span>
-                <span class="metric-lbl">Ø VDV [g·s^0.25]</span>
-              </div>
-              <div class="metric" style="color:{iriColor(selectedRide.avg_iri)}">
-                <span class="metric-val">{selectedRide.avg_iri != null ? selectedRide.avg_iri.toFixed(2) : '—'}</span>
-                <span class="metric-lbl">Ø IRI [m/km] · {iriLabel(selectedRide.avg_iri)}</span>
-              </div>
-              <div class="metric" style="color:{iriColor(selectedRide.max_iri)}">
-                <span class="metric-val">{selectedRide.max_iri != null ? selectedRide.max_iri.toFixed(2) : '—'}</span>
-                <span class="metric-lbl">Max IRI [m/km]</span>
-              </div>
-            </div>
-            {#if samples.length > 0}
-              <button class="btn-chart" on:click={() => showChart = !showChart}
-                title={showChart ? 'Chart verbergen' : 'Chart anzeigen'}>
-                {showChart ? '▼' : '▲'} Chart
-              </button>
-            {/if}
           </div>
+          <div class="detail-metrics">
+            <div class="metric">
+              <span class="metric-val">{selectedRide.avg_rms_g != null ? (selectedRide.avg_rms_g * 1000).toFixed(1) : '—'}</span>
+              <span class="metric-lbl">Ø RMS [mg]</span>
+            </div>
+            <div class="metric">
+              <span class="metric-val">{selectedRide.avg_vdv_g != null ? selectedRide.avg_vdv_g.toFixed(3) : '—'}</span>
+              <span class="metric-lbl">Ø VDV [g·s^0.25]</span>
+            </div>
+            <div class="metric" style="color:{iriColor(selectedRide.avg_iri)}">
+              <span class="metric-val">{selectedRide.avg_iri != null ? selectedRide.avg_iri.toFixed(2) : '—'}</span>
+              <span class="metric-lbl">Ø IRI [m/km] · {iriLabel(selectedRide.avg_iri)}</span>
+            </div>
+            <div class="metric" style="color:{iriColor(selectedRide.max_iri)}">
+              <span class="metric-val">{selectedRide.max_iri != null ? selectedRide.max_iri.toFixed(2) : '—'}</span>
+              <span class="metric-lbl">Max IRI [m/km]</span>
+            </div>
+          </div>
+
+          {#if samples.length > 0}
+            <RideChart {samples} />
+          {/if}
         {/if}
       </div>
-
-      <!-- Chart: ausklappbar unter dem Detail-Panel -->
-      {#if showChart && !compareMode && samples.length > 0}
-        <div class="chart-panel">
-          <RideChart {samples} />
-        </div>
-      {/if}
     {/if}
   </section>
 </div>
@@ -569,21 +555,14 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    height: 100%;
   }
 
   .map-wrap {
     position: relative;
-    flex: 1 1 0;
+    flex: 1;
     min-height: 0;
-    /* Explizite Mindesthöhe damit Leaflet nie mit 0px initialisiert */
-    min-height: 300px;
   }
-  /* Absolut positioniert = Leaflet bekommt immer die korrekte Container-Größe */
-  .map {
-    position: absolute;
-    inset: 0;
-  }
+  .map { width: 100%; height: 100%; }
 
   .legend {
     position: absolute;
@@ -614,58 +593,28 @@
   }
   .map-overlay.muted { color: #8b949e; background: transparent; }
 
-  /* ── Detail-Panel (kompakt, kein Chart hier) ───────────────────────── */
+  /* ── Detail-Panel ────────────────────────────────────────────────────── */
   .detail {
     border-top: 1px solid #30363d;
-    padding: 10px 16px;
+    padding: 16px 20px;
     background: #0d1117;
     flex-shrink: 0;
+    max-height: 280px;
+    overflow-y: auto;
   }
-
-  /* Normalmodus: alles in einer Zeile */
-  .detail-row {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    flex-wrap: wrap;
-  }
-
-  .detail-header { flex-shrink: 0; }
-  .detail-header h2 { font-size: 13px; font-weight: 700; color: #e6edf3; margin-bottom: 1px; }
-  .detail-meta { font-size: 11px; color: #8b949e; }
+  .detail-header { margin-bottom: 12px; }
+  .detail-header h2 { font-size: 15px; font-weight: 700; color: #e6edf3; margin-bottom: 2px; }
+  .detail-meta { font-size: 12px; color: #8b949e; }
 
   .detail-metrics {
-    display: flex;
-    gap: 20px;
-    flex: 1;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
   }
-  .metric { display: flex; flex-direction: column; gap: 1px; }
-  .metric-val { font-size: 16px; font-weight: 700; color: #e6edf3; }
+  .metric { display: flex; flex-direction: column; gap: 2px; }
+  .metric-val { font-size: 18px; font-weight: 700; color: #e6edf3; }
   .metric-lbl { font-size: 10px; color: #8b949e; }
-
-  .btn-chart {
-    background: none;
-    border: 1px solid #30363d;
-    color: #8b949e;
-    padding: 4px 10px;
-    border-radius: 6px;
-    font-size: 11px;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: border-color 0.15s, color 0.15s;
-    flex-shrink: 0;
-  }
-  .btn-chart:hover { border-color: #8b949e; color: #e6edf3; }
-
-  /* Ausklappbares Chart-Panel */
-  .chart-panel {
-    border-top: 1px solid #30363d;
-    height: 200px;
-    flex-shrink: 0;
-    overflow: hidden;
-    background: #0d1117;
-  }
 
   /* ── Helpers ─────────────────────────────────────────────────────────── */
   .center { display: flex; justify-content: center; align-items: center; padding: 40px; }
