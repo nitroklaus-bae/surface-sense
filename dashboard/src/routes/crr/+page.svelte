@@ -2,7 +2,13 @@
   import { onMount, tick } from 'svelte';
   import { get } from 'svelte/store';
   import { parseFIT, parseGPX } from '$lib/rollex/trackParser';
-  import { analyzeSurfaces, SURFACE_PROPS } from '$lib/rollex/surfaceAnalyzer';
+  import {
+    analyzeSurfaces,
+    applySurfaceThresholds,
+    buildSurfaceSummary,
+    DEFAULT_CLASS_THRESHOLDS,
+    SURFACE_PROPS,
+  } from '$lib/rollex/surfaceAnalyzer';
   import { optimizeTires, formatTime } from '$lib/rollex/tireOptimizer';
   import { stravaStreamsToTrack } from '$lib/rollex/stravaAdapter';
   import { fmtPressure, pressureUnitLabel } from '$lib/rollex/units';
@@ -12,6 +18,31 @@
   import { crrSession, makeCrrProfileKey, makeCrrWeightsKey } from '$lib/rollex/crrSession.js';
 
   // ── Source selection ───────────────────────────────────────────────
+  const SURFACE_THRESHOLD_STORAGE = 'crr_surface_threshold_defaults';
+  const THRESHOLD_ORDER = ['smoothRough', 'roughCobble', 'fineCoarse', 'coarseDirt', 'dirtGrass', 'grassSand', 'sandTech'];
+  const SOFT_THRESHOLD_ROWS = [
+    { key: 'fineCoarse', lower: 'gravel_fine', upper: 'gravel_coarse' },
+    { key: 'coarseDirt', lower: 'gravel_coarse', upper: 'dirt' },
+    { key: 'dirtGrass', lower: 'dirt', upper: 'grass_soft' },
+    { key: 'grassSand', lower: 'grass_soft', upper: 'sand_mud' },
+    { key: 'sandTech', lower: 'sand_mud', upper: 'technical_trail' },
+  ];
+  const HARD_THRESHOLD_ROWS = [
+    { key: 'smoothRough', lower: 'smooth_asphalt', upper: 'rough_asphalt' },
+    { key: 'roughCobble', lower: 'rough_asphalt', upper: 'cobblestone' },
+  ];
+  const THRESHOLD_PRESETS = [
+    { label: 'Standard', values: DEFAULT_CLASS_THRESHOLDS },
+    {
+      label: 'Cat4 schaerfer',
+      values: { ...DEFAULT_CLASS_THRESHOLDS, dirtGrass: 0.64, grassSand: 0.715, sandTech: 0.815 },
+    },
+    {
+      label: 'Konservativ rau',
+      values: { ...DEFAULT_CLASS_THRESHOLDS, fineCoarse: 0.37, coarseDirt: 0.54, dirtGrass: 0.66, grassSand: 0.72 },
+    },
+  ];
+
   const restoredSession = get(crrSession);
   let source = restoredSession.source ?? 'supabase'; // 'supabase' | 'upload' | 'intervals' | 'strava'
   let rides = [];
@@ -69,6 +100,11 @@
     crrModel:       'physical',
   };
   let weights = { speed: 0.6, puncture: 0.25, handling: 0.15 };
+  let classThresholds = { ...DEFAULT_CLASS_THRESHOLDS };
+  let defaultClassThresholds = { ...DEFAULT_CLASS_THRESHOLDS };
+  let thresholdPanelOpen = false;
+  let showHardThresholds = false;
+  let surfaceTuningDirty = false;
 
   $: if (
     source === 'supabase' &&
@@ -101,6 +137,82 @@
   ));
 
   // ── onMount ────────────────────────────────────────────────────────
+  function thresholdsEqual(a, b) {
+    return THRESHOLD_ORDER.every((key) => Math.abs((a?.[key] ?? 0) - (b?.[key] ?? 0)) < 0.0001);
+  }
+
+  function cleanThresholds(value) {
+    return { ...DEFAULT_CLASS_THRESHOLDS, ...(value ?? {}) };
+  }
+
+  function shortSurfaceLabel(cat) {
+    return (SURFACE_PROPS[cat]?.label ?? cat).replace(/ \(.*\)/, '');
+  }
+
+  function surfaceSummaryRows(surfaces) {
+    const totalM = results?.track?.totalDistance || surfaces.reduce((sum, seg) => sum + seg.distanceMeters, 0) || 1;
+    return Object.entries(buildSurfaceSummary(surfaces))
+      .filter(([, meters]) => meters > 0)
+      .sort((a, b) => b[1] - a[1])
+      .map(([cat, meters]) => ({ cat, meters, pct: Math.round(meters / totalM * 100) }));
+  }
+
+  function lowConfidenceMeters(surfaces) {
+    return surfaces
+      .filter((seg) => (seg.osmConfidence ?? 1) < 0.45)
+      .reduce((sum, seg) => sum + seg.distanceMeters, 0);
+  }
+
+  function cat4Meters(surfaces) {
+    const summary = buildSurfaceSummary(surfaces);
+    return (summary.grass_soft ?? 0) + (summary.sand_mud ?? 0) + (summary.technical_trail ?? 0);
+  }
+
+  function weightedOsmConfidence(surfaces) {
+    const totalM = results?.track?.totalDistance || surfaces.reduce((sum, seg) => sum + seg.distanceMeters, 0) || 1;
+    return surfaces.reduce((sum, seg) => sum + (seg.osmConfidence ?? 0.5) * (seg.distanceMeters / totalM), 0);
+  }
+
+  function setClassThresholds(next, { dirty = true } = {}) {
+    classThresholds = cleanThresholds(next);
+    if (results?.surfaces?.length) {
+      results = { ...results, surfaces: applySurfaceThresholds(results.surfaces, classThresholds) };
+      surfaceTuningDirty = dirty;
+    }
+  }
+
+  function updateThreshold(key, value) {
+    const group = SOFT_THRESHOLD_ROWS.some((row) => row.key === key)
+      ? SOFT_THRESHOLD_ROWS.map((row) => row.key)
+      : HARD_THRESHOLD_ROWS.map((row) => row.key);
+    const idx = group.indexOf(key);
+    const lo = idx > 0 ? classThresholds[group[idx - 1]] + 0.01 : 0;
+    const hi = idx < group.length - 1 ? classThresholds[group[idx + 1]] - 0.01 : 1;
+    setClassThresholds({ ...classThresholds, [key]: Math.max(lo, Math.min(hi, value)) });
+  }
+
+  function recomputeTiresForThresholds() {
+    if (!results) return;
+    saveProfile();
+    const tireSetups = optimizeTires(profile, results.surfaces, results.track.totalDistance, 5, results.track, weights);
+    results = { ...results, tireSetups };
+    surfaceTuningDirty = false;
+  }
+
+  function saveThresholdsAsDefault() {
+    defaultClassThresholds = { ...classThresholds };
+    try {
+      localStorage.setItem(SURFACE_THRESHOLD_STORAGE, JSON.stringify(defaultClassThresholds));
+    } catch {}
+  }
+
+  function resetThresholdDefaults() {
+    defaultClassThresholds = { ...DEFAULT_CLASS_THRESHOLDS };
+    try {
+      localStorage.removeItem(SURFACE_THRESHOLD_STORAGE);
+    } catch {}
+  }
+
   onMount(async () => {
     // Load saved profile
     try {
@@ -108,6 +220,14 @@
       if (saved) profile = { ...profile, ...JSON.parse(saved) };
       const savedW = localStorage.getItem('crr_weights');
       if (savedW) weights = { ...weights, ...JSON.parse(savedW) };
+      const savedThresholds = localStorage.getItem(SURFACE_THRESHOLD_STORAGE);
+      if (savedThresholds) {
+        defaultClassThresholds = cleanThresholds(JSON.parse(savedThresholds));
+        classThresholds = { ...defaultClassThresholds };
+        if (results?.surfaces?.length) {
+          results = { ...results, surfaces: applySurfaceThresholds(results.surfaces, classThresholds) };
+        }
+      }
     } catch {}
 
     // Load saved intervals.icu settings
@@ -449,9 +569,10 @@
 
       // ── Common: OSM + tire optimization ───────────────────────────
       progress = 'OSM-Karte wird abgefragt…';
-      const surfaces = await analyzeSurfaces(track, (phase, pct) => {
+      const rawSurfaces = await analyzeSurfaces(track, (phase, pct) => {
         progress = `${phase} (${pct}%)`;
       });
+      const surfaces = applySurfaceThresholds(rawSurfaces, classThresholds);
 
       progress = 'Reifen werden optimiert…';
       saveProfile();
@@ -461,6 +582,7 @@
         ? ($centralRide?.id ?? '')
         : `${source}:${rideInfo.name}:${track.points.length}:${Math.round(track.totalDistance ?? 0)}`;
       results   = { surfaces, tireSetups, track, rideInfo };
+      surfaceTuningDirty = false;
       progress  = '';
       activeTab = 'analyse';
     } catch (e) {
@@ -879,6 +1001,121 @@
             >IRI-Heatmap</button>
           </div>
 
+          <div class="surface-tuning-panel" class:open={thresholdPanelOpen}>
+            <button class="surface-tuning-toggle" type="button" on:click={() => thresholdPanelOpen = !thresholdPanelOpen}>
+              <span>Oberflaechen-Zuordnung</span>
+              <b>{surfaceTuningDirty ? 'Geaendert' : 'Aktiv'}</b>
+            </button>
+
+            {#if thresholdPanelOpen}
+              <div class="surface-tuning-body">
+                <div class="threshold-presets">
+                  {#if !thresholdsEqual(defaultClassThresholds, DEFAULT_CLASS_THRESHOLDS)}
+                    <button type="button" on:click={() => setClassThresholds(defaultClassThresholds)}>
+                      Gespeicherter Standard
+                    </button>
+                  {/if}
+                  {#each THRESHOLD_PRESETS as preset}
+                    <button type="button" on:click={() => setClassThresholds(preset.values)}>
+                      {preset.label}
+                    </button>
+                  {/each}
+                </div>
+
+                <div class="threshold-list">
+                  {#each SOFT_THRESHOLD_ROWS as row}
+                    <label class="threshold-row">
+                      <span>
+                        <i style="background:{SURFACE_PROPS[row.lower].color}"></i>
+                        {shortSurfaceLabel(row.lower)}
+                      </span>
+                      <input
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.01"
+                        value={classThresholds[row.key]}
+                        on:input={(event) => updateThreshold(row.key, Number(event.currentTarget.value))}
+                        style="accent-color:{SURFACE_PROPS[row.upper].color}"
+                      />
+                      <span>
+                        {shortSurfaceLabel(row.upper)}
+                        <i style="background:{SURFACE_PROPS[row.upper].color}"></i>
+                      </span>
+                    </label>
+                  {/each}
+                </div>
+
+                <button class="threshold-link" type="button" on:click={() => showHardThresholds = !showHardThresholds}>
+                  {showHardThresholds ? 'Asphalt/Kopfstein ausblenden' : 'Asphalt/Kopfstein-Grenzen zeigen'}
+                </button>
+
+                {#if showHardThresholds}
+                  <div class="threshold-list">
+                    {#each HARD_THRESHOLD_ROWS as row}
+                      <label class="threshold-row">
+                        <span>
+                          <i style="background:{SURFACE_PROPS[row.lower].color}"></i>
+                          {shortSurfaceLabel(row.lower)}
+                        </span>
+                        <input
+                          type="range"
+                          min="0"
+                          max="1"
+                          step="0.01"
+                          value={classThresholds[row.key]}
+                          on:input={(event) => updateThreshold(row.key, Number(event.currentTarget.value))}
+                          style="accent-color:{SURFACE_PROPS[row.upper].color}"
+                        />
+                        <span>
+                          {shortSurfaceLabel(row.upper)}
+                          <i style="background:{SURFACE_PROPS[row.upper].color}"></i>
+                        </span>
+                      </label>
+                    {/each}
+                  </div>
+                {/if}
+
+                <div class="threshold-summary">
+                  {#each surfaceSummaryRows(results.surfaces) as row}
+                    <span>
+                      <i style="background:{SURFACE_PROPS[row.cat].color}"></i>
+                      {shortSurfaceLabel(row.cat)} {row.pct}%
+                    </span>
+                  {/each}
+                </div>
+
+                <div class="threshold-metrics">
+                  <span>Segmente <b>{results.surfaces.length}</b></span>
+                  <span>OSM <b>{Math.round(weightedOsmConfidence(results.surfaces) * 100)}%</b></span>
+                  <span>Cat4+ <b>{formatKm(cat4Meters(results.surfaces))}</b></span>
+                  {#if lowConfidenceMeters(results.surfaces) > 0}
+                    <span class="warn">Niedrige Konfidenz: {formatKm(lowConfidenceMeters(results.surfaces))}</span>
+                  {/if}
+                </div>
+
+                <div class="threshold-actions">
+                  <button type="button" class="primary" on:click={recomputeTiresForThresholds} disabled={!surfaceTuningDirty}>
+                    {surfaceTuningDirty ? 'Auf Reifenanalyse anwenden' : 'Reifenanalyse aktuell'}
+                  </button>
+                  <button type="button" on:click={saveThresholdsAsDefault} disabled={thresholdsEqual(classThresholds, defaultClassThresholds)}>
+                    Als Standard speichern
+                  </button>
+                  {#if !thresholdsEqual(classThresholds, DEFAULT_CLASS_THRESHOLDS)}
+                    <button type="button" on:click={() => setClassThresholds(DEFAULT_CLASS_THRESHOLDS)}>
+                      Werkstandard
+                    </button>
+                  {/if}
+                  {#if !thresholdsEqual(defaultClassThresholds, DEFAULT_CLASS_THRESHOLDS)}
+                    <button type="button" on:click={resetThresholdDefaults}>
+                      Standard loeschen
+                    </button>
+                  {/if}
+                </div>
+              </div>
+            {/if}
+          </div>
+
           <!-- Legend overlay -->
           <div class="map-legend">
             {#if mapColorMode === 'surface'}
@@ -1232,6 +1469,137 @@
   .map-toggle.active { background: #2dd4bf22; color: #2dd4bf; }
   .map-toggle:not(.active):hover { color: #e6edf3; }
 
+  .surface-tuning-panel {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 1000;
+    width: min(620px, calc(100% - 20px));
+    color: #e6edf3;
+  }
+  .surface-tuning-toggle {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    background: #161b22ee;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    color: #e6edf3;
+    padding: 8px 10px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .surface-tuning-toggle b {
+    color: #2dd4bf;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .surface-tuning-body {
+    margin-top: 6px;
+    background: #161b22f4;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    padding: 10px;
+    box-shadow: 0 12px 34px rgba(0, 0, 0, 0.28);
+    max-height: calc(100vh - 230px);
+    overflow-y: auto;
+  }
+  .threshold-presets,
+  .threshold-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .threshold-presets { margin-bottom: 10px; }
+  .threshold-actions { margin-top: 10px; }
+  .threshold-presets button,
+  .threshold-actions button,
+  .threshold-link {
+    border: 1px solid #30363d;
+    border-radius: 999px;
+    background: #0d1117;
+    color: #c9d1d9;
+    padding: 5px 9px;
+    font-size: 11px;
+    cursor: pointer;
+  }
+  .threshold-actions button.primary {
+    border-color: #2dd4bf77;
+    background: #2dd4bf22;
+    color: #99f6e4;
+    font-weight: 700;
+  }
+  .threshold-actions button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  .threshold-link {
+    margin: 8px 0;
+    border-radius: 6px;
+    color: #2dd4bf;
+  }
+  .threshold-list {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+  .threshold-row {
+    display: grid;
+    grid-template-columns: 132px minmax(120px, 1fr) 132px;
+    gap: 8px;
+    align-items: center;
+    font-size: 11px;
+    color: #8b949e;
+  }
+  .threshold-row span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    min-width: 0;
+  }
+  .threshold-row span:first-child {
+    justify-content: flex-end;
+    text-align: right;
+  }
+  .threshold-row i,
+  .threshold-summary i {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .threshold-row input {
+    width: 100%;
+  }
+  .threshold-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 10px;
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid #30363d;
+  }
+  .threshold-summary span,
+  .threshold-metrics span {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: #c9d1d9;
+    font-size: 11px;
+  }
+  .threshold-metrics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 12px;
+    margin-top: 8px;
+  }
+  .threshold-metrics b { color: #e6edf3; }
+  .threshold-metrics .warn { color: #fbbf24; }
+
   .map-legend {
     position: absolute;
     bottom: 36px;
@@ -1500,6 +1868,28 @@
   @media (max-width: 1280px) {
     .tire-analysis-grid {
       grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .surface-tuning-panel {
+      right: 10px;
+      max-width: none;
+    }
+
+    .surface-tuning-body {
+      max-height: calc(100vh - 190px);
+    }
+
+    .threshold-row {
+      grid-template-columns: 1fr;
+      gap: 5px;
+    }
+
+    .threshold-row span:first-child,
+    .threshold-row span:last-child {
+      justify-content: flex-start;
+      text-align: left;
     }
   }
 </style>
