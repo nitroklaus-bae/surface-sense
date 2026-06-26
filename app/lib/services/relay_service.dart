@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:typed_data';
+import 'dart:io' show Platform;
 
 import 'package:bluetooth_low_energy/bluetooth_low_energy.dart';
 import 'package:flutter/foundation.dart';
@@ -28,8 +28,6 @@ class RelayService {
       UUID.fromString('19b10006-e8f2-537e-4f6c-d104768a1214');
   static final UUID _tempCharUuid =
       UUID.fromString('19b10009-e8f2-537e-4f6c-d104768a1214');
-  static final UUID _cccdUuid =
-      UUID.fromString('00002902-0000-1000-8000-00805f9b34fb');
 
   // ── BLE Peripheral Manager ────────────────────────────────────────────────
   // PeripheralManager() ist ein factory-Singleton (kein .instance)
@@ -45,14 +43,14 @@ class RelayService {
 
   bool _initialized = false;
   bool _advertising = false;
-  int  _publishCount = 0;
+  int _publishCount = 0;
   String? _lastError;
 
   // ── Public State ──────────────────────────────────────────────────────────
-  bool get isAdvertising   => _advertising;
+  bool get isAdvertising => _advertising;
   bool get garminConnected => _subscribers.isNotEmpty;
-  int  get publishCount    => _publishCount;
-  String? get lastError    => _lastError;
+  int get publishCount => _publishCount;
+  String? get lastError => _lastError;
 
   final _stateController = StreamController<RelayState>.broadcast();
   Stream<RelayState> get stateStream => _stateController.stream;
@@ -71,6 +69,7 @@ class RelayService {
     _lastError = null;
     _emit();
     try {
+      await _ensureReady();
       await _ensureInitialized();
       await _mgr.startAdvertising(Advertisement(
         name: 'SurfaceSensor',
@@ -106,10 +105,10 @@ class RelayService {
 
     // 16-Byte-Paket identisch mit Firmware-Format (Little-Endian)
     final buf = ByteData(16);
-    buf.setUint32(0,  s.timestampMs, Endian.little);
-    buf.setFloat32(4, s.rmsG,        Endian.little);
-    buf.setFloat32(8, s.vdvG,        Endian.little);
-    buf.setFloat32(12, s.peakG,      Endian.little);
+    buf.setUint32(0, s.timestampMs, Endian.little);
+    buf.setFloat32(4, s.rmsG, Endian.little);
+    buf.setFloat32(8, s.vdvG, Endian.little);
+    buf.setFloat32(12, s.peakG, Endian.little);
     final bytes = Uint8List.view(buf.buffer);
 
     final toRemove = <Central>[];
@@ -145,16 +144,7 @@ class RelayService {
         GATTCharacteristicProperty.notify,
       ],
       permissions: [GATTCharacteristicPermission.read],
-      descriptors: [
-        // CCCD – Client Characteristic Configuration Descriptor
-        GATTDescriptor.mutable(
-          uuid: _cccdUuid,
-          permissions: [
-            GATTCharacteristicPermission.read,
-            GATTCharacteristicPermission.write,
-          ],
-        ),
-      ],
+      descriptors: const [],
     );
     _tempChar = GATTCharacteristic.mutable(
       uuid: _tempCharUuid,
@@ -162,6 +152,7 @@ class RelayService {
         GATTCharacteristicProperty.read,
       ],
       permissions: [GATTCharacteristicPermission.read],
+      descriptors: const [],
     );
 
     final service = GATTService(
@@ -179,6 +170,7 @@ class RelayService {
 
     // CCCD-Writes verfolgen → wer Notify aktiviert hat = Garmin verbunden
     _notifySub = _mgr.characteristicNotifyStateChanged.listen((ev) {
+      if (ev.characteristic != _surfaceChar) return;
       if (ev.state) {
         _subscribers.add(ev.central);
         debugPrint('[RelayService] Garmin subscribed');
@@ -190,16 +182,63 @@ class RelayService {
     });
 
     // BLE-State-Änderungen (z.B. BT ausgeschaltet)
-    _stateSub = _mgr.stateChanged.listen((ev) {
-      if (ev.state != BluetoothLowEnergyState.poweredOn) {
-        _advertising = false;
-        _subscribers.clear();
-        _lastError = 'Bluetooth ist nicht eingeschaltet';
-        _emit();
+    _stateSub = _mgr.stateChanged.listen((ev) async {
+      if (Platform.isAndroid &&
+          ev.state == BluetoothLowEnergyState.unauthorized) {
+        await _mgr.authorize();
+        return;
       }
+      if (ev.state == BluetoothLowEnergyState.poweredOn) return;
+
+      _advertising = false;
+      _subscribers.clear();
+      _lastError = ev.state == BluetoothLowEnergyState.unsupported
+          ? 'BLE-Peripheral wird auf diesem Gerät nicht unterstützt'
+          : 'Bluetooth ist nicht eingeschaltet';
+      _emit();
     });
 
     _initialized = true;
+  }
+
+  Future<void> _ensureReady() async {
+    var state = await _currentState();
+
+    if (Platform.isAndroid && state == BluetoothLowEnergyState.unauthorized) {
+      final authorized = await _mgr.authorize();
+      if (!authorized) {
+        throw StateError('Bluetooth-Berechtigung fehlt');
+      }
+      state = await _currentState();
+    }
+
+    switch (state) {
+      case BluetoothLowEnergyState.poweredOn:
+        return;
+      case BluetoothLowEnergyState.unsupported:
+        throw StateError(
+            'BLE-Peripheral wird auf diesem Gerät nicht unterstützt');
+      case BluetoothLowEnergyState.unauthorized:
+        throw StateError('Bluetooth-Berechtigung fehlt');
+      case BluetoothLowEnergyState.poweredOff:
+        throw StateError('Bluetooth ist nicht eingeschaltet');
+      case BluetoothLowEnergyState.unknown:
+        throw StateError('Bluetooth-Status noch unbekannt');
+    }
+  }
+
+  Future<BluetoothLowEnergyState> _currentState() async {
+    final state = _mgr.state;
+    if (state != BluetoothLowEnergyState.unknown) return state;
+
+    try {
+      final ev = await _mgr.stateChanged
+          .firstWhere((ev) => ev.state != BluetoothLowEnergyState.unknown)
+          .timeout(const Duration(seconds: 2));
+      return ev.state;
+    } on TimeoutException {
+      return _mgr.state;
+    }
   }
 
   void _emit() => _stateController.add(state);
@@ -213,8 +252,8 @@ class RelayService {
 }
 
 enum RelayState {
-  off,             // Relay inaktiv
-  advertising,     // Advertist, Garmin noch nicht verbunden
+  off, // Relay inaktiv
+  advertising, // Advertist, Garmin noch nicht verbunden
   garminConnected, // Garmin verbunden, Daten werden weitergeleitet
-  error,           // Advertising/BT-Fehler
+  error, // Advertising/BT-Fehler
 }

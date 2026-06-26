@@ -39,7 +39,7 @@ android {
 
     defaultConfig {
         applicationId = "com.elysium.surface_sensor"
-        minSdk = flutter.minSdkVersion
+        minSdk = 24
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName

@@ -51,6 +51,8 @@
 	<true/>
 	<key>NSBluetoothAlwaysUsageDescription</key>
 	<string>BLE-Verbindung zum Surface Sensor.</string>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>BLE-Relay zum Garmin Edge.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>GPS-Aufzeichnung zur Korrelation von Strecke und Vibrationsdaten.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
@@ -58,6 +60,7 @@
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>bluetooth-central</string>
+		<string>bluetooth-peripheral</string>
 		<string>location</string>
 	</array>
 	<key>UILaunchStoryboardName</key>
