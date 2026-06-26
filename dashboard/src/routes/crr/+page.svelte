@@ -767,7 +767,8 @@
           <p class="hint">Keine passenden Reifen gefunden. Bitte Breitenbereich prüfen.</p>
         </section>
       {:else}
-        <section class="card">
+        <div class="tire-analysis-grid">
+        <section class="card tire-analysis-panel">
           <h3>Reifen-Empfehlungen</h3>
           <div class="toolbar-row">
             <label>
@@ -854,6 +855,7 @@
             tempCelsius={profile.ambientTempCelsius}
           />
         </section>
+        </div>
       {/if}
         </div> <!-- end .panel-scroll -->
       {/if} <!-- end analyse tab -->
@@ -1312,6 +1314,16 @@
   }
   .card-header h3 { font-size: 14px; font-weight: 600; color: #e6edf3; margin: 0; }
   .card h3 { font-size: 14px; font-weight: 600; margin-bottom: 14px; color: #e6edf3; }
+  .tire-analysis-grid {
+    display: grid;
+    grid-template-columns: minmax(360px, 0.92fr) minmax(620px, 1.08fr);
+    gap: 16px;
+    align-items: start;
+  }
+  .tire-analysis-panel,
+  .detail-crr-analysis {
+    min-width: 0;
+  }
   .detail-crr-analysis {
     display: flex;
     flex-direction: column;
@@ -1484,4 +1496,10 @@
     cursor: pointer;
   }
   .setup-actions button:hover { border-color: #2dd4bf; color: #2dd4bf; }
+
+  @media (max-width: 1280px) {
+    .tire-analysis-grid {
+      grid-template-columns: 1fr;
+    }
+  }
 </style>
